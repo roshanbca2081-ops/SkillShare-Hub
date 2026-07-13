@@ -1,0 +1,13 @@
+:root {
+  --bg: #07111f;
+  --bg-soft: #0f1b2e;
+  --card: rgba(255,255,255,0.08);
+  --text: #f5f7ff;
+  --muted: #9fb0cb;
+  --accent: #4f7cff;
+  --accent-2: #18c6c6;
+  --success: #24c97b;
+  --danger: #ff5d7a;
+  --shadow: 0 20px 60px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}body{margin:0;font-family:'Inter',sans-serif;background:linear-gradient(135deg,var(--bg),var(--bg-soft));color:var(--text);min-height:100vh;overflow-x:hidden}a{text-decoration:none;color:inherit}.container{width:min(1200px,92vw);margin:auto}.navbar{position:sticky;top:0;z-index:1000;background:rgba(7,17,31,.8);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.08)}.navbar .nav-link{color:var(--muted);transition:.3s}.navbar .nav-link:hover,.navbar .nav-link.active{color:var(--text)}.hero{padding:5rem 0 3rem;position:relative;overflow:hidden}.hero::before,.hero::after{content:'';position:absolute;border-radius:50%;filter:blur(80px);opacity:.4;animation:float 8s ease-in-out infinite}.hero::before{width:280px;height:280px;background:var(--accent);top:-40px;right:-80px}.hero::after{width:320px;height:320px;background:var(--accent-2);bottom:-80px;left:-80px}.card{background:var(--card);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(18px);border-radius:20px;box-shadow:var(--shadow)}.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));border:none}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 25px rgba(79,124,255,.25)}.stats .stat-card{padding:1.2rem;border-radius:18px}.section{padding:3rem 0}.feature-icon{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.1);margin-bottom:.75rem}.form-card{max-width:520px;margin:3rem auto;padding:2rem;border-radius:24px}.input-group-text,.form-control{background:rgba(255,255,255,.08);color:var(--text);border:1px solid rgba(255,255,255,.1)}.form-control::placeholder{color:#a7b5cb}.footer{padding:2rem 0;border-top:1px solid rgba(255,255,255,.08);color:var(--muted)}.badge{padding:.45rem .7rem;border-radius:999px;background:rgba(79,124,255,.2);color:#dfe7ff}.animate{animation:fadeUp .8s ease both}.@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
