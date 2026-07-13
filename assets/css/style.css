@@ -14,8 +14,13 @@
 body{
   margin:0;
   min-height:100vh;
-  background:linear-gradient(135deg,#07111f,#0f1b2e);
+  /* Professional neutral dark canvas with subtle depth */
+  background:
+    radial-gradient(900px 500px at 12% 6%, rgba(79,124,255,.18), transparent 60%),
+    radial-gradient(800px 500px at 90% 12%, rgba(24,198,198,.12), transparent 58%),
+    linear-gradient(135deg,#070A12 0%, #0B1220 55%, #0A152A 100%);
 }
+
 
 /* Common container */
 .container{width:min(1200px,92vw);margin-inline:auto}

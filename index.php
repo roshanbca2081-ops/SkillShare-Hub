@@ -11,74 +11,58 @@
   <?php include 'includes/navbar.php'; ?>
 
   <main>
-    <section class="hero">
-      <div class="container">
-        <div class="hero__grid">
-          <div>
-            <span class="badge">Premium mentorship • practical learning • career growth</span>
-            <h1 class="section-title" style="margin-top:var(--s-3)">Bridge the gap between learning and opportunity.</h1>
-            <p class="lead" style="margin-top:var(--s-2)">ShareSkill Hub brings graduates, freshers, mentors, and learners into one modern platform for skill-building, assignments, mentorship, and placement readiness.</p>
-            <div class="hero__cta">
-              <a href="register.php" class="btn btn--primary">Join as Fresher</a>
-              <a href="register.php" class="btn btn--outline">Become a Mentor</a>
-            </div>
+    <section class="hero hero-landing">
+      <div class="container hero-grid">
+        <div class="hero-copy animate">
+          <span class="pill-badge">Share knowledge. Build skills. Grow careers.</span>
+          <h1>Learn, mentor, and launch your career from one beautiful hub.</h1>
+          <p>Discover practical courses, real mentorship, assignment-driven learning, and placement-ready support for freshers and graduates.</p>
+          <div class="hero-actions">
+            <a href="register.php" class="btn btn--primary">Join as Fresher</a>
+            <a href="register.php" class="btn btn--outline">Become a Mentor</a>
           </div>
+          <div class="hero-stat-row">
+            <div class="stat-pill"><strong>500+</strong> Graduates</div>
+            <div class="stat-pill"><strong>3000+</strong> Freshers</div>
+            <div class="stat-pill"><strong>120+</strong> Mentors</div>
+          </div>
+        </div>
 
-          <div class="card animate" style="padding:var(--s-4)">
-            <h2 class="section-title" style="margin-bottom:var(--s-3)">Platform Highlights</h2>
-            <ul style="display:grid;gap:12px;margin:0;padding:0;">
-              <li>Live mentorship sessions</li>
-              <li>Practical assignments & feedback</li>
-              <li>Interview and placement prep</li>
-              <li>Secure modern dashboard experience</li>
-            </ul>
+        <div class="hero-panel animate">
+          <div class="panel-top">
+            <p class="panel-label">Platform Highlights</p>
+            <div class="panel-chip">Learn • Mentor • Place</div>
           </div>
+          <ul class="panel-list">
+            <li><span>Live mentorship sessions</span></li>
+            <li><span>Assignments with feedback</span></li>
+            <li><span>Interview preparation tools</span></li>
+            <li><span>Modern dashboard experience</span></li>
+          </ul>
         </div>
       </div>
     </section>
 
-    <section class="section">
-      <div class="container stats">
-        <div class="stats-grid">
-          <div class="card stat-card text-center animate">
-            <h3 data-count="500" style="margin:0 0 6px 0">0</h3>
-            <p>Graduates</p>
-          </div>
-          <div class="card stat-card text-center animate">
-            <h3 data-count="3000" style="margin:0 0 6px 0">0</h3>
-            <p>Freshers</p>
-          </div>
-          <div class="card stat-card text-center animate">
-            <h3 data-count="200" style="margin:0 0 6px 0">0</h3>
-            <p>Projects</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="container">
-        <div class="features-grid">
-          <div class="card feature-card animate">
-            <div class="feature-icon" aria-hidden="true">★</div>
-            <h5 style="margin:0 0 8px 0">Mentorship</h5>
-            <p class="small-muted" style="margin:0">Book sessions with graduates who can guide you through practical skills and interview preparation.</p>
-          </div>
-          <div class="card feature-card animate">
-            <div class="feature-icon" aria-hidden="true">✓</div>
-            <h5 style="margin:0 0 8px 0">Assignments</h5>
-            <p class="small-muted" style="margin:0">Submit work, receive feedback, and track your progress with structured learning paths.</p>
-          </div>
-          <div class="card feature-card animate">
-            <div class="feature-icon" aria-hidden="true">⌁</div>
-            <h5 style="margin:0 0 8px 0">Placement Prep</h5>
-            <p class="small-muted" style="margin:0">Access curated research, placement guides, and practice materials for real opportunities.</p>
-          </div>
-        </div>
+    <section class="section feature-section">
+      <div class="container feature-grid">
+        <article class="card feature-card animate">
+          <div class="feature-icon"><i class="fa-solid fa-user-graduate"></i></div>
+          <h4>Mentorship</h4>
+          <p>Book sessions with expert graduates and build real-world confidence fast.</p>
+        </article>
+        <article class="card feature-card animate">
+          <div class="feature-icon"><i class="fa-solid fa-file-lines"></i></div>
+          <h4>Assignments</h4>
+          <p>Submit projects, get feedback, and track your learning journey in one place.</p>
+        </article>
+        <article class="card feature-card animate">
+          <div class="feature-icon"><i class="fa-solid fa-briefcase"></i></div>
+          <h4>Placement Prep</h4>
+          <p>Access interview guides, resume support, and placement-focused learning paths.</p>
+        </article>
       </div>
     </section>
   </main>
-
 
   <?php include 'includes/footer.php'; ?>
 </body>
