@@ -1,0 +1,17 @@
+/* Extra navbar and hero styles for polished horizontal layout */
+.site-nav{background:linear-gradient(90deg, rgba(10,20,40,0.7), rgba(7,17,31,0.85));border-bottom:1px solid rgba(255,255,255,0.04)}
+.site-nav .brand-mark{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;font-weight:700;color:white}
+.site-nav .navbar-brand{gap:12px}
+.search-input{border-radius:999px;padding:10px 16px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.03);color:var(--text)}
+.search-input::placeholder{color:var(--muted)}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent-2),var(--accent));display:grid;place-items:center;font-weight:700;color:#05202a}
+.dropdown-menu{background:rgba(7,17,31,0.95);border-radius:12px;border:1px solid rgba(255,255,255,0.04)}
+@media(max-width:991px){.search-input{display:none}.site-nav .d-none.d-lg-inline{display:none!important}}
+
+/* Hero tweaks to match mock */
+.hero .hero-content{max-width:720px}
+.hero .cta-btns .btn{margin-right:12px}
+
+/* small utilities */
+.navbar .nav-link{padding:.6rem .8rem}
+.navbar .btn{padding:.55rem 1rem}

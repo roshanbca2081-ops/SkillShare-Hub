@@ -1,0 +1,32 @@
+/* Reusable utilities */
+
+.container{width:min(1200px,92vw);margin-inline:auto}
+
+.row{display:flex;flex-wrap:wrap}
+
+/* Spacing helpers (8px system) */
+.mt-0{margin-top:0}
+.mb-0{margin-bottom:0}
+.mb-1{margin-bottom:var(--s-1)}
+.mb-2{margin-bottom:var(--s-2)}
+.mb-3{margin-bottom:var(--s-3)}
+.mb-4{margin-bottom:var(--s-4)}
+
+.pt-hero{padding-top:calc(var(--s-6) + var(--s-4))}
+.py-hero{padding-block:calc(var(--s-6) + var(--s-4))}
+
+.text-center{text-align:center}
+
+/* Focus ring */
+:focus-visible{outline:3px solid color-mix(in srgb, var(--primary) 55%, white);outline-offset:2px}
+
+/* Hide visually but keep accessible */
+.sr-only{
+  position:absolute;
+  width:1px;height:1px;
+  padding:0;margin:-1px;
+  overflow:hidden;
+  clip:rect(0,0,0,0);
+  white-space:nowrap;border:0;
+}
+
