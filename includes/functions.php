@@ -105,6 +105,25 @@ function ensure_database_schema() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
 
+    $conn->query("CREATE TABLE IF NOT EXISTS enrollments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        student_id INT DEFAULT NULL,
+        full_name VARCHAR(150) NOT NULL,
+        email VARCHAR(150) NOT NULL,
+        phone VARCHAR(40) DEFAULT NULL,
+        address VARCHAR(190) DEFAULT NULL,
+        course VARCHAR(150) NOT NULL,
+        mentor VARCHAR(150) DEFAULT NULL,
+        preferred_duration VARCHAR(80) DEFAULT NULL,
+        preferred_time VARCHAR(80) DEFAULT NULL,
+        session_type VARCHAR(40) DEFAULT NULL,
+        payment_method VARCHAR(40) DEFAULT NULL,
+        remarks TEXT,
+        amount DECIMAL(10,2) DEFAULT 800.00,
+        status VARCHAR(30) NOT NULL DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )");
+
     $conn->query("CREATE TABLE IF NOT EXISTS messages (
         id INT AUTO_INCREMENT PRIMARY KEY,
         sender_id INT NOT NULL,
@@ -162,6 +181,33 @@ function get_course($id) {
     $course = $result->fetch_assoc();
     $stmt->close();
     return $course;
+}
+
+function create_enrollment($data) {
+    global $conn;
+    if (!$conn || trim($data['full_name'] ?? '') === '' || trim($data['email'] ?? '') === '' || trim($data['course'] ?? '') === '') {
+        return false;
+    }
+
+    $studentId = $data['student_id'] ?? null;
+    $fullName = $data['full_name'];
+    $email = $data['email'];
+    $phone = $data['phone'] ?? '';
+    $address = $data['address'] ?? '';
+    $course = $data['course'];
+    $mentor = $data['mentor'] ?? '';
+    $duration = $data['preferred_duration'] ?? '';
+    $time = $data['preferred_time'] ?? '';
+    $sessionType = $data['session_type'] ?? '';
+    $payment = $data['payment_method'] ?? '';
+    $remarks = $data['remarks'] ?? '';
+    $amount = (float)($data['amount'] ?? 800);
+
+    $stmt = $conn->prepare("INSERT INTO enrollments (student_id, full_name, email, phone, address, course, mentor, preferred_duration, preferred_time, session_type, payment_method, remarks, amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param('isssssssssssd', $studentId, $fullName, $email, $phone, $address, $course, $mentor, $duration, $time, $sessionType, $payment, $remarks, $amount);
+    $ok = $stmt->execute();
+    $stmt->close();
+    return $ok;
 }
 
 function create_course($title, $description) {

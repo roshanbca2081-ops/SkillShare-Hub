@@ -16,10 +16,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $role = $_POST['role'] ?? 'fresher';
     $password = $_POST['password'] ?? '';
+    $confirmPassword = $_POST['confirm_password'] ?? '';
 
     if ($fullName === '' || $email === '' || $password === '') {
         $message = 'Please fill in all required fields.';
-    } else if (!in_array($role, ['fresher', 'graduate'], true)) {
+    } elseif ($password !== $confirmPassword) {
+        $message = 'Password and confirm password must match.';
+    } elseif (!in_array($role, ['fresher', 'graduate'], true)) {
         $message = 'Invalid role selected.';
     } else {
         $check = $conn->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
@@ -56,43 +59,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Register | ShareSkill Hub</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body>
-  <div class="container py-5">
-    <div class="card form-card animate">
-      <h2 class="text-center mb-3"><i class="fa-solid fa-user-plus me-2"></i>Create Account</h2>
-      <p class="text-center text-light-emphasis mb-4">Choose your path and start building skills.</p>
-      <?php if ($message): ?>
-        <div class="alert alert-danger"><?php echo e($message); ?></div>
-      <?php endif; ?>
-      <form method="post">
-        <input type="hidden" name="csrf_token" value="<?php echo e(csrf_token()); ?>" />
-        <div class="mb-3">
-          <label class="form-label">Full name</label>
-          <input type="text" name="full_name" class="form-control" placeholder="Your name" required />
+  <main class="auth-page">
+    <div class="auth-grid">
+      <section class="card form-card animate">
+        <h2 class="text-center mb-1">Create Your Account</h2>
+        <p class="text-center text-light-emphasis mb-4">Join SkillShare Hub and start your learning journey</p>
+        <?php if ($message): ?>
+          <div class="alert alert-danger"><?php echo e($message); ?></div>
+        <?php endif; ?>
+        <form method="post">
+          <input type="hidden" name="csrf_token" value="<?php echo e(csrf_token()); ?>" />
+          <div class="mb-3">
+            <label>Full Name</label>
+            <input type="text" name="full_name" placeholder="Rohan Sharma" required />
+          </div>
+          <div class="mb-3">
+            <label>Email</label>
+            <input type="email" name="email" placeholder="rohan@gmail.com" required />
+          </div>
+          <div class="mb-3">
+            <label>Address</label>
+            <input type="text" name="address" placeholder="Kathmandu, Nepal" />
+          </div>
+          <div class="mb-3">
+            <label>Phone</label>
+            <input type="tel" name="phone" placeholder="9800000000" />
+          </div>
+          <div class="mb-3">
+            <label>Role</label>
+            <select name="role">
+              <option value="fresher">Fresher</option>
+              <option value="graduate">Graduate Mentor</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label>Field</label>
+            <select name="field">
+              <option>Information Technology</option>
+              <option>Agriculture</option>
+              <option>Engineering</option>
+              <option>Medical</option>
+              <option>Law</option>
+              <option>Management</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label>Password</label>
+            <input type="password" name="password" placeholder="********" required />
+          </div>
+          <div class="mb-3">
+            <label>Confirm Password</label>
+            <input type="password" name="confirm_password" placeholder="********" required />
+          </div>
+          <button class="btn btn-primary w-100" type="submit">Register</button>
+        </form>
+        <div class="d-flex gap-2 mt-3">
+          <button class="btn btn--outline w-100" type="button">Google</button>
+          <button class="btn btn--outline w-100" type="button">Facebook</button>
         </div>
-        <div class="mb-3">
-          <label class="form-label">Email address</label>
-          <input type="email" name="email" class="form-control" placeholder="you@example.com" required />
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Role</label>
-          <select class="form-select" name="role">
-            <option value="fresher">Fresher</option>
-            <option value="graduate">Graduate</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Password</label>
-          <input type="password" name="password" class="form-control" placeholder="********" required />
-        </div>
-        <button class="btn btn-primary w-100" type="submit">Register</button>
-      </form>
-      <p class="text-center mt-3 mb-0">Already have an account? <a href="login.php">Login</a></p>
+        <p class="text-center mt-3 mb-0 small">Already have an account? <a href="login.php" style="color:var(--primary);font-weight:900">Login</a></p>
+      </section>
+      <section class="auth-brand">
+        <div class="auth-logo">SH</div>
+        <h1>SkillShare Hub</h1>
+        <p>Register as a fresher or graduate mentor and unlock courses, sessions, assignments, payments and certificate workflows.</p>
+      </section>
     </div>
-  </div>
+  </main>
 </body>
 </html>

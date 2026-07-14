@@ -43,36 +43,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login | ShareSkill Hub</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body>
-  <div class="container py-5">
-    <div class="card form-card animate">
-      <h2 class="text-center mb-3"><i class="fa-solid fa-right-to-bracket me-2"></i>Welcome Back</h2>
-      <p class="text-center text-light-emphasis mb-4">Sign in to continue your journey.</p>
-      <?php if ($message): ?>
-        <div class="alert alert-danger"><?php echo e($message); ?></div>
-      <?php endif; ?>
-      <form method="post">
-        <input type="hidden" name="csrf_token" value="<?php echo e(csrf_token()); ?>" />
-        <div class="mb-3">
-          <label class="form-label">Email address</label>
-          <input type="email" name="email" class="form-control" placeholder="you@example.com" required />
+  <main class="auth-page">
+    <div class="auth-grid">
+      <section class="auth-brand">
+        <div class="auth-logo">SH</div>
+        <h1>Welcome Back!</h1>
+        <p>Login to continue your learning, mentorship sessions, assignments and certificates.</p>
+      </section>
+      <section class="card form-card animate">
+        <h2 class="text-center mb-1">Welcome Back!</h2>
+        <p class="text-center text-light-emphasis mb-4">Login to continue your learning</p>
+        <?php if ($message): ?>
+          <div class="alert alert-danger"><?php echo e($message); ?></div>
+        <?php endif; ?>
+        <form method="post">
+          <input type="hidden" name="csrf_token" value="<?php echo e(csrf_token()); ?>" />
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" placeholder="rohan@gmail.com" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input type="password" name="password" class="form-control" placeholder="********" required />
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <label class="small"><input type="checkbox" style="width:auto;min-height:auto" /> Remember me</label>
+            <a href="forgot-password.php" class="small" style="color:var(--primary);font-weight:800">Forgot Password?</a>
+          </div>
+          <button class="btn btn-primary w-100" type="submit">Login</button>
+        </form>
+        <div class="d-flex gap-2 mt-3">
+          <button class="btn btn--outline w-100" type="button">Google</button>
+          <button class="btn btn--outline w-100" type="button">Facebook</button>
         </div>
-        <div class="mb-3">
-          <label class="form-label">Password</label>
-          <input type="password" name="password" class="form-control" placeholder="********" required />
-        </div>
-        <div class="d-flex justify-content-between mb-3">
-          <div><input type="checkbox" /> <small>Remember me</small></div>
-          <a href="forgot-password.php" class="small">Forgot password?</a>
-        </div>
-        <button class="btn btn-primary w-100" type="submit">Login</button>
-      </form>
-      <p class="text-center mt-3 mb-0">New here? <a href="register.php">Create account</a></p>
+        <p class="text-center mt-3 mb-0 small">Don't have an account? <a href="register.php" style="color:var(--primary);font-weight:900">Register</a></p>
+      </section>
     </div>
-  </div>
+  </main>
 </body>
 </html>
