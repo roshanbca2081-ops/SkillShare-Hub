@@ -30,7 +30,21 @@ $target = $role === 'admin' ? 'admin/dashboard.php' : ($role === 'graduate' ? 'g
             <h1>Welcome, <?php echo e($_SESSION['user_name'] ?? 'Learner'); ?></h1>
             <p>Here is what's happening today in your <?php echo e($role); ?> workspace.</p>
           </div>
-          <a class="btn btn-primary" href="<?php echo $target; ?>">Open <?php echo e(ucfirst($role)); ?> Panel</a>
+          <a class="btn btn--primary" href="<?php echo $target; ?>">Open <?php echo e(ucfirst($role)); ?> Panel</a>
+        </div>
+        <div class="dashboard-hero card mb-4">
+          <div class="dashboard-hero-grid">
+            <div>
+              <p class="auth-eyebrow">Dashboard overview</p>
+              <h2>Quick snapshot of your progress</h2>
+              <p class="text-light-emphasis">Monitor assignments, sessions, courses, and certificates from one place.</p>
+            </div>
+            <div class="dashboard-hero-actions">
+              <span class="pill">Role: <?php echo e(ucfirst($role)); ?></span>
+              <span class="pill">Active Courses: <?php echo e($counts['courses']); ?></span>
+              <span class="pill">Pending Tasks: <?php echo e($counts['assignments']); ?></span>
+            </div>
+          </div>
         </div>
         <div class="stat-grid">
           <div class="stat-card"><div class="stat-icon">C</div><div><strong><?php echo e($counts['courses']); ?></strong><span>Enrolled Courses</span></div></div>

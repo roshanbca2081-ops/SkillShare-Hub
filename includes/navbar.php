@@ -5,6 +5,7 @@ if (!file_exists('index.php') && file_exists('../index.php')) {
 } elseif (!file_exists('index.php') && file_exists('../../index.php')) {
     $basePath = '../../';
 }
+$currentPage = basename($_SERVER['PHP_SELF'] ?? '');
 ?>
 <nav class="navbar" data-mobile-open="false">
   <div class="navbar__inner">
@@ -21,11 +22,11 @@ if (!file_exists('index.php') && file_exists('../index.php')) {
     </form>
 
     <div class="nav" role="navigation" aria-label="Primary">
-      <a class="nav__link" href="<?php echo $basePath; ?>index.php"><span class="nav__icon">H</span>Home</a>
-      <a class="nav__link" href="<?php echo $basePath; ?>course.php"><span class="nav__icon">C</span>Course</a>
-      <a class="nav__link" href="<?php echo $basePath; ?>mentor.php"><span class="nav__icon">M</span>Mentor</a>
-      <a class="nav__link" href="<?php echo $basePath; ?>notifications.php"><span class="nav__icon">N</span>Notification</a>
-      <a class="nav__link" href="<?php echo $basePath; ?>fresher/mentorship/book.php"><span class="nav__icon">S</span>Session</a>
+      <a class="nav__link<?php echo $currentPage === 'index.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>index.php"><span class="nav__icon">H</span>Home</a>
+      <a class="nav__link<?php echo $currentPage === 'course.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>course.php"><span class="nav__icon">C</span>Course</a>
+      <a class="nav__link<?php echo $currentPage === 'mentor.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>mentor.php"><span class="nav__icon">M</span>Mentor</a>
+      <a class="nav__link<?php echo $currentPage === 'notifications.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>notifications.php"><span class="nav__icon">N</span>Notification</a>
+      <a class="nav__link<?php echo $currentPage === 'book.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>fresher/mentorship/book.php"><span class="nav__icon">S</span>Session</a>
     </div>
 
     <div class="navbar__right">
@@ -53,17 +54,17 @@ if (!file_exists('index.php') && file_exists('../index.php')) {
 
   <div class="mobile-panel" aria-hidden="true">
     <div class="mobile-panel__grid">
-      <a class="mobile-panel__link" href="<?php echo $basePath; ?>index.php">Home</a>
-      <a class="mobile-panel__link" href="<?php echo $basePath; ?>course.php">Courses</a>
-      <a class="mobile-panel__link" href="<?php echo $basePath; ?>mentor.php">Mentors</a>
-      <a class="mobile-panel__link" href="<?php echo $basePath; ?>about.php">About</a>
-      <a class="mobile-panel__link" href="<?php echo $basePath; ?>contact.php">Contact</a>
+      <a class="mobile-panel__link<?php echo $currentPage === 'index.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>index.php">Home</a>
+      <a class="mobile-panel__link<?php echo $currentPage === 'course.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>course.php">Courses</a>
+      <a class="mobile-panel__link<?php echo $currentPage === 'mentor.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>mentor.php">Mentors</a>
+      <a class="mobile-panel__link<?php echo $currentPage === 'about.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>about.php">About</a>
+      <a class="mobile-panel__link<?php echo $currentPage === 'contact.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>contact.php">Contact</a>
       <?php if (is_logged_in()): ?>
-        <a class="mobile-panel__link" href="<?php echo $basePath; ?>dashboard.php">Dashboard</a>
+        <a class="mobile-panel__link<?php echo $currentPage === 'dashboard.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>dashboard.php">Dashboard</a>
         <a class="mobile-panel__link" href="<?php echo $basePath; ?>logout.php">Logout</a>
       <?php else: ?>
-        <a class="mobile-panel__link" href="<?php echo $basePath; ?>login.php">Login</a>
-        <a class="mobile-panel__link" href="<?php echo $basePath; ?>register.php">Register</a>
+        <a class="mobile-panel__link<?php echo $currentPage === 'login.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>login.php">Login</a>
+        <a class="mobile-panel__link<?php echo $currentPage === 'register.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>register.php">Register</a>
       <?php endif; ?>
     </div>
   </div>

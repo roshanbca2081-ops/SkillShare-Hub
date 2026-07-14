@@ -24,8 +24,8 @@ $courses = [
       </div>
       <a class="btn btn--primary" href="enrollment.php?course=Full%20Stack%20Web%20Development">Start Course</a>
     </div>
-    <div class="card mb-4">
-      <div class="home-grid">
+    <div class="course-hero mb-4">
+      <div class="course-hero-grid">
         <div>
           <div class="d-flex gap-2 mb-3">
             <span class="tag">Intermediate Level</span>
@@ -40,16 +40,20 @@ $courses = [
             <span>Students Enrolled: <strong>120+</strong></span>
           </div>
         </div>
-        <div class="soft-card text-center">
-          <div class="field-icon" style="margin:0 auto 16px;width:72px;height:72px">JS</div>
+        <div class="course-summary soft-card text-center">
+          <div class="field-icon" style="margin:0 auto 16px;width:80px;height:80px">JS</div>
           <div class="d-flex gap-2 justify-content-center" style="flex-wrap:wrap">
             <span class="chip">Node.js</span>
             <span class="chip">MySQL</span>
-            <span class="chip">React UI Concepts</span>
+            <span class="chip">React</span>
             <span class="chip">API</span>
           </div>
           <h2 class="price mt-3">Rs. 800</h2>
           <p class="small text-light-emphasis">Full Course</p>
+          <div class="d-flex justify-content-center gap-2 mt-3">
+            <span class="tag">12 Assignments</span>
+            <span class="tag">24 Sessions</span>
+          </div>
         </div>
       </div>
     </div>

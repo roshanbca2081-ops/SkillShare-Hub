@@ -115,6 +115,7 @@
 .mobile-panel{display:none}
 .mobile-panel__grid{width:min(1240px,94vw);margin:auto;padding:0 0 16px;display:grid;gap:8px}
 .mobile-panel__link{padding:11px 12px;border:1px solid var(--border);background:#fff;border-radius:8px;font-weight:800}
+.mobile-panel__link--active{background:rgba(79,70,229,.12);border-color:rgba(79,70,229,.18);color:var(--primary)}
 
 @media(max-width:960px){
   .nav{display:none}

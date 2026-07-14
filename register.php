@@ -59,64 +59,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Register | ShareSkill Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body>
   <main class="auth-page">
     <div class="auth-grid">
-      <section class="card form-card animate">
-        <h2 class="text-center mb-1">Create Your Account</h2>
-        <p class="text-center text-light-emphasis mb-4">Join SkillShare Hub and start your learning journey</p>
+      <section class="auth-panel card form-card animate">
+        <div class="text-center" style="margin-bottom:28px">
+          <div class="auth-logo" style="margin-inline:auto;margin-bottom:18px;width:64px;height:64px;">SH</div>
+          <h2 class="mb-1">Create your ShareSkill Hub account</h2>
+          <p class="text-light-emphasis mb-4">Register as a fresher or graduate mentor to start learning and teaching.</p>
+        </div>
         <?php if ($message): ?>
           <div class="alert alert-danger"><?php echo e($message); ?></div>
         <?php endif; ?>
         <form method="post">
           <input type="hidden" name="csrf_token" value="<?php echo e(csrf_token()); ?>" />
-          <div class="mb-3">
-            <label>Full Name</label>
-            <input type="text" name="full_name" placeholder="Rohan Sharma" required />
+          <div class="row g-4">
+            <div class="col-md-6"><label class="form-label">Full Name</label><input type="text" name="full_name" class="form-control" placeholder="Rohan Sharma" required /></div>
+            <div class="col-md-6"><label class="form-label">Email</label><input type="email" name="email" class="form-control" placeholder="rohan@gmail.com" required /></div>
+            <div class="col-md-6"><label class="form-label">Role</label><select name="role" class="form-control"><option value="fresher">Fresher</option><option value="graduate">Graduate Mentor</option></select></div>
+            <div class="col-md-6"><label class="form-label">Field</label><select name="field" class="form-control"><option>Information Technology</option><option>Agriculture</option><option>Engineering</option><option>Medical</option><option>Law</option><option>Management</option></select></div>
+            <div class="col-md-6"><label class="form-label">Password</label><input type="password" name="password" class="form-control" placeholder="********" required /></div>
+            <div class="col-md-6"><label class="form-label">Confirm Password</label><input type="password" name="confirm_password" class="form-control" placeholder="********" required /></div>
           </div>
-          <div class="mb-3">
-            <label>Email</label>
-            <input type="email" name="email" placeholder="rohan@gmail.com" required />
+          <div class="d-flex align-items-center gap-2 mt-3">
+            <input type="checkbox" id="terms" />
+            <label for="terms" class="small">I agree to the <strong>Terms</strong> and <strong>Privacy Policy</strong></label>
           </div>
-          <div class="mb-3">
-            <label>Address</label>
-            <input type="text" name="address" placeholder="Kathmandu, Nepal" />
-          </div>
-          <div class="mb-3">
-            <label>Phone</label>
-            <input type="tel" name="phone" placeholder="9800000000" />
-          </div>
-          <div class="mb-3">
-            <label>Role</label>
-            <select name="role">
-              <option value="fresher">Fresher</option>
-              <option value="graduate">Graduate Mentor</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label>Field</label>
-            <select name="field">
-              <option>Information Technology</option>
-              <option>Agriculture</option>
-              <option>Engineering</option>
-              <option>Medical</option>
-              <option>Law</option>
-              <option>Management</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label>Password</label>
-            <input type="password" name="password" placeholder="********" required />
-          </div>
-          <div class="mb-3">
-            <label>Confirm Password</label>
-            <input type="password" name="confirm_password" placeholder="********" required />
-          </div>
-          <button class="btn btn-primary w-100" type="submit">Register</button>
+          <button class="btn btn--primary w-100 mt-3" type="submit">Register</button>
         </form>
-        <div class="d-flex gap-2 mt-3">
+        <div class="auth-divider"><span>or continue with</span></div>
+        <div class="auth-form-actions">
           <button class="btn btn--outline w-100" type="button">Google</button>
           <button class="btn btn--outline w-100" type="button">Facebook</button>
         </div>
@@ -124,8 +101,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </section>
       <section class="auth-brand">
         <div class="auth-logo">SH</div>
-        <h1>SkillShare Hub</h1>
-        <p>Register as a fresher or graduate mentor and unlock courses, sessions, assignments, payments and certificate workflows.</p>
+        <div class="auth-eyebrow">Join the community</div>
+        <h1>Gain mentorship, assignments, video sessions and placement support</h1>
+        <p>Register as a fresher or graduate mentor and unlock courses, sessions, assignments, certificates and placement tools.</p>
+        <div class="auth-info-list">
+          <div><strong>✔</strong><span>Mentorship bookings and schedules</span></div>
+          <div><strong>✔</strong><span>Course recommendations tailored to your field</span></div>
+          <div><strong>✔</strong><span>Verified certificates and placement guides</span></div>
+        </div>
       </section>
     </div>
   </main>
