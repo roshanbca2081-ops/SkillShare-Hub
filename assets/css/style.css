@@ -11,21 +11,38 @@ body{
   min-height:100vh;
   color:var(--text);
   background:
-    linear-gradient(115deg,rgba(67,83,196,.07),transparent 34%),
-    radial-gradient(circle at 82% 14%,rgba(87,111,255,.12),transparent 28%),
-    linear-gradient(180deg,#fbfcff 0%,#f3f6ff 100%);
+    linear-gradient(120deg,rgba(235,239,255,.92) 0%,rgba(255,255,255,.96) 28%,rgba(246,249,255,.94) 58%,rgba(255,255,255,1) 100%);
+  background-size:180% 180%;
+  animation:pageGlow 16s ease-in-out infinite;
+  isolation:isolate;
 }
+
+body > *{position:relative;z-index:1}
 
 body::before{
   content:"";
   position:fixed;
   inset:0;
   pointer-events:none;
+  z-index:0;
   background-image:
-    linear-gradient(rgba(38,50,99,.045) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(38,50,99,.045) 1px,transparent 1px);
-  background-size:34px 34px;
-  mask-image:linear-gradient(180deg,rgba(0,0,0,.8),transparent 72%);
+    linear-gradient(rgba(43,58,128,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(43,58,128,.035) 1px,transparent 1px);
+  background-size:36px 36px;
+  mask-image:linear-gradient(180deg,rgba(0,0,0,.72),transparent 76%);
+  animation:gridDrift 22s linear infinite;
+}
+
+body::after{
+  content:"";
+  position:fixed;
+  inset:-30% -10% auto;
+  height:58%;
+  pointer-events:none;
+  z-index:0;
+  background:linear-gradient(100deg,transparent 20%,rgba(77,98,230,.08) 48%,transparent 76%);
+  transform:translateX(-18%);
+  animation:lightSweep 13s ease-in-out infinite;
 }
 
 .container{width:min(1240px,94vw);margin-inline:auto}
@@ -40,9 +57,15 @@ body::before{
   border:1px solid var(--border);
   border-radius:var(--radius);
   box-shadow:var(--shadow);
+  transition:transform var(--transition),box-shadow var(--transition),border-color var(--transition);
 }
 
 .card{padding:20px}
+.card:hover,.mentor-card:hover,.course-card:hover,.field-card:hover,.stat-card:hover{
+  transform:translateY(-3px);
+  border-color:#cbd4ff;
+  box-shadow:var(--shadow-lg);
+}
 .card h1,.card h2,.card h3,.card h4,.card h5{color:var(--ink)}
 .soft-card{background:#f7f9ff;border:1px solid var(--border);border-radius:var(--radius);padding:16px}
 
