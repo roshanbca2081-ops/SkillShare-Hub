@@ -7,5 +7,6 @@ $assetBase = file_exists('assets/js/main.js') ? 'assets/' : (file_exists('../ass
   </div>
 </footer>
 <script src="<?php echo $assetBase; ?>js/main.js"></script>
+<script src="<?php echo $assetBase; ?>js/app.js"></script>
 </body>
 </html>

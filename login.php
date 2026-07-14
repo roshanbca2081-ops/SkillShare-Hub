@@ -37,64 +37,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login | ShareSkill Hub</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/style.css" />
-</head>
-<body>
-  <main class="auth-page">
-    <div class="auth-grid">
-      <section class="auth-brand">
-        <div class="auth-logo">SH</div>
-        <div class="auth-eyebrow">Secure Access</div>
-        <h1>Welcome Back to ShareSkill Hub</h1>
-        <p>Login to continue your learning, mentorship sessions, assignments and certificates.</p>
-        <div class="auth-info-list">
-          <div><strong>✔</strong><span>Fast access to courses and mentors</span></div>
-          <div><strong>✔</strong><span>Track your assignments and progress</span></div>
-          <div><strong>✔</strong><span>Secure dashboard for freshers and graduates</span></div>
+<?php include 'includes/header.php'; ?>
+
+<div class="page-section centered" style="min-height:calc(100vh - 120px);padding:50px 0;">
+  <div class="auth-grid">
+    <section class="auth-brand">
+      <div class="auth-logo">SH</div>
+      <div class="auth-eyebrow">Secure Access</div>
+      <h1>Welcome Back to ShareSkill Hub</h1>
+      <p>Login to continue your learning, mentorship sessions, assignments and certificates.</p>
+      <div class="auth-info-list">
+        <div><strong>✔</strong><span>Fast access to courses and mentors</span></div>
+        <div><strong>✔</strong><span>Track your assignments and progress</span></div>
+        <div><strong>✔</strong><span>Secure dashboard for freshers and graduates</span></div>
+      </div>
+    </section>
+    <section class="auth-panel form-card animate">
+      <div class="text-center" style="margin-bottom:28px">
+        <div class="auth-logo" style="margin-inline:auto;margin-bottom:18px;width:64px;height:64px;">SH</div>
+        <h2 class="mb-1">Sign in to your account</h2>
+        <p class="text-light-emphasis mb-4">Quickly access your dashboard and learning tools.</p>
+      </div>
+      <?php if ($message): ?>
+        <div class="alert alert-danger"><?php echo e($message); ?></div>
+      <?php endif; ?>
+      <form method="post">
+        <input type="hidden" name="csrf_token" value="<?php echo e(csrf_token()); ?>" />
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" placeholder="rohan@gmail.com" required />
         </div>
-      </section>
-      <section class="auth-panel form-card animate">
-        <div class="text-center" style="margin-bottom:28px">
-          <div class="auth-logo" style="margin-inline:auto;margin-bottom:18px;width:64px;height:64px;">SH</div>
-          <h2 class="mb-1">Sign in to your account</h2>
-          <p class="text-light-emphasis mb-4">Quickly access your dashboard and learning tools.</p>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" placeholder="********" required />
         </div>
-        <?php if ($message): ?>
-          <div class="alert alert-danger"><?php echo e($message); ?></div>
-        <?php endif; ?>
-        <form method="post">
-          <input type="hidden" name="csrf_token" value="<?php echo e(csrf_token()); ?>" />
-          <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" name="email" class="form-control" placeholder="rohan@gmail.com" required />
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Password</label>
-            <input type="password" name="password" class="form-control" placeholder="********" required />
-          </div>
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <label class="small" style="display:flex;align-items:center;gap:8px;"> <input type="checkbox" style="width:auto;min-height:auto" /> Remember me</label>
-            <a href="forgot-password.php" class="small" style="color:var(--primary);font-weight:800">Forgot Password?</a>
-          </div>
-          <button class="btn btn--primary w-100" type="submit">Login</button>
-        </form>
-        <div class="auth-divider"><span>or continue with</span></div>
-        <div class="auth-form-actions">
-          <button class="btn btn--outline w-100" type="button">Google</button>
-          <button class="btn btn--outline w-100" type="button">Facebook</button>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <label class="small" style="display:flex;align-items:center;gap:8px;"> <input type="checkbox" style="width:auto;min-height:auto" /> Remember me</label>
+          <a href="forgot-password.php" class="small" style="color:var(--primary);font-weight:800">Forgot Password?</a>
         </div>
-        <p class="text-center mt-3 mb-0 small">Don't have an account? <a href="register.php" style="color:var(--primary);font-weight:900">Register</a></p>
-      </section>
-    </div>
-  </main>
-</body>
-</html>
+        <button class="btn btn--primary w-100" type="submit">Login</button>
+      </form>
+      <div class="auth-divider"><span>or continue with</span></div>
+      <div class="auth-form-actions">
+        <button class="btn btn--outline w-100" type="button">Google</button>
+        <button class="btn btn--outline w-100" type="button">Facebook</button>
+      </div>
+      <p class="text-center mt-3 mb-0 small">Don't have an account? <a href="register.php" style="color:var(--primary);font-weight:900">Register</a></p>
+    </section>
+  </div>
+</div>
+
+<?php include 'includes/footer.php'; ?>

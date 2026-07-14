@@ -30,6 +30,7 @@ $currentPage = basename($_SERVER['PHP_SELF'] ?? '');
     </div>
 
     <div class="navbar__right">
+      <button class="btn btn--ghost btn-sm" type="button" data-theme-toggle aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
       <?php if (is_logged_in()): ?>
         <div class="profile" data-profile>
           <button class="avatar-btn" type="button" data-profile-trigger aria-label="Open profile menu">
