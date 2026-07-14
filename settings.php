@@ -1,34 +1,39 @@
-<?php include 'config/config.php'; include 'includes/functions.php'; ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Settings | ShareSkill Hub</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-  <link rel="stylesheet" href="assets/css/style.css" />
-</head>
-<body>
-  <nav class="navbar navbar-expand-lg">
-    <div class="container">
-      <a class="navbar-brand fw-bold" href="dashboard.php"><i class="fa-solid fa-graduation-cap me-2"></i>ShareSkill Hub</a>
-      <div class="collapse navbar-collapse">
-        <ul class="navbar-nav ms-auto gap-2">
-          <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link active" href="settings.php">Settings</a></li>
-          <li class="nav-item"><a class="nav-link" href="logout.php">Logout</a></li>
-        </ul>
+<?php
+require_once 'config/config.php';
+require_once 'includes/functions.php';
+ensure_database_schema();
+require_login();
+?>
+<?php include 'includes/header.php'; ?>
+<?php include 'includes/navbar.php'; ?>
+<main class="page-shell">
+  <section class="container page-section">
+    <div class="card card--padded animate" style="max-width:780px;margin:auto;">
+      <div class="page-title">
+        <div>
+          <h1>Account Settings</h1>
+          <p>Update your profile, notifications, and privacy preferences.</p>
+        </div>
       </div>
-    </div>
-  </nav>
-  <section class="section">
-    <div class="container">
-      <div class="card p-4 animate">
-        <h3 class="mb-3">Account Settings</h3>
-        <p class="text-light-emphasis">Update your profile, notifications, and privacy preferences.</p>
+      <div class="row g-4">
+        <div class="col-md-6">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-control" value="<?php echo e($_SESSION['user_name'] ?? ''); ?>" disabled />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-control" value="<?php echo e($_SESSION['user_email'] ?? ''); ?>" disabled />
+        </div>
+        <div class="col-12">
+          <label class="form-label">Notifications</label>
+          <div class="soft-card">Email alerts for assignments, session reminders, and important updates.</div>
+        </div>
+      </div>
+      <div class="mt-4 d-flex gap-3 flex-wrap">
+        <a href="dashboard.php" class="btn btn--outline">Back to Dashboard</a>
+        <a href="logout.php" class="btn btn--primary">Sign Out</a>
       </div>
     </div>
   </section>
-</body>
-</html>
+</main>
+<?php include 'includes/footer.php'; ?>

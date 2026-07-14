@@ -16,3 +16,7 @@
 </head>
 <body>
 <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+<button class="site-back-btn" type="button" onclick="history.back()" aria-label="Back to previous page">
+  <i class="fa-solid fa-arrow-left"></i>
+  Back
+</button>

@@ -22,11 +22,11 @@ $currentPage = basename($_SERVER['PHP_SELF'] ?? '');
     </form>
 
     <div class="nav" role="navigation" aria-label="Primary">
-      <a class="nav__link<?php echo $currentPage === 'index.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>index.php"><span class="nav__icon">H</span>Home</a>
-      <a class="nav__link<?php echo $currentPage === 'course.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>course.php"><span class="nav__icon">C</span>Course</a>
-      <a class="nav__link<?php echo $currentPage === 'mentor.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>mentor.php"><span class="nav__icon">M</span>Mentor</a>
-      <a class="nav__link<?php echo $currentPage === 'notifications.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>notifications.php"><span class="nav__icon">N</span>Notification</a>
-      <a class="nav__link<?php echo $currentPage === 'book.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>fresher/mentorship/book.php"><span class="nav__icon">S</span>Session</a>
+      <a class="nav__link<?php echo $currentPage === 'index.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>index.php"><i class="fa-solid fa-house"></i> Home</a>
+      <a class="nav__link<?php echo $currentPage === 'course.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>course.php"><i class="fa-solid fa-book-open-reader"></i> Course</a>
+      <a class="nav__link<?php echo $currentPage === 'mentor.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>mentor.php"><i class="fa-solid fa-user-tie"></i> Mentor</a>
+      <a class="nav__link<?php echo $currentPage === 'notifications.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>notifications.php"><i class="fa-solid fa-bell"></i> Notification</a>
+      <a class="nav__link<?php echo $currentPage === 'book.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>fresher/mentorship/book.php"><i class="fa-solid fa-calendar-days"></i> Session</a>
     </div>
 
     <div class="navbar__right">
@@ -55,11 +55,11 @@ $currentPage = basename($_SERVER['PHP_SELF'] ?? '');
 
   <div class="mobile-panel" aria-hidden="true">
     <div class="mobile-panel__grid">
-      <a class="mobile-panel__link<?php echo $currentPage === 'index.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>index.php">Home</a>
-      <a class="mobile-panel__link<?php echo $currentPage === 'course.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>course.php">Courses</a>
-      <a class="mobile-panel__link<?php echo $currentPage === 'mentor.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>mentor.php">Mentors</a>
-      <a class="mobile-panel__link<?php echo $currentPage === 'about.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>about.php">About</a>
-      <a class="mobile-panel__link<?php echo $currentPage === 'contact.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>contact.php">Contact</a>
+      <a class="mobile-panel__link<?php echo $currentPage === 'index.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>index.php"><i class="fa-solid fa-house"></i> Home</a>
+      <a class="mobile-panel__link<?php echo $currentPage === 'course.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>course.php"><i class="fa-solid fa-book-open-reader"></i> Courses</a>
+      <a class="mobile-panel__link<?php echo $currentPage === 'mentor.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>mentor.php"><i class="fa-solid fa-user-tie"></i> Mentors</a>
+      <a class="mobile-panel__link<?php echo $currentPage === 'about.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>about.php"><i class="fa-solid fa-circle-info"></i> About</a>
+      <a class="mobile-panel__link<?php echo $currentPage === 'contact.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>contact.php"><i class="fa-solid fa-envelope"></i> Contact</a>
       <?php if (is_logged_in()): ?>
         <a class="mobile-panel__link<?php echo $currentPage === 'dashboard.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>dashboard.php">Dashboard</a>
         <a class="mobile-panel__link" href="<?php echo $basePath; ?>logout.php">Logout</a>

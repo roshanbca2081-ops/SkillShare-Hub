@@ -73,19 +73,37 @@ $mentors = get_users('graduate');
           <div class="col-md-12 mb-3"><label>Session Type</label><select name="session_type"><option>Theory</option><option>Practical</option></select></div>
           <div class="col-md-12 mb-3"><label>Remarks / Goals</label><textarea name="remarks" rows="3" placeholder="I want to become a full stack developer."></textarea></div>
         </div>
-        <button class="btn btn-primary" type="submit">Next -></button>
+        <div class="mt-4">
+          <h3>Schedule & Payment</h3>
+          <div class="row g-4">
+            <div class="col-md-6 mb-3"><label>Choose Schedule</label><select name="schedule" class="form-select"><option>Monday, 7:00 PM</option><option>Wednesday, 6:00 PM</option><option>Friday, 8:00 AM</option></select></div>
+            <div class="col-md-6 mb-3"><label>Payment Method</label><select name="payment_method" class="form-select"><option>eSewa</option><option>Khalti</option><option>FonePay</option></select></div>
+          </div>
+        </div>
+        <button class="btn btn-primary" type="submit">Start Course</button>
       </form>
       <aside class="card">
-        <h3>Select Mentor</h3>
+        <h3>Choose Mentor</h3>
         <div class="meta-list">
           <?php foreach (array_slice($mentors, 0, 3) as $mentor): ?>
-            <label class="soft-card"><input type="radio" form="enroll-form" name="mentor" value="<?php echo e($mentor['full_name']); ?>" style="width:auto;min-height:auto" /> <?php echo e($mentor['full_name']); ?> <span class="small text-light-emphasis">4.8</span></label>
+            <label class="soft-card" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+              <span><?php echo e($mentor['full_name']); ?></span>
+              <input type="radio" form="enroll-form" name="mentor" value="<?php echo e($mentor['full_name']); ?>" style="width:auto;min-height:auto" />
+            </label>
           <?php endforeach; ?>
         </div>
+        <h3>Choose Schedule</h3>
+        <div class="meta-list">
+          <label class="soft-card"><input type="radio" form="enroll-form" name="schedule" value="Monday, 7:00 PM" style="width:auto;min-height:auto" checked /> Monday, 7:00 PM</label>
+          <label class="soft-card"><input type="radio" form="enroll-form" name="schedule" value="Wednesday, 6:00 PM" style="width:auto;min-height:auto" /> Wednesday, 6:00 PM</label>
+          <label class="soft-card"><input type="radio" form="enroll-form" name="schedule" value="Friday, 8:00 AM" style="width:auto;min-height:auto" /> Friday, 8:00 AM</label>
+        </div>
         <h3>Payment Method</h3>
-        <label><input type="radio" name="payment_method" value="eSewa" form="enroll-form" style="width:auto;min-height:auto" checked /> eSewa</label>
-        <label><input type="radio" name="payment_method" value="Khalti" form="enroll-form" style="width:auto;min-height:auto" /> Khalti</label>
-        <label><input type="radio" name="payment_method" value="FonePay" form="enroll-form" style="width:auto;min-height:auto" /> FonePay</label>
+        <div class="meta-list">
+          <label class="soft-card"><input type="radio" name="payment_method" value="eSewa" form="enroll-form" style="width:auto;min-height:auto" checked /> eSewa</label>
+          <label class="soft-card"><input type="radio" name="payment_method" value="Khalti" form="enroll-form" style="width:auto;min-height:auto" /> Khalti</label>
+          <label class="soft-card"><input type="radio" name="payment_method" value="FonePay" form="enroll-form" style="width:auto;min-height:auto" /> FonePay</label>
+        </div>
         <hr />
         <div class="d-flex justify-content-between"><strong>Total Amount</strong><strong style="color:var(--success)">Rs. 800</strong></div>
       </aside>

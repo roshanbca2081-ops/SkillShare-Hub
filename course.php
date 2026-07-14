@@ -11,6 +11,59 @@ $courses = [
   ['Business Management','Management','Beginner Level','2 Months','7','12','72+','Rs. 600','Planning, Finance, Team'],
   ['Legal Foundation','Law','Beginner Level','1 Month','5','8','44+','Rs. 550','Case, Contract, Policy'],
 ];
+
+$fields = [
+  ['name' => 'Information Technology', 'icon' => 'fa-laptop-code', 'courses' => [
+    ['name' => 'Full Stack Web Development', 'price' => 'Rs. 800'],
+    ['name' => 'Mobile App Development', 'price' => 'Rs. 700'],
+    ['name' => 'Database Management', 'price' => 'Rs. 650'],
+  ]],
+  ['name' => 'Computer Engineering', 'icon' => 'fa-microchip', 'courses' => [
+    ['name' => 'Embedded Systems', 'price' => 'Rs. 750'],
+    ['name' => 'IoT Development', 'price' => 'Rs. 770'],
+    ['name' => 'Digital Logic Design', 'price' => 'Rs. 720'],
+  ]],
+  ['name' => 'Software Engineering', 'icon' => 'fa-code', 'courses' => [
+    ['name' => 'Agile Software Development', 'price' => 'Rs. 680'],
+    ['name' => 'System Design Fundamentals', 'price' => 'Rs. 720'],
+    ['name' => 'Quality Assurance', 'price' => 'Rs. 650'],
+  ]],
+  ['name' => 'Civil Engineering', 'icon' => 'fa-person-digging', 'courses' => [
+    ['name' => 'Structural Design', 'price' => 'Rs. 700'],
+    ['name' => 'Construction Management', 'price' => 'Rs. 690'],
+    ['name' => 'Land Surveying', 'price' => 'Rs. 670'],
+  ]],
+  ['name' => 'Agriculture', 'icon' => 'fa-seedling', 'courses' => [
+    ['name' => 'Agriculture Basics', 'price' => 'Rs. 500'],
+    ['name' => 'Soil & Crop Planning', 'price' => 'Rs. 530'],
+    ['name' => 'Farm Management', 'price' => 'Rs. 550'],
+  ]],
+  ['name' => 'Business Administration', 'icon' => 'fa-chart-line', 'courses' => [
+    ['name' => 'Business Management', 'price' => 'Rs. 600'],
+    ['name' => 'Marketing Essentials', 'price' => 'Rs. 620'],
+    ['name' => 'Leadership & Planning', 'price' => 'Rs. 640'],
+  ]],
+  ['name' => 'Nursing', 'icon' => 'fa-heart-pulse', 'courses' => [
+    ['name' => 'Patient Care Fundamentals', 'price' => 'Rs. 590'],
+    ['name' => 'Medical Ethics', 'price' => 'Rs. 610'],
+    ['name' => 'Clinical Practice', 'price' => 'Rs. 630'],
+  ]],
+  ['name' => 'Law', 'icon' => 'fa-gavel', 'courses' => [
+    ['name' => 'Legal Foundation', 'price' => 'Rs. 550'],
+    ['name' => 'Corporate Law Basics', 'price' => 'Rs. 580'],
+    ['name' => 'Civil Procedure', 'price' => 'Rs. 570'],
+  ]],
+  ['name' => 'Architecture', 'icon' => 'fa-building', 'courses' => [
+    ['name' => 'Design Studio', 'price' => 'Rs. 660'],
+    ['name' => 'Urban Planning', 'price' => 'Rs. 680'],
+    ['name' => 'Sustainable Architecture', 'price' => 'Rs. 700'],
+  ]],
+  ['name' => 'Hotel Management', 'icon' => 'fa-hotel', 'courses' => [
+    ['name' => 'Hospitality Basics', 'price' => 'Rs. 620'],
+    ['name' => 'Food & Beverage Management', 'price' => 'Rs. 640'],
+    ['name' => 'Front Desk Operations', 'price' => 'Rs. 630'],
+  ]],
+];
 ?>
 <?php include 'includes/header.php'; ?>
 <?php include 'includes/navbar.php'; ?>
@@ -65,8 +118,11 @@ $courses = [
     <div class="course-grid">
       <?php foreach ($courses as $course): ?>
         <article class="course-card">
+          <div class="course-card-header">
+            <span class="course-icon"><i class="fa-solid fa-graduation-cap"></i></span>
+            <h3><?php echo e($course[0]); ?></h3>
+          </div>
           <span class="tag"><?php echo e($course[1]); ?></span>
-          <h3><?php echo e($course[0]); ?></h3>
           <p class="text-light-emphasis"><?php echo e($course[8]); ?></p>
           <div class="meta-list">
             <span><?php echo e($course[2]); ?></span>
@@ -76,6 +132,29 @@ $courses = [
           <div class="d-flex justify-content-between align-items-center">
             <strong class="price"><?php echo e($course[7]); ?></strong>
             <a class="btn btn-primary btn-sm" href="enrollment.php?course=<?php echo urlencode($course[0]); ?>">Start</a>
+          </div>
+        </article>
+      <?php endforeach; ?>
+    </div>
+
+    <div class="section-heading" style="margin-top:40px;">
+      <h2>Browse by Field</h2>
+      <a href="course.php">See More Courses</a>
+    </div>
+    <div class="field-grid">
+      <?php foreach ($fields as $field): ?>
+        <article class="field-card animate">
+          <div class="field-card-body">
+            <div class="field-icon"><i class="fa-solid <?php echo e($field['icon']); ?>"></i></div>
+            <h3><?php echo e($field['name']); ?></h3>
+            <div class="field-stats">
+              <?php foreach ($field['courses'] as $nestedCourse): ?>
+                <span><i class="fa-solid fa-circle-dot" style="font-size:0.75rem;margin-right:6px;color:var(--primary);"></i><?php echo e($nestedCourse['name']); ?> <strong><?php echo e($nestedCourse['price']); ?></strong></span>
+              <?php endforeach; ?>
+            </div>
+          </div>
+          <div class="field-card-action">
+            <a href="enrollment.php?course=<?php echo urlencode($field['courses'][0]['name']); ?>"><i class="fa-solid fa-arrow-right"></i> Explore Course</a>
           </div>
         </article>
       <?php endforeach; ?>

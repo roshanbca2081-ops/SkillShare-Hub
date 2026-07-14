@@ -1,4 +1,9 @@
-function sassName = `toast toast--${type}`;
+function showToast(message, type = 'info', duration = 3500) {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast--${type}`;
   toast.innerHTML = `
     <span class="icon">${type === 'success' ? '✔' : type === 'error' ? '✖' : 'ℹ'}</span>
     <span>${message}</span>
@@ -9,6 +14,16 @@ function sassName = `toast toast--${type}`;
     toast.style.animation = 'toastOut 260ms ease forwards';
     toast.addEventListener('animationend', () => toast.remove());
   }, duration);
+}
+
+function setThemeMode(mode) {
+  if (mode === 'dark') {
+    document.body.classList.add('dark');
+    localStorage.setItem('themeMode', 'dark');
+  } else {
+    document.body.classList.remove('dark');
+    localStorage.setItem('themeMode', 'light');
+  }
 }
 
 function filterCards(containerSelector, query, category) {

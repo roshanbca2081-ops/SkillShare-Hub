@@ -78,6 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 <?php include 'includes/header.php'; ?>
+<?php include 'includes/navbar.php'; ?>
 
 <div class="page-section centered" style="min-height:calc(100vh - 120px);padding:50px 0;">
   <div class="form-card card animate" style="max-width:540px;margin:auto;">

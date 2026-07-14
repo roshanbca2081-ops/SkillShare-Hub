@@ -1,35 +1,37 @@
-<?php include 'config/config.php'; include 'includes/functions.php'; ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>About | ShareSkill Hub</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-  <link rel="stylesheet" href="assets/css/style.css" />
-</head>
-<body>
-  <nav class="navbar navbar-expand-lg">
-    <div class="container">
-      <a class="navbar-brand fw-bold" href="index.php"><i class="fa-solid fa-graduation-cap me-2"></i>ShareSkill Hub</a>
-      <div class="collapse navbar-collapse">
-        <ul class="navbar-nav ms-auto gap-2">
-          <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-          <li class="nav-item"><a class="nav-link active" href="about.php">About</a></li>
-          <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
-        </ul>
+<?php
+require_once 'config/config.php';
+require_once 'includes/functions.php';
+?>
+<?php include 'includes/header.php'; ?>
+<?php include 'includes/navbar.php'; ?>
+<main class="page-shell">
+  <section class="container page-section">
+    <div class="card card--padded animate" style="max-width:840px;margin:auto;">
+      <div class="page-title">
+        <div>
+          <h1>About ShareSkill Hub</h1>
+          <p>ShareSkill Hub is a modern learning and mentorship platform that connects learners and mentors through practical education, assignments, and career preparation.</p>
+        </div>
       </div>
-    </div>
-  </nav>
-  <section class="section">
-    <div class="container">
-      <div class="card p-5 animate">
-        <h2 class="mb-3">About ShareSkill Hub</h2>
-        <p class="text-light-emphasis">ShareSkill Hub is a premium learning and mentorship platform designed to connect graduates and freshers through practical education, guided assignments, and career preparation.</p>
-        <p class="text-light-emphasis">Our mission is to make skill transformation visible, structured, and accessible for every learner.</p>
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="soft-card">
+            <h3>Our mission</h3>
+            <p>Make skill transformation visible, structured, and accessible for every learner.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="soft-card">
+            <h3>What we offer</h3>
+            <p>Courses, mentorship sessions, assignments, placement coaching, and certification pathways tailored for freshers and graduates.</p>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4">
+        <a href="register.php" class="btn btn--primary">Join Now</a>
+        <a href="contact.php" class="btn btn--outline">Contact Support</a>
       </div>
     </div>
   </section>
-</body>
-</html>
+</main>
+<?php include 'includes/footer.php'; ?>
