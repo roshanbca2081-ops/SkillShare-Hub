@@ -84,9 +84,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <input type="password" name="password" class="form-control" placeholder="********" required />
         </div>
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <label class="small" style="display:flex;align-items:center;gap:8px;"> <input type="checkbox" style="width:auto;min-height:auto" /> Remember me</label>
+          <label class="small" style="display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" name="remember_me" value="1" style="width:auto;min-height:auto" /> Remember me
+          </label>
+
           <a href="forgot-password.php" class="small" style="color:var(--primary);font-weight:800">Forgot Password?</a>
         </div>
+
         <button class="btn btn--primary w-100" type="submit">Login</button>
       </form>
       <div class="auth-divider"><span>or continue with</span></div>
