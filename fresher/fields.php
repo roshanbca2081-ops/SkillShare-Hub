@@ -28,22 +28,34 @@ $fields = get_fields();
           </div>
         </div>
 
+        <?php
+          // Phase 3: if DB table is empty, fall back to the premium catalog.
+          if (!$fields) {
+            require_once '../includes/field-data.php';
+            // after requiring field-data.php, $academicFields becomes available
+            $fields = array_values($academicFields ?? []);
+          }
+        ?>
+
         <?php if (!$fields): ?>
           <div class="alert alert-info">No fields available yet.</div>
         <?php else: ?>
           <div class="row g-3">
             <?php foreach ($fields as $f): ?>
               <div class="col-md-6">
-                <div class="soft-card">
-                  <div class="d-flex align-items-center gap-3">
-                    <div class="field-icon" style="width:46px;height:46px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.03);border-radius:12px;">
-                      <i class="fa-solid <?php echo e($f['icon'] ?? 'fa-graduation-cap'); ?>"></i>
-                    </div>
-                    <div>
-                      <strong><?php echo e($f['name']); ?></strong>
+                <a href="../field.php?field=<?php echo urlencode($f['slug'] ?? strtolower(str_replace(' ','-',$f['name'] ?? ''))); ?>" style="text-decoration:none;">
+                  <div class="soft-card">
+                    <div class="d-flex align-items-center gap-3">
+                      <div class="field-icon" style="width:46px;height:46px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.03);border-radius:12px;">
+                        <i class="fa-solid <?php echo e($f['icon'] ?? 'fa-graduation-cap'); ?>"></i>
+                      </div>
+                      <div>
+                        <strong><?php echo e($f['name'] ?? 'Field'); ?></strong>
+                        <div class="small text-light-emphasis" style="margin-top:3px; font-weight:800;">Explore field details</div>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </a>
               </div>
             <?php endforeach; ?>
           </div>

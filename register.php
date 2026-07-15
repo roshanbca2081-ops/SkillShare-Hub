@@ -55,8 +55,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <?php include 'includes/header.php'; ?>
 
+<link rel="stylesheet" href="assets/css/auth-premium.css" />
+
 <div class="page-section centered" style="min-height:calc(100vh - 120px);padding:50px 0;">
-  <div class="auth-grid">
+  <div class="auth-grid" style="position:relative;">
+    <div class="auth-bg-logo" aria-hidden="true"></div>
+    <div class="auth-particles" aria-hidden="true" style="--d:14s;">
+      <span style="--x:14%;--y:26%;--dx:18px;"></span>
+      <span style="--x:30%;--y:16%;--dx:-14px;--d:17s;"></span>
+      <span style="--x:54%;--y:22%;--dx:16px;--d:12s;"></span>
+      <span style="--x:74%;--y:30%;--dx:-10px;--d:15s;"></span>
+      <span style="--x:86%;--y:16%;--dx:14px;--d:19s;"></span>
+      <span style="--x:40%;--y:50%;--dx:-18px;--d:16s;"></span>
+    </div>
     <section class="auth-panel card form-card animate">
       <div class="text-center" style="margin-bottom:28px">
         <div class="auth-logo" style="margin-inline:auto;margin-bottom:18px;width:64px;height:64px;">SH</div>

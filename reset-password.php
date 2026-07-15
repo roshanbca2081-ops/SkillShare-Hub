@@ -4,6 +4,7 @@ require_once 'includes/functions.php';
 ?>
 <?php include 'includes/header.php'; ?>
 <?php include 'includes/navbar.php'; ?>
+<link rel="stylesheet" href="assets/css/auth-premium.css" />
 <main class="page-shell">
   <section class="page-section centered" style="min-height:calc(100vh - 120px);padding:50px 0;">
     <div class="form-card card animate" style="max-width:520px;margin:auto;">

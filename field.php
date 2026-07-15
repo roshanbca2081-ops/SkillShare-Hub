@@ -5,6 +5,7 @@ require_once 'includes/field-data.php';
 ensure_database_schema();
 
 $fieldSlug = $_GET['field'] ?? '';
+$fieldSlug = preg_replace('/[^a-z0-9\-]/i', '', (string)$fieldSlug);
 $field = $academicFields[$fieldSlug] ?? null;
 if (!$field) {
     header('Location: index.php');

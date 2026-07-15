@@ -1,21 +1,29 @@
-# TODO - ShareSkill Hub premium homepage + academic fields
+# SkillShare Hub — Development Tracker
 
-- [x] Update `index.php` homepage:
-  - [x] Replace the current Academic Fields cards with your requested 12 fields
-  - [x] Render each field as a clickable circular glassmorphism icon
-  - [x] Add premium background elements: blurred center watermark logo, animated gradient, particles, glowing circles, parallax-friendly layers
+> Phase 1 focused on UI/UX premium foundation (glassmorphism, logo blur, animations) and keep existing pages functional.
 
-- [x] Update `assets/css/home.css`:
-  - [x] Add CSS for the new field icon grid (float, hover glow, scaling, shadows)
-  - [x] Add CSS for particles/glowing circles/watermark/parallax layers + fade-in-on-scroll hooks
-- [x] Update `assets/js/main.js`:
-  - [x] Implement smooth throttled parallax scrolling
-- [x] Ensure any scroll-trigger fade-in works with existing structure
-- [x] Update `field.php` course section:
-  - [x] Use course images from `includes/field-data.php`
-  - [x] Add course meta (duration, skill level, mentors count, practical projects, assignments, placement support)
-  - [x] Add “View Details” button per course card
-- [ ] Quick verification:
-  - [ ] Confirm clicking a field icon routes to `field.php?field=<slug>` and renders the correct field data
-  - [ ] Validate responsiveness on desktop/tablet/mobile
+## Phase A — Premium UI Layer (CSS/JS only)
+- [ ] Glassmorphism + premium shadows: confirm CSS vars are used consistently
+- [ ] Ensure blurred large ShareSkill Hub logo appears on:
+  - [ ] `login.php`
+  - [ ] `register.php`
+  - [ ] `forgot-password.php`
+  - [ ] `reset-password.php`
+  - [ ] Hero section on `index.php`
+- [ ] Add/verify animated background + micro animations on auth pages
+- [ ] Verify dark mode toggle wiring remains functional
+
+## Phase B — Home Page Premium Sections
+- [ ] Implement missing sections in `index.php` without breaking layout
+
+## Phase C — Academic Fields (50+)
+- [ ] Confirm data source (DB vs `includes/field-data.php`)
+- [ ] Add 50+ academic fields (seed SQL or static list)
+
+## Phase D — Auth Role Redirect + Remember Me
+- [ ] Ensure role redirects from `dashboard.php`
+- [ ] Implement Remember Me persistence (server-side)
+
+## Phase E onward (not started)
+- Booking, Video sessions, Assignments, Placement, Research, Chat, Payments, Certificates, Admin management
 

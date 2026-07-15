@@ -80,8 +80,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php include 'includes/header.php'; ?>
 <?php include 'includes/navbar.php'; ?>
 
+<link rel="stylesheet" href="assets/css/auth-premium.css" />
+
 <div class="page-section centered" style="min-height:calc(100vh - 120px);padding:50px 0;">
-  <div class="form-card card animate" style="max-width:540px;margin:auto;">
+  <div class="auth-grid" style="position:relative;">
+    <div class="auth-bg-logo" aria-hidden="true"></div>
+    <div class="auth-particles" aria-hidden="true" style="--d:14s;">
+      <span style="--x:12%;--y:22%;--dx:18px;"></span>
+      <span style="--x:28%;--y:14%;--dx:-14px;--d:17s;"></span>
+      <span style="--x:52%;--y:20%;--dx:16px;--d:12s;"></span>
+      <span style="--x:70%;--y:30%;--dx:-10px;--d:15s;"></span>
+      <span style="--x:86%;--y:16%;--dx:14px;--d:19s;"></span>
+      <span style="--x:36%;--y:54%;--dx:-18px;--d:16s;"></span>
+    </div>
+    <div class="form-card card animate" style="max-width:540px;margin:auto;position:relative;z-index:1;">
+    
     <div class="text-center mb-4">
       <div class="auth-logo" style="margin-inline:auto;margin-bottom:18px;width:64px;height:64px;">SH</div>
       <h2 class="mb-1">Forgot Password</h2>
