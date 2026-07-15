@@ -16,6 +16,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 30);
   });
 
+  // Parallax for premium background (lightweight, rAF-throttled)
+  const parallaxEls = Array.from(document.querySelectorAll('[data-parallax-x],[data-parallax-y]'));
+  const state = { y: 0, ticking: false };
+
+  const updateParallax = () => {
+    state.ticking = false;
+    const scrollY = window.scrollY || 0;
+    parallaxEls.forEach((el) => {
+      const px = Number(el.getAttribute('data-parallax-x') || 0);
+      const py = Number(el.getAttribute('data-parallax-y') || 0);
+      const translateX = (px * scrollY) / 600;
+      const translateY = (py * scrollY) / 600;
+      el.style.transform = `translate3d(${translateX}px, ${translateY}px, 0)`;
+    });
+  };
+
+  const onScroll = () => {
+    if (state.ticking) return;
+    state.ticking = true;
+    window.requestAnimationFrame(updateParallax);
+  };
+
+  if (parallaxEls.length) {
+    window.addEventListener('scroll', onScroll, { passive: true });
+    updateParallax();
+  }
+
   // Pure CSS/JS navbar:
   // - hamburger toggles mobile panel
   // - profile dropdown toggles on click (desktop + mobile)
@@ -63,4 +90,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
 

@@ -12,14 +12,18 @@ require_login('fresher');
       <aside class="sidebar-nav">
         <div class="sidebar-brand">SkillShare Hub</div>
         <a class="active" href="dashboard.php">Dashboard</a>
+        <a href="fields.php">Fields</a>
+        <a href="practical-skills.php">Practical Skills</a>
         <a href="enrolled-courses/index.php">My Courses</a>
-        <a href="assignments/index.php">Assignments</a>
+        <a href="assignments.php">Assignments (Browse)</a>
+        <a href="assignments/index.php">Assignments (Upload/Submit)</a>
         <a href="../notifications.php">Notifications</a>
         <a href="mentorship/book.php">Mentorship</a>
         <a href="research/index.php">Research</a>
         <a href="interview/index.php">Interview Prep</a>
         <a href="placement/index.php">Placement Prep</a>
       </aside>
+
       <div>
         <div class="page-title"><div><h1>Welcome, <?php echo e($_SESSION['user_name'] ?? 'Fresher'); ?></h1><p>Keep learning and grow your skills.</p></div></div>
         <div class="stat-grid">

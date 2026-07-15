@@ -45,6 +45,34 @@ function verify_csrf_token() {
     }
 }
 
+function json_response($status, $message, $data = [], $code = 200) {
+    http_response_code($code);
+    header('Content-Type: application/json');
+    echo json_encode([
+        'status' => $status,
+        'message' => $message,
+        'data' => $data,
+        'timestamp' => date('Y-m-d H:i:s')
+    ]);
+    exit;
+}
+
+function get_json_input() {
+    $raw = file_get_contents('php://input');
+    if (!$raw) return [];
+    $data = json_decode($raw, true);
+    return is_array($data) ? $data : [];
+}
+
+function generate_token($bytes = 32) {
+    return bin2hex(random_bytes($bytes));
+}
+
+function get_request_ip() {
+    return $_SERVER['HTTP_X_FORWARDED_FOR'] ?? ($_SERVER['REMOTE_ADDR'] ?? null);
+}
+
+
 function ensure_database_schema() {
     global $conn;
 
@@ -52,31 +80,143 @@ function ensure_database_schema() {
         return;
     }
 
+    // Core users table (kept for compatibility with existing login/register pages)
     $conn->query("CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         full_name VARCHAR(150) NOT NULL,
         email VARCHAR(150) NOT NULL UNIQUE,
         password_hash VARCHAR(255) NOT NULL,
         role ENUM('admin','graduate','fresher') NOT NULL DEFAULT 'fresher',
+        is_verified TINYINT(1) NOT NULL DEFAULT 0,
+        email_verified_at TIMESTAMP NULL DEFAULT NULL,
         status ENUM('active','inactive','suspended') NOT NULL DEFAULT 'active',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_login_at TIMESTAMP NULL DEFAULT NULL,
+        last_login_ip VARCHAR(45) DEFAULT NULL
     )");
 
-    $conn->query("CREATE TABLE IF NOT EXISTS courses (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        title VARCHAR(150) NOT NULL,
-        description TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )");
+    // Phase 1 required supporting tables
 
-    $conn->query("CREATE TABLE IF NOT EXISTS assignments (
+    // Phase 2 profile tables
+
+    $conn->query("CREATE TABLE IF NOT EXISTS user_profiles (
+        user_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (user_id),
+        CONSTRAINT fk_user_profiles_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB");
+
+    $conn->query("CREATE TABLE IF NOT EXISTS fresher_profiles (
+        user_id INT NOT NULL,
+        academic_field VARCHAR(150) DEFAULT NULL,
+        course VARCHAR(150) DEFAULT NULL,
+        semester VARCHAR(50) DEFAULT NULL,
+        skills TEXT,
+        resume_url VARCHAR(255) DEFAULT NULL,
+        portfolio_url VARCHAR(255) DEFAULT NULL,
+        interests TEXT,
+        personal_details TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (user_id),
+        CONSTRAINT fk_fresher_profiles_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB");
+
+    $conn->query("CREATE TABLE IF NOT EXISTS graduate_profiles (
+        user_id INT NOT NULL,
+        experience TEXT,
+        company VARCHAR(150) DEFAULT NULL,
+        skills TEXT,
+        biography TEXT,
+        hourly_rate DECIMAL(10,2) DEFAULT NULL,
+        available_time VARCHAR(100) DEFAULT NULL,
+        rating DECIMAL(3,2) DEFAULT NULL,
+        certificates TEXT,
+        languages TEXT,
+        portfolio_url VARCHAR(255) DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (user_id),
+        CONSTRAINT fk_graduate_profiles_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB");
+
+
+    $conn->query("CREATE TABLE IF NOT EXISTS user_roles (
+        user_id INT NOT NULL,
+        role ENUM('admin','graduate','fresher') NOT NULL DEFAULT 'fresher',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (user_id),
+        CONSTRAINT fk_user_roles_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB");
+
+    $conn->query("CREATE TABLE IF NOT EXISTS login_history (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        title VARCHAR(150) NOT NULL,
-        description TEXT,
-        created_by INT NOT NULL,
-        deadline DATE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )");
+        user_id INT NOT NULL,
+        login_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        login_ip VARCHAR(45) DEFAULT NULL,
+        user_agent TEXT,
+        is_success TINYINT(1) NOT NULL DEFAULT 1,
+        reason VARCHAR(255) DEFAULT NULL,
+        CONSTRAINT fk_login_history_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB");
+
+    $conn->query("CREATE TABLE IF NOT EXISTS password_resets (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        email VARCHAR(150) NOT NULL,
+        token VARCHAR(100) NOT NULL UNIQUE,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_password_resets_email_user FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE
+    ) ENGINE=InnoDB");
+
+    // Remember-me tokens
+    $conn->query("CREATE TABLE IF NOT EXISTS user_sessions (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        remember_token VARCHAR(255) NOT NULL UNIQUE,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_seen_at TIMESTAMP NULL DEFAULT NULL,
+        ip_address VARCHAR(45) DEFAULT NULL,
+        user_agent TEXT,
+        CONSTRAINT fk_user_sessions_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB");
+
+    // Backfill roles for existing users (safe, idempotent)
+    $conn->query("INSERT IGNORE INTO user_roles (user_id, role)
+                 SELECT id, role FROM users");
+
+    // For existing installations: if admin user exists, mark verified so API login can work
+    // (If you later add real email verification, you can remove this backfill.)
+    // Backfill for older installs: email_verified_at may not exist yet.
+    $conn->query("UPDATE users SET is_verified=1 WHERE role='admin'");
+
+
+    // Continue creating the rest of the existing schema
+
+
+    $conn->query("CREATE TABLE IF NOT EXISTS courses (\r\n        id INT AUTO_INCREMENT PRIMARY KEY,\r\n        title VARCHAR(150) NOT NULL,\r\n        description TEXT,\r\n        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\r\n    )");
+
+    // Phase 3: Fields, practical skills, and linking tables
+    $conn->query("CREATE TABLE IF NOT EXISTS academic_fields (\r\n        id INT AUTO_INCREMENT PRIMARY KEY,\r\n        name VARCHAR(150) NOT NULL,\r\n        icon VARCHAR(120) DEFAULT NULL,\r\n        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\r\n    )");
+
+    $conn->query("CREATE TABLE IF NOT EXISTS course_fields (\r\n        course_id INT NOT NULL,\r\n        field_id INT NOT NULL,\r\n        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\r\n        PRIMARY KEY (course_id, field_id),\r\n        CONSTRAINT fk_course_fields_course FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,\r\n        CONSTRAINT fk_course_fields_field FOREIGN KEY (field_id) REFERENCES academic_fields(id) ON DELETE CASCADE\r\n    ) ENGINE=InnoDB");
+
+    $conn->query("CREATE TABLE IF NOT EXISTS practical_skills (\r\n        id INT AUTO_INCREMENT PRIMARY KEY,\r\n        title VARCHAR(150) NOT NULL,\r\n        description TEXT,\r\n        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\r\n    )");
+
+    $conn->query("CREATE TABLE IF NOT EXISTS mentor_skills (\r\n        id INT AUTO_INCREMENT PRIMARY KEY,\r\n        mentor_id INT NOT NULL,\r\n        practical_skill_id INT NOT NULL,\r\n        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\r\n        CONSTRAINT fk_mentor_skills_mentor FOREIGN KEY (mentor_id) REFERENCES users(id) ON DELETE CASCADE,\r\n        CONSTRAINT fk_mentor_skills_skill FOREIGN KEY (practical_skill_id) REFERENCES practical_skills(id) ON DELETE CASCADE\r\n    )");
+
+    $conn->query("CREATE TABLE IF NOT EXISTS mentor_availability (\r\n        id INT AUTO_INCREMENT PRIMARY KEY,\r\n        mentor_id INT NOT NULL,\r\n        available_time VARCHAR(120) DEFAULT NULL,\r\n        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\r\n        CONSTRAINT fk_mentor_availability_mentor FOREIGN KEY (mentor_id) REFERENCES users(id) ON DELETE CASCADE\r\n    )");
+
+    // assignments can be linked to fields/courses in Phase 3
+    $conn->query("CREATE TABLE IF NOT EXISTS assignments (\r\n        id INT AUTO_INCREMENT PRIMARY KEY,\r\n        title VARCHAR(150) NOT NULL,\r\n        description TEXT,\r\n        created_by INT NOT NULL,\r\n        deadline DATE,\r\n        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\r\n    )");
+
+    $conn->query("CREATE TABLE IF NOT EXISTS assignment_courses (\r\n        assignment_id INT NOT NULL,\r\n        course_id INT NOT NULL,\r\n        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\r\n        PRIMARY KEY (assignment_id, course_id),\r\n        CONSTRAINT fk_assignment_courses_assignment FOREIGN KEY (assignment_id) REFERENCES assignments(id) ON DELETE CASCADE,\r\n        CONSTRAINT fk_assignment_courses_course FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE\r\n    ) ENGINE=InnoDB");
+
+    $conn->query("CREATE TABLE IF NOT EXISTS assignment_fields (\r\n        assignment_id INT NOT NULL,\r\n        field_id INT NOT NULL,\r\n        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\r\n        PRIMARY KEY (assignment_id, field_id),\r\n        CONSTRAINT fk_assignment_fields_assignment FOREIGN KEY (assignment_id) REFERENCES assignments(id) ON DELETE CASCADE,\r\n        CONSTRAINT fk_assignment_fields_field FOREIGN KEY (field_id) REFERENCES academic_fields(id) ON DELETE CASCADE\r\n    ) ENGINE=InnoDB");
+
+
 
     $conn->query("CREATE TABLE IF NOT EXISTS mentorship_sessions (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -167,6 +307,62 @@ function get_courses() {
     $result = $conn->query("SELECT id, title, description, created_at FROM courses ORDER BY id DESC");
     return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 }
+
+function get_fields() {
+    global $conn;
+    if (!$conn) {
+        return [];
+    }
+
+    // If academic_fields table exists, use it. Otherwise return empty.
+    $result = $conn->query("SHOW TABLES LIKE 'academic_fields'");
+    if (!$result || $result->num_rows === 0) {
+        return [];
+    }
+
+    // academic_fields schema may use `name` or `title` depending on the existing DB.
+    // Check the actual column first instead of assuming `name` exists.
+    $nameField = null;
+    $nameCheck = $conn->query("SHOW COLUMNS FROM academic_fields LIKE 'name'");
+    if ($nameCheck && $nameCheck->num_rows > 0) {
+        $nameField = 'name';
+    } else {
+        $titleCheck = $conn->query("SHOW COLUMNS FROM academic_fields LIKE 'title'");
+        if ($titleCheck && $titleCheck->num_rows > 0) {
+            $nameField = 'title';
+        }
+    }
+
+    if ($nameField === 'name') {
+        $rows = $conn->query("SELECT id, name, icon, created_at FROM academic_fields ORDER BY id DESC");
+        return $rows ? $rows->fetch_all(MYSQLI_ASSOC) : [];
+    }
+
+    if ($nameField === 'title') {
+        $rows = $conn->query("SELECT id, title AS name, icon, created_at FROM academic_fields ORDER BY id DESC");
+        return $rows ? $rows->fetch_all(MYSQLI_ASSOC) : [];
+    }
+
+    return [];
+}
+
+function get_practical_skills() {
+    global $conn;
+    if (!$conn) {
+        return [];
+    }
+
+    // If practical_skills table exists, use it. Otherwise return empty.
+    $result = $conn->query("SHOW TABLES LIKE 'practical_skills'");
+    if (!$result || $result->num_rows === 0) {
+        return [];
+    }
+
+    $rows = $conn->query("SELECT id, title, description, created_at FROM practical_skills ORDER BY id DESC");
+    return $rows ? $rows->fetch_all(MYSQLI_ASSOC) : [];
+}
+
+
 
 function get_course($id) {
     global $conn;
@@ -313,7 +509,58 @@ function get_assignments() {
     return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 }
 
+function get_assignments_by_course($courseId) {
+    global $conn;
+    if (!$conn || !$courseId) return [];
+
+    $stmt = $conn->prepare("SELECT a.id, a.title, a.description, a.deadline, a.created_by, u.full_name as created_by_name
+                            FROM assignment_courses ac
+                            INNER JOIN assignments a ON a.id = ac.assignment_id
+                            LEFT JOIN users u ON u.id = a.created_by
+                            WHERE ac.course_id = ?
+                            ORDER BY a.id DESC");
+    $stmt->bind_param('i', $courseId);
+    $stmt->execute();
+    $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    return $rows;
+}
+
+function get_assignments_by_field($fieldId) {
+    global $conn;
+    if (!$conn || !$fieldId) return [];
+
+    $stmt = $conn->prepare("SELECT a.id, a.title, a.description, a.deadline, a.created_by, u.full_name as created_by_name
+                            FROM assignment_fields af
+                            INNER JOIN assignments a ON a.id = af.assignment_id
+                            LEFT JOIN users u ON u.id = a.created_by
+                            WHERE af.field_id = ?
+                            ORDER BY a.id DESC");
+    $stmt->bind_param('i', $fieldId);
+    $stmt->execute();
+    $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    return $rows;
+}
+
+function get_mentors_by_practical_skill($skillId) {
+    global $conn;
+    if (!$conn || !$skillId) return [];
+
+    $stmt = $conn->prepare("SELECT DISTINCT u.id, u.full_name, u.email
+                            FROM mentor_skills ms
+                            INNER JOIN users u ON u.id = ms.mentor_id
+                            WHERE ms.practical_skill_id = ? AND u.role = 'graduate'
+                            ORDER BY u.id DESC");
+    $stmt->bind_param('i', $skillId);
+    $stmt->execute();
+    $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    return $rows;
+}
+
 function create_mentorship_booking($mentor_id, $student_id, $topic, $status = 'pending') {
+
     global $conn;
     if (!$conn || !$mentor_id || !$student_id || trim($topic) === '') {
         return false;
@@ -332,18 +579,50 @@ function get_mentorship_bookings($student_id = null, $mentor_id = null) {
         return [];
     }
 
-    $sql = "SELECT ms.id, ms.topic, ms.status, ms.created_at, ms.student_id, ms.mentor_id, student.full_name AS student_name, mentor.full_name AS mentor_name FROM mentorship_sessions ms LEFT JOIN users student ON student.id = ms.student_id LEFT JOIN users mentor ON mentor.id = ms.mentor_id";
+    $hasTopicColumn = false;
+    $hasStudentIdColumn = false;
+    $hasMentorIdColumn = false;
+
+    $topicCheck = $conn->query("SHOW COLUMNS FROM mentorship_sessions LIKE 'topic'");
+    if ($topicCheck && $topicCheck->num_rows > 0) {
+        $hasTopicColumn = true;
+    }
+
+    $studentIdCheck = $conn->query("SHOW COLUMNS FROM mentorship_sessions LIKE 'student_id'");
+    if ($studentIdCheck && $studentIdCheck->num_rows > 0) {
+        $hasStudentIdColumn = true;
+    }
+
+    $mentorIdCheck = $conn->query("SHOW COLUMNS FROM mentorship_sessions LIKE 'mentor_id'");
+    if ($mentorIdCheck && $mentorIdCheck->num_rows > 0) {
+        $hasMentorIdColumn = true;
+    }
+
+    $sql = "SELECT ms.id";
+    if ($hasTopicColumn) {
+        $sql .= ", ms.topic";
+    } else {
+        $sql .= ", '' AS topic";
+    }
+    $sql .= ", ms.status, ms.created_at";
+    if ($hasStudentIdColumn) {
+        $sql .= ", ms.student_id";
+    }
+    if ($hasMentorIdColumn) {
+        $sql .= ", ms.mentor_id";
+    }
+    $sql .= ", student.full_name AS student_name, mentor.full_name AS mentor_name FROM mentorship_sessions ms LEFT JOIN users student ON student.id = ms.student_id LEFT JOIN users mentor ON mentor.id = ms.mentor_id";
     $params = [];
     $types = '';
     $conditions = [];
 
-    if ($student_id !== null) {
+    if ($student_id !== null && $hasStudentIdColumn) {
         $conditions[] = 'ms.student_id = ?';
         $params[] = $student_id;
         $types .= 'i';
     }
 
-    if ($mentor_id !== null) {
+    if ($mentor_id !== null && $hasMentorIdColumn) {
         $conditions[] = 'ms.mentor_id = ?';
         $params[] = $mentor_id;
         $types .= 'i';
