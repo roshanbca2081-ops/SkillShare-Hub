@@ -9,5 +9,6 @@ $assetBase = file_exists('assets/js/main.js') ? 'assets/' : (file_exists('../ass
 </footer>
 <script src="<?php echo $assetBase; ?>js/main.js"></script>
 <script src="<?php echo $assetBase; ?>js/app.js"></script>
+<script src="<?php echo $assetBase; ?>js/premium-ui.js"></script>
 </body>
 </html>

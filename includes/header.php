@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="<?php echo $assetBase; ?>css/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-7O+o0fV4Y5QKK0eMF4wX6sNHEX3GibJFeHzk3Q5fHfnwVckPgzQFluXw5KZkVqW3cEYBie2E4LA9wMvP9x+fRw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="<?php echo $assetBase; ?>css/app.css" />
+  <link rel="stylesheet" href="<?php echo $assetBase; ?>css/premium-ui.css" />
 </head>
 <body>
 <div class="site-loader" data-site-loader aria-hidden="true">
