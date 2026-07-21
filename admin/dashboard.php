@@ -10,11 +10,12 @@ $recentAssignments = get_assignments();
 ?>
 <?php include '../includes/header.php'; ?>
 <?php include '../includes/navbar.php'; ?>
-<main class="page-shell">
+<main class="page-shell dashboard-shell">
+  <div class="dashboard-bg-logo" aria-hidden="true"></div>
   <section class="container">
     <div class="app-layout">
       <aside class="sidebar-nav">
-        <div class="sidebar-brand">Admin Panel</div>
+        <div class="sidebar-brand"><span class="site-logo site-logo--sidebar" aria-hidden="true"></span></div>
         <a class="active" href="dashboard.php">Dashboard</a>
         <a href="users/index.php">Users</a>
         <a href="graduates/index.php">Mentors</a>

@@ -7,11 +7,12 @@ $bookings = get_mentorship_bookings(null, $_SESSION['user_id']);
 ?>
 <?php include '../includes/header.php'; ?>
 <?php include '../includes/navbar.php'; ?>
-<main class="page-shell">
+<main class="page-shell dashboard-shell">
+  <div class="dashboard-bg-logo" aria-hidden="true"></div>
   <section class="container">
     <div class="app-layout">
       <aside class="sidebar-nav">
-        <div class="sidebar-brand">SkillShare Hub</div>
+        <div class="sidebar-brand"><span class="site-logo site-logo--sidebar" aria-hidden="true"></span></div>
         <a class="active" href="dashboard.php">Dashboard</a>
         <a href="video-sessions/index.php">My Sessions</a>
         <a href="assignments/index.php">Assignments</a>

@@ -9,12 +9,12 @@
 }
 
 .navbar__inner{
-  width:min(1240px,94vw);
+  width:min(1420px,96vw);
   margin-inline:auto;
   min-height:70px;
   display:flex;
   align-items:center;
-  gap:14px;
+  gap:10px;
   flex-wrap:nowrap;
 }
 
@@ -34,8 +34,8 @@
 .brand__tag{font-size:.72rem;color:var(--muted);font-weight:700;margin-top:3px}
 
 .search{
-  flex:0 1 290px;
-  max-width:290px;
+  flex:0 1 210px;
+  max-width:210px;
   display:flex;
   align-items:center;
   margin-left:6px;
@@ -46,7 +46,7 @@
   display:flex;
   align-items:center;
   justify-content:flex-end;
-  gap:6px;
+  gap:2px;
   margin-left:auto;
   flex-wrap:nowrap;
 }
@@ -55,12 +55,12 @@
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  gap:6px;
-  padding:9px 10px;
+  gap:5px;
+  padding:8px 7px;
   border-radius:8px;
   color:var(--ink);
   font-weight:800;
-  font-size:.78rem;
+  font-size:.7rem;
   line-height:1;
   white-space:nowrap;
   transition:background var(--transition),color var(--transition),transform var(--transition-fast);
@@ -68,7 +68,7 @@
 .nav__link:hover,.nav__link--active{background:#eef1ff;color:var(--primary);transform:translateY(-1px)}
 .nav__icon{font-size:1rem;line-height:1}
 
-.navbar__right{display:flex;align-items:center;gap:10px}
+.navbar__right{display:flex;align-items:center;gap:8px}
 .profile{position:relative}
 .avatar-btn{border:0;background:transparent;padding:0;cursor:pointer}
 .avatar{
@@ -117,7 +117,7 @@
 .mobile-panel__link{padding:11px 12px;border:1px solid var(--border);background:#fff;border-radius:8px;font-weight:800}
 .mobile-panel__link--active{background:rgba(79,70,229,.12);border-color:rgba(79,70,229,.18);color:var(--primary)}
 
-@media(max-width:960px){
+@media(max-width:1180px){
   .nav{display:none}
   .hamburger{display:grid}
   .navbar[data-mobile-open="true"] .mobile-panel{display:block}

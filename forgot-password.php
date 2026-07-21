@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="form-card card animate" style="max-width:540px;margin:auto;position:relative;z-index:1;">
     
     <div class="text-center mb-4">
-      <div class="auth-logo" style="margin-inline:auto;margin-bottom:18px;width:64px;height:64px;">SH</div>
+      <div class="site-logo site-logo--auth" aria-hidden="true" style="margin-bottom:18px;"></div>
       <h2 class="mb-1">Forgot Password</h2>
       <p class="text-light-emphasis">Securely reset your password with a one-time OTP.</p>
     </div>
@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="hidden" name="action" value="request_otp" />
         <div class="mb-3">
           <label class="form-label">Email address</label>
-          <input type="email" name="email" class="form-control" placeholder="you@example.com" required />
+          <div class="input-icon"><i class="fa-regular fa-envelope"></i><input type="email" name="email" class="form-control" placeholder="Email Address" required /></div>
         </div>
         <button class="btn btn--primary w-100" type="submit">Send OTP</button>
       </form>
@@ -134,11 +134,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="hidden" name="action" value="reset_password" />
         <div class="mb-3">
           <label class="form-label">New Password</label>
-          <input type="password" name="password" class="form-control" placeholder="********" required />
+          <div class="input-icon"><i class="fa-solid fa-lock"></i><input type="password" name="password" class="form-control" placeholder="New Password" required data-password-field /><button class="password-toggle" type="button" data-password-toggle aria-label="Show password"><i class="fa-regular fa-eye"></i></button></div>
         </div>
         <div class="mb-3">
           <label class="form-label">Confirm Password</label>
-          <input type="password" name="confirm_password" class="form-control" placeholder="********" required />
+          <div class="input-icon"><i class="fa-solid fa-lock"></i><input type="password" name="confirm_password" class="form-control" placeholder="Confirm Password" required data-password-field /><button class="password-toggle" type="button" data-password-toggle aria-label="Show password"><i class="fa-regular fa-eye"></i></button></div>
         </div>
         <button class="btn btn--primary w-100" type="submit">Reset Password</button>
       </form>

@@ -11,11 +11,12 @@ $target = $role === 'admin' ? 'admin/dashboard.php' : ($role === 'graduate' ? 'g
 ?>
 <?php include 'includes/header.php'; ?>
 <?php include 'includes/navbar.php'; ?>
-<main class="page-shell">
+<main class="page-shell dashboard-shell">
+  <div class="dashboard-bg-logo" aria-hidden="true"></div>
   <section class="container">
     <div class="app-layout">
       <aside class="sidebar-nav">
-        <div class="sidebar-brand">SkillShare Hub</div>
+        <div class="sidebar-brand"><span class="site-logo site-logo--sidebar" aria-hidden="true"></span></div>
         <a class="active" href="dashboard.php">Dashboard</a>
         <a href="course.php">My Courses</a>
         <a href="fresher/assignments/index.php">Assignments</a>

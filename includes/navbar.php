@@ -10,11 +10,7 @@ $currentPage = basename($_SERVER['PHP_SELF'] ?? '');
 <nav class="navbar" data-mobile-open="false">
   <div class="navbar__inner">
     <a class="brand" href="<?php echo $basePath; ?>index.php" aria-label="ShareSkill Hub">
-      <div class="brand__mark">SH</div>
-      <div class="brand__text">
-        <div class="brand__name">SkillShare Hub</div>
-        <div class="brand__tag">Share, Learn, Grow</div>
-      </div>
+      <span class="site-logo" aria-hidden="true"></span>
     </a>
 
     <form class="search" action="<?php echo $basePath; ?>course.php" method="get" aria-label="Site search">
@@ -23,10 +19,17 @@ $currentPage = basename($_SERVER['PHP_SELF'] ?? '');
 
     <div class="nav" role="navigation" aria-label="Primary">
       <a class="nav__link<?php echo $currentPage === 'index.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>index.php"><i class="fa-solid fa-house"></i> Home</a>
-      <a class="nav__link<?php echo $currentPage === 'course.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>course.php"><i class="fa-solid fa-book-open-reader"></i> Course</a>
-      <a class="nav__link<?php echo $currentPage === 'mentor.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>mentor.php"><i class="fa-solid fa-user-tie"></i> Mentor</a>
-      <a class="nav__link<?php echo $currentPage === 'notifications.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>notifications.php"><i class="fa-solid fa-bell"></i> Notification</a>
-      <a class="nav__link<?php echo $currentPage === 'book.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>fresher/mentorship/book.php"><i class="fa-solid fa-calendar-days"></i> Session</a>
+      <a class="nav__link" href="<?php echo $basePath; ?>index.php#academic-fields"><i class="fa-solid fa-layer-group"></i> Fields</a>
+      <a class="nav__link<?php echo $currentPage === 'course.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>course.php"><i class="fa-solid fa-book-open-reader"></i> Courses</a>
+      <a class="nav__link<?php echo $currentPage === 'mentor.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>mentor.php"><i class="fa-solid fa-user-tie"></i> Mentors</a>
+      <a class="nav__link<?php echo $currentPage === 'book.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>fresher/mentorship/book.php"><i class="fa-solid fa-video"></i> Sessions</a>
+      <a class="nav__link" href="<?php echo $basePath; ?>fresher/assignments/index.php"><i class="fa-solid fa-file-pen"></i> Assignments</a>
+      <a class="nav__link" href="<?php echo $basePath; ?>fresher/research/index.php"><i class="fa-solid fa-microscope"></i> Research</a>
+      <a class="nav__link" href="<?php echo $basePath; ?>fresher/placement/index.php"><i class="fa-solid fa-briefcase"></i> Placement</a>
+      <a class="nav__link" href="<?php echo $basePath; ?>fresher/certificates/index.php"><i class="fa-solid fa-award"></i> Certificates</a>
+      <a class="nav__link<?php echo $currentPage === 'about.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>about.php"><i class="fa-solid fa-circle-info"></i> About</a>
+      <a class="nav__link<?php echo $currentPage === 'contact.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>contact.php"><i class="fa-solid fa-envelope"></i> Contact</a>
+      <a class="nav__link<?php echo $currentPage === 'notifications.php' ? ' nav__link--active' : ''; ?>" href="<?php echo $basePath; ?>notifications.php"><i class="fa-solid fa-bell"></i></a>
     </div>
 
     <div class="navbar__right">
@@ -58,6 +61,12 @@ $currentPage = basename($_SERVER['PHP_SELF'] ?? '');
       <a class="mobile-panel__link<?php echo $currentPage === 'index.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>index.php"><i class="fa-solid fa-house"></i> Home</a>
       <a class="mobile-panel__link<?php echo $currentPage === 'course.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>course.php"><i class="fa-solid fa-book-open-reader"></i> Courses</a>
       <a class="mobile-panel__link<?php echo $currentPage === 'mentor.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>mentor.php"><i class="fa-solid fa-user-tie"></i> Mentors</a>
+      <a class="mobile-panel__link" href="<?php echo $basePath; ?>index.php#academic-fields"><i class="fa-solid fa-layer-group"></i> Academic Fields</a>
+      <a class="mobile-panel__link" href="<?php echo $basePath; ?>fresher/mentorship/book.php"><i class="fa-solid fa-video"></i> Video Sessions</a>
+      <a class="mobile-panel__link" href="<?php echo $basePath; ?>fresher/assignments/index.php"><i class="fa-solid fa-file-pen"></i> Assignments</a>
+      <a class="mobile-panel__link" href="<?php echo $basePath; ?>fresher/research/index.php"><i class="fa-solid fa-microscope"></i> Research</a>
+      <a class="mobile-panel__link" href="<?php echo $basePath; ?>fresher/placement/index.php"><i class="fa-solid fa-briefcase"></i> Placement</a>
+      <a class="mobile-panel__link" href="<?php echo $basePath; ?>fresher/certificates/index.php"><i class="fa-solid fa-award"></i> Certificates</a>
       <a class="mobile-panel__link<?php echo $currentPage === 'about.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>about.php"><i class="fa-solid fa-circle-info"></i> About</a>
       <a class="mobile-panel__link<?php echo $currentPage === 'contact.php' ? ' mobile-panel__link--active' : ''; ?>" href="<?php echo $basePath; ?>contact.php"><i class="fa-solid fa-envelope"></i> Contact</a>
       <?php if (is_logged_in()): ?>

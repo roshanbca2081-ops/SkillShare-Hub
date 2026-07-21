@@ -3,41 +3,44 @@
 <?php include 'includes/navbar.php'; ?>
 
 <main class="page-shell">
-  <section class="hero-section" style="position:relative;">
-    <div class="premium-bg__watermark" aria-hidden="true" style="position:absolute;inset:0;display:grid;place-items:center;opacity:.14;z-index:0;">
-      <div class="premium-bg__watermark-logo" style="filter:blur(1.2px);">ShareSkill Hub</div>
-    </div>
-    <div style="position:relative;z-index:1;">
-
+  <section class="hero-section">
     <div class="container hero-grid">
       <div class="hero-copy animate">
-        <span class="tag tag--orange">SkillShare Hub</span>
-        <h1>Share Knowledge.<br />Learn Together. Grow Forever.</h1>
-        <p>Find the best mentors, courses and resources to achieve your goals across academic fields, guided sessions, assignments and certificates.</p>
+        <span class="tag">Welcome to Skill Share Hub</span>
+        <h1>Learn. Share.<br />Grow <span>Together.</span></h1>
+        <p>A platform where graduates share practical knowledge and skills with future learners across all fields.</p>
         <div class="hero-actions">
-          <a href="course.php" class="btn btn--primary">Explore Courses</a>
-          <a href="mentor.php" class="btn btn--outline">Find a Mentor</a>
+          <a href="mentor.php" class="btn btn--primary">Explore Mentors</a>
+          <a href="course.php" class="btn btn--outline">Explore Courses</a>
         </div>
       </div>
       <div class="hero-visual" aria-label="Learners and mentors">
-        <div class="floating-icons">
-          <i class="fa-solid fa-book-open"></i>
-          <i class="fa-solid fa-laptop-code"></i>
-          <i class="fa-solid fa-user-graduate"></i>
-          <i class="fa-solid fa-chalkboard-user"></i>
-          <i class="fa-solid fa-rocket"></i>
-        </div>
-        <div class="people-row">
-          <div class="person"></div>
-          <div class="person"></div>
-          <div class="person"></div>
+        <div class="hero-watermark site-logo" aria-hidden="true"></div>
+        <div class="hero-orbit">
+          <div class="hero-orbit__ring hero-orbit__ring--outer"></div>
+          <div class="hero-orbit__ring hero-orbit__ring--inner"></div>
+          <div class="hero-orbit__center"><span class="site-logo site-logo--auth" aria-hidden="true"></span></div>
+          <span class="orbit-icon orbit-icon--1"><i class="fa-solid fa-laptop-code"></i></span>
+          <span class="orbit-icon orbit-icon--2"><i class="fa-solid fa-book-open"></i></span>
+          <span class="orbit-icon orbit-icon--3"><i class="fa-solid fa-flask"></i></span>
+          <span class="orbit-icon orbit-icon--4"><i class="fa-solid fa-scale-balanced"></i></span>
+          <span class="orbit-icon orbit-icon--5"><i class="fa-solid fa-seedling"></i></span>
+          <span class="orbit-person orbit-person--1"></span>
+          <span class="orbit-person orbit-person--2"></span>
+          <span class="orbit-person orbit-person--3"></span>
         </div>
       </div>
     </div>
   </section>
-  </div>
 
-  <section class="field-overview">
+  <section class="container home-stats">
+    <article class="stat-card"><div class="stat-icon"><i class="fa-regular fa-user"></i></div><div><strong>500+</strong><span>Mentors</span></div></article>
+    <article class="stat-card"><div class="stat-icon"><i class="fa-solid fa-computer"></i></div><div><strong>1000+</strong><span>Courses</span></div></article>
+    <article class="stat-card"><div class="stat-icon"><i class="fa-solid fa-users"></i></div><div><strong>10,000+</strong><span>Freshers</span></div></article>
+    <article class="stat-card"><div class="stat-icon"><i class="fa-solid fa-layer-group"></i></div><div><strong>50+</strong><span>Academic Fields</span></div></article>
+  </section>
+
+  <section class="field-overview" id="academic-fields">
     <div class="container">
       <div class="section-heading">
         <h2>Academic Fields</h2>
@@ -46,7 +49,7 @@
 
       <div class="premium-bg" aria-hidden="true">
         <div class="premium-bg__watermark" data-parallax-y="-10">
-          <div class="premium-bg__watermark-logo">ShareSkill Hub</div>
+          <div class="site-logo site-logo--auth premium-bg__watermark-logo" aria-hidden="true"></div>
         </div>
 
         <div class="premium-bg__particles" data-parallax-y="8">

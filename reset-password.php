@@ -9,7 +9,7 @@ require_once 'includes/functions.php';
   <section class="page-section centered" style="min-height:calc(100vh - 120px);padding:50px 0;">
     <div class="form-card card animate" style="max-width:520px;margin:auto;">
       <div class="text-center mb-4">
-        <div class="auth-logo" style="margin-inline:auto;margin-bottom:18px;width:64px;height:64px;">SH</div>
+        <div class="site-logo site-logo--auth" aria-hidden="true" style="margin-bottom:18px;"></div>
         <h2 class="mb-1">Password Reset</h2>
         <p class="text-light-emphasis">Please use the Forgot Password page to securely reset your account password.</p>
       </div>

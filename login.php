@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <span style="--x:38%;--y:50%;--dx:-18px;--d:16s;"></span>
     </div>
     <section class="auth-brand">
-      <div class="auth-logo">SH</div>
+      <div class="site-logo site-logo--auth" aria-hidden="true"></div>
 
       <div class="auth-eyebrow">Secure Access</div>
       <h1>Welcome Back to ShareSkill Hub</h1>
@@ -66,9 +66,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </section>
     <section class="auth-panel form-card animate">
       <div class="text-center" style="margin-bottom:28px">
-        <div class="auth-logo" style="margin-inline:auto;margin-bottom:18px;width:64px;height:64px;">SH</div>
-        <h2 class="mb-1">Sign in to your account</h2>
-        <p class="text-light-emphasis mb-4">Quickly access your dashboard and learning tools.</p>
+        <div class="site-logo site-logo--auth" aria-hidden="true" style="margin-bottom:18px;"></div>
+        <h2 class="mb-1">Welcome Back!</h2>
+        <p class="text-light-emphasis mb-4">Login to continue your journey.</p>
       </div>
       <?php if ($message): ?>
         <div class="alert alert-danger"><?php echo e($message); ?></div>
@@ -76,12 +76,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <form method="post">
         <input type="hidden" name="csrf_token" value="<?php echo e(csrf_token()); ?>" />
         <div class="mb-3">
-          <label class="form-label">Email</label>
-          <input type="email" name="email" class="form-control" placeholder="rohan@gmail.com" required />
+          <label class="form-label">Email Address</label>
+          <div class="input-icon"><i class="fa-regular fa-envelope"></i><input type="email" name="email" class="form-control" placeholder="Email Address" required /></div>
         </div>
         <div class="mb-3">
           <label class="form-label">Password</label>
-          <input type="password" name="password" class="form-control" placeholder="********" required />
+          <div class="input-icon"><i class="fa-solid fa-lock"></i><input type="password" name="password" class="form-control" placeholder="Password" required data-password-field /><button class="password-toggle" type="button" data-password-toggle aria-label="Show password"><i class="fa-regular fa-eye"></i></button></div>
         </div>
         <div class="d-flex justify-content-between align-items-center mb-3">
           <label class="small" style="display:flex;align-items:center;gap:8px;">
@@ -95,8 +95,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </form>
       <div class="auth-divider"><span>or continue with</span></div>
       <div class="auth-form-actions">
-        <button class="btn btn--outline w-100" type="button">Google</button>
-        <button class="btn btn--outline w-100" type="button">Facebook</button>
+        <button class="btn btn--outline w-100" type="button"><i class="fa-brands fa-google"></i> Login with Google</button>
+        <button class="btn btn--outline w-100" type="button"><i class="fa-brands fa-facebook"></i> Login with Facebook</button>
       </div>
       <p class="text-center mt-3 mb-0 small">Don't have an account? <a href="register.php" style="color:var(--primary);font-weight:900">Register</a></p>
     </section>

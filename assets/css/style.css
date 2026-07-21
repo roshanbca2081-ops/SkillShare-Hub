@@ -7,6 +7,10 @@
 @import url('./home.css');
 @import url('./responsive.css');
 
+:root{
+  --brand-logo-url: url('../img/shareskill-logo.png');
+}
+
 html {
   font-size: var(--font-size);
   box-sizing: border-box;
@@ -61,6 +65,29 @@ body::after {
   transform: translateX(-18%);
   animation: lightSweep 13s ease-in-out infinite;
 }
+
+.site-loader{
+  position:fixed;
+  inset:0;
+  z-index:3000;
+  display:grid;
+  place-items:center;
+  background:rgba(248,250,253,.88);
+  backdrop-filter:blur(18px);
+  transition:opacity .45s ease, visibility .45s ease;
+}
+.site-loader::before{
+  content:"";
+  position:absolute;
+  width:320px;
+  height:320px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(26,91,191,.18), rgba(255,140,0,.12), transparent 68%);
+  filter:blur(12px);
+  animation:brandWatermarkPulse 2.4s ease-in-out infinite;
+}
+.site-loader .site-logo{position:relative;z-index:1;filter:drop-shadow(0 20px 35px rgba(15,35,71,.18))}
+.site-loader.is-hidden{opacity:0;visibility:hidden;pointer-events:none}
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-sans);
@@ -159,7 +186,20 @@ button, .btn, .btn-primary, .btn-outline-light, .btn-outline-primary, .btn-secon
 .auth-brand{padding:32px;background:linear-gradient(135deg,rgba(79,70,229,.08),rgba(124,58,237,.06));border:1px solid rgba(79,70,229,.12);border-radius:24px}
 .auth-brand h1{font-size:2.8rem;line-height:1.05;margin:18px 0 12px;color:var(--ink)}
 .auth-brand p{color:var(--muted);line-height:1.7;font-size:1rem;max-width:360px}
-.auth-logo{width:58px;height:58px;border-radius:18px;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;display:grid;place-items:center;font-weight:900;font-size:1.2rem}
+.site-logo{
+  display:inline-block;
+  width:160px;
+  height:48px;
+  background-image:var(--brand-logo-url);
+  background-repeat:no-repeat;
+  background-position:left center;
+  background-size:contain;
+  flex:0 0 auto;
+}
+.site-logo--mark{width:58px;height:58px;border-radius:18px;background-position:left center}
+.site-logo--auth{width:190px;height:70px;margin-inline:auto}
+.site-logo--sidebar{width:150px;height:46px;filter:drop-shadow(0 12px 22px rgba(0,0,0,.18))}
+.auth-logo{width:58px;height:58px;border-radius:18px;background-image:var(--brand-logo-url);background-repeat:no-repeat;background-position:center;background-size:contain;color:transparent;display:grid;place-items:center;font-size:0}
 .auth-eyebrow{color:var(--primary);font-weight:900;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px}
 .auth-info-list{display:grid;gap:14px;margin-top:28px}
 .auth-info-list div{display:flex;align-items:flex-start;gap:12px;color:var(--text);font-weight:600}
@@ -184,6 +224,31 @@ button, .btn, .btn-primary, .btn-outline-light, .btn-outline-primary, .btn-secon
   transition:border-color var(--transition),box-shadow var(--transition);
 }
 .form-control:focus,.form-select:focus,input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 10px 20px rgba(79,70,229,.12)}
+.input-icon{position:relative}
+.input-icon > i{
+  position:absolute;
+  left:14px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#8aa0ba;
+  z-index:1;
+  pointer-events:none;
+}
+.input-icon .form-control{padding-left:42px;padding-right:42px}
+.password-toggle{
+  position:absolute;
+  right:10px;
+  top:50%;
+  transform:translateY(-50%);
+  border:0;
+  background:transparent;
+  color:#8aa0ba;
+  width:32px;
+  height:32px;
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+}
 .animate{opacity:0;transform:translateY(18px);animation:fadeIn .7s ease forwards}
 .mb-3{margin-bottom:16px}.mb-4{margin-bottom:24px}.mt-3{margin-top:16px}.mt-4{margin-top:24px}
 .py-5{padding-block:34px}.p-3{padding:16px}.p-4{padding:20px}.p-5{padding:28px}
@@ -201,11 +266,30 @@ button, .btn, .btn-primary, .btn-outline-light, .btn-outline-primary, .btn-secon
 
 .app-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:22px;align-items:start}
 .sidebar-nav{position:sticky;top:88px;background:var(--sidebar);color:var(--sidebar-foreground);border-radius:8px;padding:14px;box-shadow:var(--shadow-lg)}
-.sidebar-brand{font-weight:900;color:var(--sidebar-foreground);margin-bottom:16px}
+.sidebar-brand{font-weight:900;color:var(--sidebar-foreground);margin-bottom:16px;display:flex;align-items:center}
 .sidebar-nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:7px;color:var(--sidebar-foreground);font-weight:700;font-size:.88rem}
 .sidebar-nav a.active,.sidebar-nav a:hover{background:linear-gradient(135deg,var(--sidebar-primary),var(--sidebar-accent));color:var(--sidebar-primary-foreground)}
 
 .dashboard-hero{background:linear-gradient(135deg,rgba(79,70,229,.08),rgba(6,182,212,.06));border-radius:24px;padding:28px 24px;border:1px solid rgba(79,70,229,.12);box-shadow:var(--shadow-lg);margin-bottom:20px}
+.dashboard-shell{overflow:hidden}
+.dashboard-bg-logo{
+  position:absolute;
+  right:8%;
+  top:90px;
+  width:min(560px,70vw);
+  height:220px;
+  background:var(--brand-logo-url) center / contain no-repeat;
+  opacity:.08;
+  filter:blur(8px);
+  transform:scale(1.6);
+  pointer-events:none;
+  z-index:0;
+  animation:brandWatermarkPulse 8s ease-in-out infinite;
+}
+@keyframes brandWatermarkPulse{
+  0%,100%{opacity:.07;transform:scale(1.55) translateY(0)}
+  50%{opacity:.11;transform:scale(1.6) translateY(-8px)}
+}
 .dashboard-hero-grid{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center}
 .dashboard-hero-actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-end}
 .dashboard-hero-actions .pill{display:inline-flex;align-items:center;padding:10px 16px;background:#fff;border-radius:999px;font-weight:700;color:var(--ink);box-shadow:0 10px 25px rgba(79,70,229,.08)}

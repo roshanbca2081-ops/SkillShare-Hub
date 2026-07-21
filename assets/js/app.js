@@ -58,6 +58,9 @@ function startCourse(courseName) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  const loader = document.querySelector('[data-site-loader]');
+  if (loader) window.setTimeout(() => loader.classList.add('is-hidden'), 350);
+
   const savedTheme = localStorage.getItem('themeMode');
   if (savedTheme) setThemeMode(savedTheme);
 
@@ -81,6 +84,17 @@ document.addEventListener('DOMContentLoaded', () => {
   if (courseSearch) {
     courseSearch.addEventListener('input', () => filterCourses(document.querySelector('#courseTabs [data-tab].active')?.dataset.tab || 'all'));
   }
+
+  document.querySelectorAll('[data-password-toggle]').forEach(button => {
+    button.addEventListener('click', () => {
+      const field = button.parentElement?.querySelector('[data-password-field]');
+      if (!field) return;
+      const isPassword = field.getAttribute('type') === 'password';
+      field.setAttribute('type', isPassword ? 'text' : 'password');
+      const icon = button.querySelector('i');
+      if (icon) icon.className = isPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+    });
+  });
 });
 
 window.filterCourses = filterCourses;

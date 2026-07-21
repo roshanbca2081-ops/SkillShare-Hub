@@ -1,7 +1,7 @@
 /* Responsive tweaks (1200 / 992 / 768 / 576) */
 
 @media(max-width:1200px){
-  .nav__link{padding:10px 10px}
+  .nav__link{padding:8px 7px}
 }
 
 @media(max-width:992px){

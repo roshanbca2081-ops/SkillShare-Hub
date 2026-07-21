@@ -70,9 +70,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <section class="auth-panel card form-card animate">
       <div class="text-center" style="margin-bottom:28px">
-        <div class="auth-logo" style="margin-inline:auto;margin-bottom:18px;width:64px;height:64px;">SH</div>
-        <h2 class="mb-1">Create your ShareSkill Hub account</h2>
-        <p class="text-light-emphasis mb-4">Register as a fresher or graduate mentor to start learning and teaching.</p>
+        <div class="site-logo site-logo--auth" aria-hidden="true" style="margin-bottom:18px;"></div>
+        <h2 class="mb-1">Create Your Account</h2>
+        <p class="text-light-emphasis mb-4">Join us and start sharing your skills.</p>
       </div>
       <?php if ($message): ?>
         <div class="alert alert-danger"><?php echo e($message); ?></div>
@@ -80,12 +80,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <form method="post">
         <input type="hidden" name="csrf_token" value="<?php echo e(csrf_token()); ?>" />
         <div class="row g-4">
-          <div class="col-md-6"><label class="form-label">Full Name</label><input type="text" name="full_name" class="form-control" placeholder="Rohan Sharma" required /></div>
-          <div class="col-md-6"><label class="form-label">Email</label><input type="email" name="email" class="form-control" placeholder="rohan@gmail.com" required /></div>
+          <div class="col-md-6"><label class="form-label">Full Name</label><div class="input-icon"><i class="fa-regular fa-user"></i><input type="text" name="full_name" class="form-control" placeholder="Full Name" required /></div></div>
+          <div class="col-md-6"><label class="form-label">Email</label><div class="input-icon"><i class="fa-regular fa-envelope"></i><input type="email" name="email" class="form-control" placeholder="Email Address" required /></div></div>
           <div class="col-md-6"><label class="form-label">Role</label><select name="role" class="form-control"><option value="fresher">Fresher</option><option value="graduate">Graduate Mentor</option></select></div>
           <div class="col-md-6"><label class="form-label">Field</label><select name="field" class="form-control"><option>Information Technology</option><option>Agriculture</option><option>Engineering</option><option>Medical</option><option>Law</option><option>Management</option></select></div>
-          <div class="col-md-6"><label class="form-label">Password</label><input type="password" name="password" class="form-control" placeholder="********" required /></div>
-          <div class="col-md-6"><label class="form-label">Confirm Password</label><input type="password" name="confirm_password" class="form-control" placeholder="********" required /></div>
+          <div class="col-md-6"><label class="form-label">Password</label><div class="input-icon"><i class="fa-solid fa-lock"></i><input type="password" name="password" class="form-control" placeholder="Password" required data-password-field /><button class="password-toggle" type="button" data-password-toggle aria-label="Show password"><i class="fa-regular fa-eye"></i></button></div></div>
+          <div class="col-md-6"><label class="form-label">Confirm Password</label><div class="input-icon"><i class="fa-solid fa-lock"></i><input type="password" name="confirm_password" class="form-control" placeholder="Confirm Password" required data-password-field /><button class="password-toggle" type="button" data-password-toggle aria-label="Show password"><i class="fa-regular fa-eye"></i></button></div></div>
         </div>
         <div class="d-flex align-items-center gap-2 mt-3">
           <input type="checkbox" id="terms" required />
@@ -95,13 +95,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </form>
       <div class="auth-divider"><span>or continue with</span></div>
       <div class="auth-form-actions">
-        <button class="btn btn--outline w-100" type="button">Google</button>
-        <button class="btn btn--outline w-100" type="button">Facebook</button>
+        <button class="btn btn--outline w-100" type="button"><i class="fa-brands fa-google"></i> Register with Google</button>
+        <button class="btn btn--outline w-100" type="button"><i class="fa-brands fa-facebook"></i> Register with Facebook</button>
       </div>
       <p class="text-center mt-3 mb-0 small">Already have an account? <a href="login.php" style="color:var(--primary);font-weight:900">Login</a></p>
     </section>
     <section class="auth-brand">
-      <div class="auth-logo">SH</div>
+      <div class="site-logo site-logo--auth" aria-hidden="true"></div>
       <div class="auth-eyebrow">Join the community</div>
       <h1>Gain mentorship, assignments, video sessions and placement support</h1>
       <p>Register as a fresher or graduate mentor and unlock courses, sessions, assignments, certificates and placement tools.</p>
