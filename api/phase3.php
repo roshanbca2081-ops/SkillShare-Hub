@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $allowed = [
     'list-fields',
     'list-courses',
+    'list-courses-by-field',
     'list-assignments',
     'list-practical-skills',
     'list-assignments-by-course',
@@ -46,6 +47,15 @@ if (in_array($action, ['list-courses'], true)) {
     }
     $data = get_courses();
     json_response('success', 'Courses fetched', ['courses' => $data]);
+}
+
+if (in_array($action, ['list-courses-by-field'], true)) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+        json_response('error', 'Method not allowed', [], 405);
+    }
+    $fieldId = (int)($_GET['field_id'] ?? 0);
+    $data = get_courses_by_field($fieldId);
+    json_response('success', 'Courses fetched by field', ['courses' => $data]);
 }
 
 if (in_array($action, ['list-assignments'], true)) {

@@ -1,0 +1,363 @@
+/* ============================================
+   PREMIUM FIELDS UI - ShareSkill Hub
+   Modern glassmorphism field cards & animations
+   ============================================ */
+
+/* Field Card Grid */
+.field-grid-modern {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  padding: 8px 0;
+}
+
+/* Field Card - Glassmorphism Premium */
+.field-card-premium {
+  position: relative;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 24px;
+  padding: 28px 24px 24px;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.08);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 220px;
+}
+
+.field-card-premium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary), var(--info));
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  border-radius: 24px 24px 0 0;
+}
+
+.field-card-premium:hover::before {
+  opacity: 1;
+}
+
+.field-card-premium:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 20px 60px rgba(26, 91, 191, 0.18);
+  border-color: rgba(26, 91, 191, 0.2);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+/* Field Gradient Themes */
+.field-card-premium[data-theme="engineering"] {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(59, 130, 246, 0.08));
+}
+.field-card-premium[data-theme="it"] {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(16, 185, 129, 0.08));
+}
+.field-card-premium[data-theme="science"] {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(139, 92, 246, 0.08));
+}
+.field-card-premium[data-theme="health"] {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(239, 68, 68, 0.06));
+}
+.field-card-premium[data-theme="education"] {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(251, 191, 36, 0.06));
+}
+.field-card-premium[data-theme="management"] {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(6, 182, 212, 0.06));
+}
+.field-card-premium[data-theme="arts"] {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(236, 72, 153, 0.06));
+}
+.field-card-premium[data-theme="law"] {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(168, 85, 247, 0.06));
+}
+.field-card-premium[data-theme="agriculture"] {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(34, 197, 94, 0.06));
+}
+
+/* Field Logo/Icon Container */
+.field-card-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  font-size: 1.6rem;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  box-shadow: 0 8px 24px rgba(26, 91, 191, 0.2);
+  flex-shrink: 0;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.field-card-premium:hover .field-card-icon {
+  transform: scale(1.08) rotate(-4deg);
+  box-shadow: 0 12px 32px rgba(26, 91, 191, 0.3);
+}
+
+.field-card-icon img {
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  object-fit: cover;
+}
+
+/* Field Card Content */
+.field-card-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.field-card-desc {
+  font-size: 0.86rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.field-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid rgba(26, 91, 191, 0.08);
+}
+
+.field-card-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.field-card-stat i {
+  color: var(--primary);
+  font-size: 0.78rem;
+}
+
+/* Field Card Action */
+.field-card-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  color: #fff;
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  margin-top: 4px;
+  align-self: flex-start;
+}
+
+.field-card-action-btn:hover {
+  transform: translateX(4px);
+  box-shadow: 0 8px 20px rgba(26, 91, 191, 0.25);
+  color: #fff;
+}
+
+/* Course Card - Premium */
+.course-card-premium {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.course-card-premium:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(26, 91, 191, 0.14);
+  border-color: rgba(26, 91, 191, 0.15);
+}
+
+.course-card-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-bottom: 1px solid var(--border);
+}
+
+.course-card-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.course-card-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+}
+
+.course-card-desc {
+  font-size: 0.84rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.course-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  background: rgba(248, 250, 253, 0.5);
+}
+
+.course-card-mentor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.course-card-mentor-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+
+.course-card-mentor-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.course-card-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #f59e0b;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+/* Loading Skeleton */
+.field-skeleton {
+  background: linear-gradient(90deg, #f0f4f8 25%, #e2e8f0 50%, #f0f4f8 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s ease-in-out infinite;
+  border-radius: 24px;
+  height: 220px;
+}
+
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Field Detail Hero */
+.field-detail-hero {
+  position: relative;
+  border-radius: 28px;
+  overflow: hidden;
+  min-height: 340px;
+  display: flex;
+  align-items: flex-end;
+  padding: 40px;
+  margin-bottom: 32px;
+}
+
+.field-detail-hero-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.25;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.field-detail-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(6, 15, 40, 0.92) 10%, rgba(6, 15, 40, 0.45) 65%, transparent 100%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.field-detail-content {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+}
+
+.field-detail-title {
+  font-size: clamp(2rem, 3.7vw, 3rem);
+  margin-bottom: 10px;
+  color: #fff;
+}
+
+.field-detail-desc {
+  max-width: 720px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .field-grid-modern {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .field-card-premium {
+    padding: 20px;
+    min-height: 180px;
+  }
+  .field-detail-hero {
+    padding: 24px;
+    min-height: 260px;
+  }
+}
+
+@media (max-width: 480px) {
+  .field-grid-modern {
+    grid-template-columns: 1fr;
+  }
+  .field-card-icon {
+    width: 52px;
+    height: 52px;
+    font-size: 1.3rem;
+    border-radius: 14px;
+  }
+}
+

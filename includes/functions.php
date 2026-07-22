@@ -195,28 +195,196 @@ function ensure_database_schema() {
 
     // Continue creating the rest of the existing schema
 
+    // Enhanced courses table with all required columns
+    $conn->query("CREATE TABLE IF NOT EXISTS courses (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(150) NOT NULL,
+        slug VARCHAR(150) NOT NULL UNIQUE,
+        description TEXT,
+        image_path VARCHAR(255) DEFAULT NULL,
+        duration VARCHAR(80) DEFAULT NULL,
+        difficulty_level VARCHAR(50) DEFAULT 'Beginner',
+        rating DECIMAL(3,2) DEFAULT 0.00,
+        enrolled_students INT DEFAULT 0,
+        mentor_name VARCHAR(150) DEFAULT NULL,
+        mentor_avatar VARCHAR(255) DEFAULT NULL,
+        field_id INT DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+        CONSTRAINT fk_courses_field FOREIGN KEY (field_id) REFERENCES academic_fields(id) ON DELETE SET NULL
+    )");
 
-    $conn->query("CREATE TABLE IF NOT EXISTS courses (\r\n        id INT AUTO_INCREMENT PRIMARY KEY,\r\n        title VARCHAR(150) NOT NULL,\r\n        description TEXT,\r\n        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\r\n    )");
+    // Migrate existing courses table columns
+    $colCheck = $conn->query("SHOW COLUMNS FROM courses LIKE 'slug'");
+    if ($colCheck && $colCheck->num_rows === 0) {
+        $conn->query("ALTER TABLE courses ADD slug VARCHAR(150) NOT NULL DEFAULT '' AFTER title");
+    }
+    $colCheck = $conn->query("SHOW COLUMNS FROM courses LIKE 'image_path'");
+    if ($colCheck && $colCheck->num_rows === 0) {
+        $conn->query("ALTER TABLE courses ADD image_path VARCHAR(255) DEFAULT NULL AFTER description");
+    }
+    $colCheck = $conn->query("SHOW COLUMNS FROM courses LIKE 'duration'");
+    if ($colCheck && $colCheck->num_rows === 0) {
+        $conn->query("ALTER TABLE courses ADD duration VARCHAR(80) DEFAULT NULL");
+    }
+    $colCheck = $conn->query("SHOW COLUMNS FROM courses LIKE 'difficulty_level'");
+    if ($colCheck && $colCheck->num_rows === 0) {
+        $conn->query("ALTER TABLE courses ADD difficulty_level VARCHAR(50) DEFAULT 'Beginner'");
+    }
+    $colCheck = $conn->query("SHOW COLUMNS FROM courses LIKE 'rating'");
+    if ($colCheck && $colCheck->num_rows === 0) {
+        $conn->query("ALTER TABLE courses ADD rating DECIMAL(3,2) DEFAULT 0.00");
+    }
+    $colCheck = $conn->query("SHOW COLUMNS FROM courses LIKE 'enrolled_students'");
+    if ($colCheck && $colCheck->num_rows === 0) {
+        $conn->query("ALTER TABLE courses ADD enrolled_students INT DEFAULT 0");
+    }
+    $colCheck = $conn->query("SHOW COLUMNS FROM courses LIKE 'mentor_name'");
+    if ($colCheck && $colCheck->num_rows === 0) {
+        $conn->query("ALTER TABLE courses ADD mentor_name VARCHAR(150) DEFAULT NULL");
+    }
+    $colCheck = $conn->query("SHOW COLUMNS FROM courses LIKE 'mentor_avatar'");
+    if ($colCheck && $colCheck->num_rows === 0) {
+        $conn->query("ALTER TABLE courses ADD mentor_avatar VARCHAR(255) DEFAULT NULL");
+    }
+    $colCheck = $conn->query("SHOW COLUMNS FROM courses LIKE 'field_id'");
+    if ($colCheck && $colCheck->num_rows === 0) {
+        $conn->query("ALTER TABLE courses ADD field_id INT DEFAULT NULL");
+    }
+    $colCheck = $conn->query("SHOW COLUMNS FROM courses LIKE 'updated_at'");
+    if ($colCheck && $colCheck->num_rows === 0) {
+        $conn->query("ALTER TABLE courses ADD updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP");
+    }
 
     // Phase 3: Fields, practical skills, and linking tables
-    $conn->query("CREATE TABLE IF NOT EXISTS academic_fields (\r\n        id INT AUTO_INCREMENT PRIMARY KEY,\r\n        name VARCHAR(150) NOT NULL,\r\n        icon VARCHAR(120) DEFAULT NULL,\r\n        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\r\n    )");
+    $conn->query("CREATE TABLE IF NOT EXISTS academic_fields (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(150) NOT NULL,
+        slug VARCHAR(150) NOT NULL UNIQUE,
+        icon VARCHAR(120) DEFAULT NULL,
+        description TEXT,
+        logo_path VARCHAR(255) DEFAULT NULL,
+        course_count INT NOT NULL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+    )");
 
-    $conn->query("CREATE TABLE IF NOT EXISTS course_fields (\r\n        course_id INT NOT NULL,\r\n        field_id INT NOT NULL,\r\n        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\r\n        PRIMARY KEY (course_id, field_id),\r\n        CONSTRAINT fk_course_fields_course FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,\r\n        CONSTRAINT fk_course_fields_field FOREIGN KEY (field_id) REFERENCES academic_fields(id) ON DELETE CASCADE\r\n    ) ENGINE=InnoDB");
+    // Migrate existing academic_fields table
+    $colCheck = $conn->query("SHOW COLUMNS FROM academic_fields LIKE 'slug'");
+    if ($colCheck && $colCheck->num_rows === 0) {
+        $conn->query("ALTER TABLE academic_fields ADD slug VARCHAR(150) NOT NULL DEFAULT '' AFTER name");
+    }
+    $colCheck = $conn->query("SHOW COLUMNS FROM academic_fields LIKE 'description'");
+    if ($colCheck && $colCheck->num_rows === 0) {
+        $conn->query("ALTER TABLE academic_fields ADD description TEXT AFTER icon");
+    }
+    $colCheck = $conn->query("SHOW COLUMNS FROM academic_fields LIKE 'logo_path'");
+    if ($colCheck && $colCheck->num_rows === 0) {
+        $conn->query("ALTER TABLE academic_fields ADD logo_path VARCHAR(255) DEFAULT NULL AFTER description");
+    }
+    $colCheck = $conn->query("SHOW COLUMNS FROM academic_fields LIKE 'course_count'");
+    if ($colCheck && $colCheck->num_rows === 0) {
+        $conn->query("ALTER TABLE academic_fields ADD course_count INT NOT NULL DEFAULT 0");
+    }
+    $colCheck = $conn->query("SHOW COLUMNS FROM academic_fields LIKE 'updated_at'");
+    if ($colCheck && $colCheck->num_rows === 0) {
+        $conn->query("ALTER TABLE academic_fields ADD updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP");
+    }
 
-    $conn->query("CREATE TABLE IF NOT EXISTS practical_skills (\r\n        id INT AUTO_INCREMENT PRIMARY KEY,\r\n        title VARCHAR(150) NOT NULL,\r\n        description TEXT,\r\n        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\r\n    )");
+    $conn->query("CREATE TABLE IF NOT EXISTS course_fields (
+        course_id INT NOT NULL,
+        field_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (course_id, field_id),
+        CONSTRAINT fk_course_fields_course FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+        CONSTRAINT fk_course_fields_field FOREIGN KEY (field_id) REFERENCES academic_fields(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB");
 
-    $conn->query("CREATE TABLE IF NOT EXISTS mentor_skills (\r\n        id INT AUTO_INCREMENT PRIMARY KEY,\r\n        mentor_id INT NOT NULL,\r\n        practical_skill_id INT NOT NULL,\r\n        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\r\n        CONSTRAINT fk_mentor_skills_mentor FOREIGN KEY (mentor_id) REFERENCES users(id) ON DELETE CASCADE,\r\n        CONSTRAINT fk_mentor_skills_skill FOREIGN KEY (practical_skill_id) REFERENCES practical_skills(id) ON DELETE CASCADE\r\n    )");
+    $conn->query("CREATE TABLE IF NOT EXISTS practical_skills (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(150) NOT NULL,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )");
 
-    $conn->query("CREATE TABLE IF NOT EXISTS mentor_availability (\r\n        id INT AUTO_INCREMENT PRIMARY KEY,\r\n        mentor_id INT NOT NULL,\r\n        available_time VARCHAR(120) DEFAULT NULL,\r\n        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\r\n        CONSTRAINT fk_mentor_availability_mentor FOREIGN KEY (mentor_id) REFERENCES users(id) ON DELETE CASCADE\r\n    )");
+    $conn->query("CREATE TABLE IF NOT EXISTS mentor_skills (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        mentor_id INT NOT NULL,
+        practical_skill_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_mentor_skills_mentor FOREIGN KEY (mentor_id) REFERENCES users(id) ON DELETE CASCADE,
+        CONSTRAINT fk_mentor_skills_skill FOREIGN KEY (practical_skill_id) REFERENCES practical_skills(id) ON DELETE CASCADE
+    )");
 
-    // assignments can be linked to fields/courses in Phase 3
-    $conn->query("CREATE TABLE IF NOT EXISTS assignments (\r\n        id INT AUTO_INCREMENT PRIMARY KEY,\r\n        title VARCHAR(150) NOT NULL,\r\n        description TEXT,\r\n        created_by INT NOT NULL,\r\n        deadline DATE,\r\n        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\r\n    )");
+    $conn->query("CREATE TABLE IF NOT EXISTS mentor_availability (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        mentor_id INT NOT NULL,
+        available_time VARCHAR(120) DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_mentor_availability_mentor FOREIGN KEY (mentor_id) REFERENCES users(id) ON DELETE CASCADE
+    )");
 
-    $conn->query("CREATE TABLE IF NOT EXISTS assignment_courses (\r\n        assignment_id INT NOT NULL,\r\n        course_id INT NOT NULL,\r\n        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\r\n        PRIMARY KEY (assignment_id, course_id),\r\n        CONSTRAINT fk_assignment_courses_assignment FOREIGN KEY (assignment_id) REFERENCES assignments(id) ON DELETE CASCADE,\r\n        CONSTRAINT fk_assignment_courses_course FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE\r\n    ) ENGINE=InnoDB");
+    // assignments
+    $conn->query("CREATE TABLE IF NOT EXISTS assignments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(150) NOT NULL,
+        description TEXT,
+        created_by INT NOT NULL,
+        deadline DATE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )");
 
-    $conn->query("CREATE TABLE IF NOT EXISTS assignment_fields (\r\n        assignment_id INT NOT NULL,\r\n        field_id INT NOT NULL,\r\n        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\r\n        PRIMARY KEY (assignment_id, field_id),\r\n        CONSTRAINT fk_assignment_fields_assignment FOREIGN KEY (assignment_id) REFERENCES assignments(id) ON DELETE CASCADE,\r\n        CONSTRAINT fk_assignment_fields_field FOREIGN KEY (field_id) REFERENCES academic_fields(id) ON DELETE CASCADE\r\n    ) ENGINE=InnoDB");
+    $conn->query("CREATE TABLE IF NOT EXISTS assignment_courses (
+        assignment_id INT NOT NULL,
+        course_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (assignment_id, course_id),
+        CONSTRAINT fk_assignment_courses_assignment FOREIGN KEY (assignment_id) REFERENCES assignments(id) ON DELETE CASCADE,
+        CONSTRAINT fk_assignment_courses_course FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB");
 
+    $conn->query("CREATE TABLE IF NOT EXISTS assignment_fields (
+        assignment_id INT NOT NULL,
+        field_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (assignment_id, field_id),
+        CONSTRAINT fk_assignment_fields_assignment FOREIGN KEY (assignment_id) REFERENCES assignments(id) ON DELETE CASCADE,
+        CONSTRAINT fk_assignment_fields_field FOREIGN KEY (field_id) REFERENCES academic_fields(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB");
 
+    // Create mentors table
+    $conn->query("CREATE TABLE IF NOT EXISTS mentors (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(150) NOT NULL,
+        email VARCHAR(150) DEFAULT NULL,
+        bio TEXT,
+        avatar VARCHAR(255) DEFAULT NULL,
+        specialization VARCHAR(255) DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )");
+
+    // Create course_mentors pivot table
+    $conn->query("CREATE TABLE IF NOT EXISTS course_mentors (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        course_id INT NOT NULL,
+        mentor_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_cm_course FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+        CONSTRAINT fk_cm_mentor FOREIGN KEY (mentor_id) REFERENCES mentors(id) ON DELETE CASCADE
+    )");
+
+    // Create bookings table
+    $conn->query("CREATE TABLE IF NOT EXISTS bookings (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        mentor_id INT DEFAULT NULL,
+        course_id INT DEFAULT NULL,
+        status VARCHAR(30) NOT NULL DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_bookings_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        CONSTRAINT fk_bookings_mentor FOREIGN KEY (mentor_id) REFERENCES mentors(id) ON DELETE SET NULL,
+        CONSTRAINT fk_bookings_course FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE SET NULL
+    )");
 
     $conn->query("CREATE TABLE IF NOT EXISTS mentorship_sessions (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -298,16 +466,30 @@ function ensure_database_schema() {
     $stmt->close();
 }
 
+/**
+ * Enhanced get_courses() - returns courses with field info, mentor details, etc.
+ */
 function get_courses() {
     global $conn;
     if (!$conn) {
         return [];
     }
 
-    $result = $conn->query("SELECT id, title, description, created_at FROM courses ORDER BY id DESC");
+    $result = $conn->query("
+        SELECT c.id, c.title, c.slug, c.description, c.image_path, c.duration,
+               c.difficulty_level, c.rating, c.enrolled_students, c.mentor_name,
+               c.mentor_avatar, c.field_id, c.created_at,
+               af.name AS field_name, af.slug AS field_slug, af.icon AS field_icon
+        FROM courses c
+        LEFT JOIN academic_fields af ON af.id = c.field_id
+        ORDER BY c.id DESC
+    ");
     return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 }
 
+/**
+ * Enhanced get_fields() - returns fields with course counts
+ */
 function get_fields() {
     global $conn;
     if (!$conn) {
@@ -320,58 +502,298 @@ function get_fields() {
         return [];
     }
 
-    // academic_fields schema may use `name` or `title` depending on the existing DB.
-    // Check the actual column first instead of assuming `name` exists.
-    $nameField = null;
-    $nameCheck = $conn->query("SHOW COLUMNS FROM academic_fields LIKE 'name'");
-    if ($nameCheck && $nameCheck->num_rows > 0) {
-        $nameField = 'name';
-    } else {
-        $titleCheck = $conn->query("SHOW COLUMNS FROM academic_fields LIKE 'title'");
-        if ($titleCheck && $titleCheck->num_rows > 0) {
-            $nameField = 'title';
+    // Check if slug column exists
+    $slugCheck = $conn->query("SHOW COLUMNS FROM academic_fields LIKE 'slug'");
+    $hasSlug = $slugCheck && $slugCheck->num_rows > 0;
+
+    $sql = "SELECT af.id, af.name" . ($hasSlug ? ", af.slug" : ", '' AS slug") . ", af.icon, af.description, af.logo_path, af.course_count, af.created_at,
+                   (SELECT COUNT(*) FROM courses c WHERE c.field_id = af.id) AS actual_course_count
+            FROM academic_fields af
+            ORDER BY af.id ASC";
+
+    $rows = $conn->query($sql);
+    if (!$rows) {
+        return [];
+    }
+
+    $fields = $rows->fetch_all(MYSQLI_ASSOC);
+
+    // Use actual course count if course_count column is 0
+    foreach ($fields as &$field) {
+        if ((int)$field['course_count'] === 0 && (int)$field['actual_course_count'] > 0) {
+            $field['course_count'] = $field['actual_course_count'];
+        }
+        // Auto-generate slug if empty
+        if (empty($field['slug'])) {
+            $field['slug'] = strtolower(str_replace(' ', '-', preg_replace('/[^a-zA-Z0-9 ]/', '', $field['name'])));
         }
     }
 
-    if ($nameField === 'name') {
-        $rows = $conn->query("SELECT id, name, icon, created_at FROM academic_fields ORDER BY id DESC");
-        return $rows ? $rows->fetch_all(MYSQLI_ASSOC) : [];
-    }
-
-    if ($nameField === 'title') {
-        $rows = $conn->query("SELECT id, title AS name, icon, created_at FROM academic_fields ORDER BY id DESC");
-        return $rows ? $rows->fetch_all(MYSQLI_ASSOC) : [];
-    }
-
-    return [];
+    return $fields;
 }
 
-function get_practical_skills() {
+/**
+ * Get field by slug
+ */
+function get_field_by_slug($slug) {
     global $conn;
-    if (!$conn) {
-        return [];
+    if (!$conn || !$slug) {
+        return null;
     }
 
-    // If practical_skills table exists, use it. Otherwise return empty.
-    $result = $conn->query("SHOW TABLES LIKE 'practical_skills'");
-    if (!$result || $result->num_rows === 0) {
-        return [];
-    }
-
-    $rows = $conn->query("SELECT id, title, description, created_at FROM practical_skills ORDER BY id DESC");
-    return $rows ? $rows->fetch_all(MYSQLI_ASSOC) : [];
+    $stmt = $conn->prepare("SELECT af.*, (SELECT COUNT(*) FROM courses c WHERE c.field_id = af.id) AS actual_course_count
+                           FROM academic_fields af WHERE af.slug = ? LIMIT 1");
+    $stmt->bind_param('s', $slug);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $field = $result->fetch_assoc();
+    $stmt->close();
+    return $field;
 }
 
+/**
+ * Get field by ID
+ */
+function get_field_by_id($id) {
+    global $conn;
+    if (!$conn || !$id) {
+        return null;
+    }
 
+    $stmt = $conn->prepare("SELECT af.* FROM academic_fields af WHERE af.id = ? LIMIT 1");
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $field = $result->fetch_assoc();
+    $stmt->close();
+    return $field;
+}
 
+/**
+ * Get courses by field ID
+ */
+function get_courses_by_field($field_id) {
+    global $conn;
+    if (!$conn || !$field_id) {
+        return [];
+    }
+
+    $stmt = $conn->prepare("
+        SELECT c.*, af.name AS field_name, af.slug AS field_slug, af.icon AS field_icon
+        FROM courses c
+        LEFT JOIN academic_fields af ON af.id = c.field_id
+        WHERE c.field_id = ?
+        ORDER BY c.created_at DESC
+    ");
+    $stmt->bind_param('i', $field_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $courses = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    return $courses;
+}
+
+/**
+ * Upload an image and return the path
+ */
+function upload_image($file, $target_dir) {
+    if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) {
+        return null;
+    }
+
+    // Create directory if it doesn't exist
+    if (!is_dir($target_dir)) {
+        mkdir($target_dir, 0775, true);
+    }
+
+    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $allowed = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
+
+    if (!in_array($ext, $allowed)) {
+        return null;
+    }
+
+    $filename = uniqid('field_') . '.' . $ext;
+    $dest_path = $target_dir . $filename;
+
+    if (move_uploaded_file($file['tmp_name'], $dest_path)) {
+        return $filename;
+    }
+
+    return null;
+}
+
+/**
+ * Create a field (admin)
+ */
+function create_field($name, $slug, $icon, $description, $logo_path = null) {
+    global $conn;
+    if (!$conn || trim($name) === '' || trim($slug) === '') {
+        return false;
+    }
+
+    $stmt = $conn->prepare("INSERT INTO academic_fields (name, slug, icon, description, logo_path) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param('sssss', $name, $slug, $icon, $description, $logo_path);
+    $ok = $stmt->execute();
+    $stmt->close();
+    return $ok;
+}
+
+/**
+ * Update a field (admin)
+ */
+function update_field($id, $name, $slug, $icon, $description, $logo_path = null) {
+    global $conn;
+    if (!$conn || !$id || trim($name) === '') {
+        return false;
+    }
+
+    if ($logo_path !== null) {
+        $stmt = $conn->prepare("UPDATE academic_fields SET name = ?, slug = ?, icon = ?, description = ?, logo_path = ? WHERE id = ?");
+        $stmt->bind_param('sssssi', $name, $slug, $icon, $description, $logo_path, $id);
+    } else {
+        $stmt = $conn->prepare("UPDATE academic_fields SET name = ?, slug = ?, icon = ?, description = ? WHERE id = ?");
+        $stmt->bind_param('ssssi', $name, $slug, $icon, $description, $id);
+    }
+    $ok = $stmt->execute();
+    $stmt->close();
+    return $ok;
+}
+
+/**
+ * Delete a field (admin)
+ */
+function delete_field($id) {
+    global $conn;
+    if (!$conn || !$id) {
+        return false;
+    }
+
+    // Unset field_id for courses in this field
+    $conn->query("UPDATE courses SET field_id = NULL WHERE field_id = $id");
+
+    $stmt = $conn->prepare("DELETE FROM academic_fields WHERE id = ?");
+    $stmt->bind_param('i', $id);
+    $ok = $stmt->execute();
+    $stmt->close();
+    return $ok;
+}
+
+/**
+ * Enhanced create_course with all fields
+ */
+function create_course_full($title, $slug, $description, $image_path, $duration, $difficulty_level, $rating, $enrolled_students, $mentor_name, $mentor_avatar, $field_id) {
+    global $conn;
+    if (!$conn || trim($title) === '' || trim($slug) === '') {
+        return false;
+    }
+
+    $stmt = $conn->prepare("INSERT INTO courses (title, slug, description, image_path, duration, difficulty_level, rating, enrolled_students, mentor_name, mentor_avatar, field_id)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param('sssssssdssi', $title, $slug, $description, $image_path, $duration, $difficulty_level, $rating, $enrolled_students, $mentor_name, $mentor_avatar, $field_id);
+    $ok = $stmt->execute();
+    $stmt->close();
+
+    // Update field course count
+    if ($ok && $field_id) {
+        $conn->query("UPDATE academic_fields SET course_count = (SELECT COUNT(*) FROM courses WHERE field_id = $field_id) WHERE id = $field_id");
+    }
+
+    return $ok;
+}
+
+/**
+ * Enhanced update_course with all fields
+ */
+function update_course_full($id, $title, $slug, $description, $image_path, $duration, $difficulty_level, $rating, $enrolled_students, $mentor_name, $mentor_avatar, $field_id) {
+    global $conn;
+    if (!$conn || !$id || trim($title) === '') {
+        return false;
+    }
+
+    // Get old field_id for count update
+    $oldFieldId = null;
+    $stmt = $conn->prepare("SELECT field_id FROM courses WHERE id = ?");
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $stmt->bind_result($oldFieldId);
+    $stmt->fetch();
+    $stmt->close();
+
+    if ($image_path !== null) {
+        $stmt = $conn->prepare("UPDATE courses SET title = ?, slug = ?, description = ?, image_path = ?, duration = ?, difficulty_level = ?, rating = ?, enrolled_students = ?, mentor_name = ?, mentor_avatar = ?, field_id = ? WHERE id = ?");
+        $stmt->bind_param('sssssssdssii', $title, $slug, $description, $image_path, $duration, $difficulty_level, $rating, $enrolled_students, $mentor_name, $mentor_avatar, $field_id, $id);
+    } else {
+        $stmt = $conn->prepare("UPDATE courses SET title = ?, slug = ?, description = ?, duration = ?, difficulty_level = ?, rating = ?, enrolled_students = ?, mentor_name = ?, mentor_avatar = ?, field_id = ? WHERE id = ?");
+        $stmt->bind_param('sssssssdssi', $title, $slug, $description, $duration, $difficulty_level, $rating, $enrolled_students, $mentor_name, $mentor_avatar, $field_id, $id);
+    }
+    $ok = $stmt->execute();
+    $stmt->close();
+
+    // Update course counts for old and new fields
+    if ($ok) {
+        if ($oldFieldId) {
+            $conn->query("UPDATE academic_fields SET course_count = (SELECT COUNT(*) FROM courses WHERE field_id = $oldFieldId) WHERE id = $oldFieldId");
+        }
+        if ($field_id && $field_id != $oldFieldId) {
+            $conn->query("UPDATE academic_fields SET course_count = (SELECT COUNT(*) FROM courses WHERE field_id = $field_id) WHERE id = $field_id");
+        }
+    }
+
+    return $ok;
+}
+
+/**
+ * Override original create_course to use enhanced version
+ */
+function create_course($title, $description) {
+    $slug = strtolower(str_replace(' ', '-', preg_replace('/[^a-zA-Z0-9 ]/', '', $title)));
+    return create_course_full($title, $slug, $description, null, null, 'Beginner', 0, 0, null, null, null);
+}
+
+/**
+ * Override original update_course to use enhanced version
+ */
+function update_course($id, $title, $description) {
+    $slug = strtolower(str_replace(' ', '-', preg_replace('/[^a-zA-Z0-9 ]/', '', $title)));
+    return update_course_full($id, $title, $slug, $description, null, null, 'Beginner', 0, 0, null, null, null);
+}
+
+/**
+ * Get enhanced course by ID
+ */
 function get_course($id) {
     global $conn;
     if (!$conn) {
         return null;
     }
 
-    $stmt = $conn->prepare("SELECT id, title, description FROM courses WHERE id = ? LIMIT 1");
+    $stmt = $conn->prepare("SELECT c.*, af.name AS field_name, af.slug AS field_slug, af.icon AS field_icon
+                           FROM courses c
+                           LEFT JOIN academic_fields af ON af.id = c.field_id
+                           WHERE c.id = ? LIMIT 1");
     $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $course = $result->fetch_assoc();
+    $stmt->close();
+    return $course;
+}
+
+/**
+ * Get course by slug
+ */
+function get_course_by_slug($slug) {
+    global $conn;
+    if (!$conn || !$slug) {
+        return null;
+    }
+
+    $stmt = $conn->prepare("SELECT c.*, af.name AS field_name, af.slug AS field_slug, af.icon AS field_icon
+                           FROM courses c
+                           LEFT JOIN academic_fields af ON af.id = c.field_id
+                           WHERE c.slug = ? LIMIT 1");
+    $stmt->bind_param('s', $slug);
     $stmt->execute();
     $result = $stmt->get_result();
     $course = $result->fetch_assoc();
@@ -406,42 +828,31 @@ function create_enrollment($data) {
     return $ok;
 }
 
-function create_course($title, $description) {
-    global $conn;
-    if (!$conn || trim($title) === '') {
-        return false;
-    }
-
-    $stmt = $conn->prepare("INSERT INTO courses (title, description) VALUES (?, ?)");
-    $stmt->bind_param('ss', $title, $description);
-    $ok = $stmt->execute();
-    $stmt->close();
-    return $ok;
-}
-
-function update_course($id, $title, $description) {
-    global $conn;
-    if (!$conn || trim($title) === '') {
-        return false;
-    }
-
-    $stmt = $conn->prepare("UPDATE courses SET title = ?, description = ? WHERE id = ?");
-    $stmt->bind_param('ssi', $title, $description, $id);
-    $ok = $stmt->execute();
-    $stmt->close();
-    return $ok;
-}
-
 function delete_course($id) {
     global $conn;
     if (!$conn) {
         return false;
     }
 
+    // Get field_id before deleting
+    $fieldId = null;
+    $stmt = $conn->prepare("SELECT field_id FROM courses WHERE id = ?");
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $stmt->bind_result($fieldId);
+    $stmt->fetch();
+    $stmt->close();
+
     $stmt = $conn->prepare("DELETE FROM courses WHERE id = ?");
     $stmt->bind_param('i', $id);
     $ok = $stmt->execute();
     $stmt->close();
+
+    // Update field course count
+    if ($ok && $fieldId) {
+        $conn->query("UPDATE academic_fields SET course_count = (SELECT COUNT(*) FROM courses WHERE field_id = $fieldId) WHERE id = $fieldId");
+    }
+
     return $ok;
 }
 
@@ -541,6 +952,21 @@ function get_assignments_by_field($fieldId) {
     $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
     return $rows;
+}
+
+function get_practical_skills() {
+    global $conn;
+    if (!$conn) {
+        return [];
+    }
+
+    $result = $conn->query("SHOW TABLES LIKE 'practical_skills'");
+    if (!$result || $result->num_rows === 0) {
+        return [];
+    }
+
+    $rows = $conn->query("SELECT id, title, description, created_at FROM practical_skills ORDER BY id DESC");
+    return $rows ? $rows->fetch_all(MYSQLI_ASSOC) : [];
 }
 
 function get_mentors_by_practical_skill($skillId) {
@@ -732,6 +1158,9 @@ function get_dashboard_counts() {
         'courses' => 0,
         'assignments' => 0,
         'sessions' => 0,
+        'fields' => 0,
+        'mentors' => 0,
+        'bookings' => 0,
     ];
 
     if (!$conn) {
@@ -742,6 +1171,20 @@ function get_dashboard_counts() {
     $counts['courses'] = (int) $conn->query("SELECT COUNT(*) FROM courses")->fetch_row()[0];
     $counts['assignments'] = (int) $conn->query("SELECT COUNT(*) FROM assignments")->fetch_row()[0];
     $counts['sessions'] = (int) $conn->query("SELECT COUNT(*) FROM mentorship_sessions")->fetch_row()[0];
+
+    // New counts
+    $result = $conn->query("SHOW TABLES LIKE 'academic_fields'");
+    if ($result && $result->num_rows > 0) {
+        $counts['fields'] = (int) $conn->query("SELECT COUNT(*) FROM academic_fields")->fetch_row()[0];
+    }
+    $result = $conn->query("SHOW TABLES LIKE 'mentors'");
+    if ($result && $result->num_rows > 0) {
+        $counts['mentors'] = (int) $conn->query("SELECT COUNT(*) FROM mentors")->fetch_row()[0];
+    }
+    $result = $conn->query("SHOW TABLES LIKE 'bookings'");
+    if ($result && $result->num_rows > 0) {
+        $counts['bookings'] = (int) $conn->query("SELECT COUNT(*) FROM bookings")->fetch_row()[0];
+    }
 
     return $counts;
 }
@@ -839,4 +1282,99 @@ function create_placement($title, $company, $description) {
     $stmt->close();
     return $ok;
 }
+
+/**
+ * Get all available field icons mapping
+ */
+function get_field_icon_map() {
+    return [
+        'information-technology' => 'fa-laptop-code',
+        'engineering' => 'fa-gears',
+        'science' => 'fa-flask',
+        'management' => 'fa-briefcase',
+        'agriculture' => 'fa-seedling',
+        'health-sciences' => 'fa-heart-pulse',
+        'education' => 'fa-graduation-cap',
+        'law' => 'fa-scale-balanced',
+        'arts' => 'fa-palette',
+        'media' => 'fa-camera',
+        'hospitality' => 'fa-hotel',
+        'tourism' => 'fa-plane',
+        'arts-humanities' => 'fa-palette',
+        'media-communication' => 'fa-camera',
+        'hospitality-tourism' => 'fa-hotel',
+        'research-innovation' => 'fa-lightbulb',
+        'business-finance' => 'fa-chart-line',
+        'architecture' => 'fa-building',
+        'environmental-science' => 'fa-earth-americas',
+        'mathematics' => 'fa-calculator',
+        'social-science' => 'fa-globe',
+        'pharmacy' => 'fa-capsules',
+        'nursing' => 'fa-user-nurse',
+        'veterinary' => 'fa-paw',
+        'civil-engineering' => 'fa-road',
+        'mechanical-engineering' => 'fa-cogs',
+        'electrical-engineering' => 'fa-bolt',
+        'computer-engineering' => 'fa-microchip',
+        'aerospace-engineering' => 'fa-rocket',
+        'fashion-design' => 'fa-shirt',
+        'music' => 'fa-music',
+        'psychology' => 'fa-brain',
+        'economics' => 'fa-chart-bar',
+        'journalism' => 'fa-newspaper',
+        'digital-marketing' => 'fa-bullhorn',
+        'biotechnology' => 'fa-dna',
+        'data-science' => 'fa-robot',
+        'sports-science' => 'fa-running',
+        'construction-management' => 'fa-hard-hat',
+    ];
+}
+
+/**
+ * Get icon for a field slug
+ */
+function get_field_icon($slug) {
+    $map = get_field_icon_map();
+    return $map[$slug] ?? 'fa-graduation-cap';
+}
+
+/**
+ * Create a booking record
+ */
+function create_booking($user_id, $mentor_id = null, $course_id = null, $status = 'pending') {
+    global $conn;
+    if (!$conn || !$user_id) {
+        return false;
+    }
+
+    $stmt = $conn->prepare("INSERT INTO bookings (user_id, mentor_id, course_id, status) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param('iiis', $user_id, $mentor_id, $course_id, $status);
+    $ok = $stmt->execute();
+    $stmt->close();
+    return $ok;
+}
+
+/**
+ * Get bookings for a user
+ */
+function get_user_bookings($user_id) {
+    global $conn;
+    if (!$conn || !$user_id) {
+        return [];
+    }
+
+    $stmt = $conn->prepare("SELECT b.*, m.name AS mentor_name, c.title AS course_title
+                           FROM bookings b
+                           LEFT JOIN mentors m ON m.id = b.mentor_id
+                           LEFT JOIN courses c ON c.id = b.course_id
+                           WHERE b.user_id = ?
+                           ORDER BY b.created_at DESC");
+    $stmt->bind_param('i', $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $rows = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    return $rows;
+}
 ?>
+

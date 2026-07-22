@@ -1,4 +1,4 @@
-<?php include 'config/config.php'; include 'includes/functions.php'; ?>
+<?php include 'config/config.php'; include 'includes/functions.php'; require_once 'includes/field-data.php'; ?>
 <?php include 'includes/header.php'; ?>
 <?php include 'includes/navbar.php'; ?>
 
@@ -68,39 +68,70 @@
 
       <div class="field-icon-grid" role="list">
         <?php
-          $fields = [
-            ['slug' => 'engineering', 'name' => 'Engineering', 'icon' => 'fa-gears'],
-            ['slug' => 'information-technology', 'name' => 'Information Technology', 'icon' => 'fa-laptop-code'],
-            ['slug' => 'science', 'name' => 'Science', 'icon' => 'fa-flask'],
-            ['slug' => 'management', 'name' => 'Management', 'icon' => 'fa-chart-line'],
-            ['slug' => 'agriculture', 'name' => 'Agriculture', 'icon' => 'fa-seedling'],
-            ['slug' => 'health-sciences', 'name' => 'Health Sciences', 'icon' => 'fa-heart-pulse'],
-            ['slug' => 'education', 'name' => 'Education', 'icon' => 'fa-graduation-cap'],
-            ['slug' => 'law', 'name' => 'Law', 'icon' => 'fa-gavel'],
-            ['slug' => 'arts-humanities', 'name' => 'Arts & Humanities', 'icon' => 'fa-palette'],
-            ['slug' => 'media-communication', 'name' => 'Media & Communication', 'icon' => 'fa-broadcast-tower'],
-            ['slug' => 'hospitality-tourism', 'name' => 'Hospitality & Tourism', 'icon' => 'fa-hotel'],
-            ['slug' => 'research-innovation', 'name' => 'Research & Innovation', 'icon' => 'fa-lightbulb'],
-          ];
+          $fieldList = array_values($academicFields ?? []);
+          $mainFieldCount = 12;
+          $displayFields = array_slice($fieldList, 0, $mainFieldCount);
         ?>
-
-        <?php foreach ($fields as $i => $field): ?>
+        <?php foreach ($displayFields as $i => $f): ?>
           <a
             class="field-icon-item"
-            href="field.php?field=<?php echo urlencode($field['slug']); ?>"
+            href="field.php?field=<?php echo urlencode($f['slug']); ?>"
             role="listitem"
-            data-float-delay="<?php echo (string)($i * 120); ?>ms"
+            style="--float-delay: <?php echo (string)($i * 120); ?>ms;"
           >
             <span class="field-icon-item__glass" data-parallax-x="<?php echo ($i % 2 === 0 ? -10 : 10); ?>" data-parallax-y="<?php echo ($i % 3) * 6; ?>">
-              <i class="fa-solid <?php echo e($field['icon']); ?>" aria-hidden="true"></i>
-              <span class="field-icon-item__label"><?php echo e($field['name']); ?></span>
+              <i class="fa-solid <?php echo e($f['icon'] ?? 'fa-graduation-cap'); ?>" aria-hidden="true"></i>
+              <span class="field-icon-item__label"><?php echo e($f['name']); ?></span>
             </span>
+            <?php if (!empty($f['courses'])): ?>
+              <span class="field-course-count"><?php echo count($f['courses']); ?> Courses</span>
+            <?php endif; ?>
           </a>
         <?php endforeach; ?>
+        <!-- View All Fields CTA -->
+        <a class="field-icon-item" href="course.php" role="listitem" style="--float-delay: 1500ms;">
+          <span class="field-icon-item__glass view-all-fields">
+            <i class="fa-solid fa-arrow-right" aria-hidden="true" style="font-size:24px;"></i>
+            <span class="field-icon-item__label" style="background:linear-gradient(135deg,var(--primary),var(--primary-2));">View All Fields →</span>
+          </span>
+        </a>
+      </div>
+      <?php if (count($fieldList) > $mainFieldCount): ?>
+      <div style="text-align:center;margin-top:18px;">
+        <a href="course.php" class="btn btn--outline" style="border-radius:999px;padding:12px 28px;">
+          <i class="fa-regular fa-compass"></i> Explore All <?php echo count($fieldList); ?> Academic Fields
+        </a>
+      </div>
+      <?php endif; ?>
+    </div>
+  </section>
+
+  <!-- ===== HOW IT WORKS ===== -->
+  <section class="container how-it-works-section" id="how-it-works">
+    <div class="section-heading">
+      <h2>How It Works</h2>
+      <a href="register.php">Get Started</a>
+    </div>
+    <div class="how-it-works-grid">
+      <div class="how-step reveal" data-reveal>
+        <div class="how-step__number">1</div>
+        <h3>Create Your Account</h3>
+        <p>Sign up as a Fresher or Graduate Mentor. Complete your profile with your field, skills, and interests.</p>
+      </div>
+      <div class="how-step reveal" data-reveal>
+        <div class="how-step__number">2</div>
+        <h3>Choose Your Path</h3>
+        <p>Explore academic fields, enroll in courses, find mentors, or join research groups that match your goals.</p>
+      </div>
+      <div class="how-step reveal" data-reveal>
+        <div class="how-step__number">3</div>
+        <h3>Learn & Grow</h3>
+        <p>Book mentorship sessions, complete assignments, earn certificates, and prepare for your career.</p>
       </div>
     </div>
   </section>
 
+  <!-- ===== FEATURES ===== -->
   <section class="container feature-strip">
     <article class="mini-module reveal" data-reveal>
       <h3>Create / Join Group</h3>
@@ -125,33 +156,81 @@
       <h2>Popular Courses</h2>
       <a href="course.php">View all</a>
     </div>
-    <div class="course-grid">
-      <?php
-        $courses = get_courses();
-        $courses = array_slice($courses, 0, 6);
-        if (empty($courses)) {
-          $courses = [
-            ['id'=>1,'title'=>'Software Engineering Foundations','description'=>'Build practical engineering habits.'],
-            ['id'=>2,'title'=>'Data Science Essentials','description'=>'From data cleaning to modeling.'],
-            ['id'=>3,'title'=>'Cyber Security Basics','description'=>'Threats, defenses and secure thinking.'],
-            ['id'=>4,'title'=>'Cloud Computing Fundamentals','description'=>'Deploy, scale and secure in the cloud.'],
-            ['id'=>5,'title'=>'Networking for Developers','description'=>'Understand routing, protocols, and performance.'],
-            ['id'=>6,'title'=>'AI Literacy & Applications','description'=>'Hands-on overview of modern AI workflows.'],
-          ];
+    <?php
+      // Aggregate courses from all fields in field-data.php for a rich display
+      $allCourses = [];
+      foreach (($academicFields ?? []) as $fieldSlug => $fieldData) {
+        if (!empty($fieldData['courses'])) {
+          foreach ($fieldData['courses'] as $c) {
+            $c['field_name'] = $fieldData['name'];
+            $c['field_slug'] = $fieldSlug;
+            $c['field_icon'] = $fieldData['icon'] ?? 'fa-graduation-cap';
+            $allCourses[] = $c;
+          }
         }
-      ?>
-      <?php foreach ($courses as $course): ?>
-        <article class="course-card reveal" data-reveal style="padding:22px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-            <div class="avatar-photo" style="width:52px;height:52px;border-radius:16px;font-size:.95rem;">CS</div>
-            <span class="pill" style="background:#eef1ff;">Premium</span>
-          </div>
-          <h3 style="margin-top:14px;"><?php echo e($course['title']); ?></h3>
-          <p style="margin:8px 0 12px;color:var(--muted);font-weight:650;line-height:1.6;font-size:.92rem;"><?php echo e($course['description'] ?? 'Learn with mentor guidance.'); ?></p>
-          <a class="btn btn--primary" href="course.php" style="width:100%;text-decoration:none;">Explore course</a>
-        </article>
-      <?php endforeach; ?>
-    </div>
+      }
+      $allCourses = array_slice($allCourses, 0, 9);
+    ?>
+    <?php if ($allCourses): ?>
+      <div class="course-grid">
+        <?php foreach ($allCourses as $c): ?>
+          <article class="course-card reveal" data-reveal style="padding:22px;">
+            <div class="course-media" style="height:140px;border-radius:14px;overflow:hidden;margin:-22px -22px 14px;background:linear-gradient(135deg,rgba(79,70,229,.12),rgba(6,182,212,.08));">
+              <?php if (!empty($c['image'])): ?>
+                <img src="<?php echo e($c['image']); ?>" alt="<?php echo e($c['title']); ?>" style="width:100%;height:100%;object-fit:cover;" loading="lazy" />
+              <?php else: ?>
+                <div style="display:grid;place-items:center;height:100%;">
+                  <i class="fa-solid <?php echo e($c['field_icon']); ?>" style="font-size:2.8rem;opacity:.25;color:var(--primary);"></i>
+                </div>
+              <?php endif; ?>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+              <span class="pill" style="background:#eef1ff;font-size:.7rem;"><?php echo e($c['field_name'] ?? 'General'); ?></span>
+              <span class="tag <?php echo e(strtolower($c['level'] ?? 'beginner') === 'beginner' ? 'tag--green' : 'tag--orange'); ?>"><?php echo e($c['level'] ?? 'All Levels'); ?></span>
+            </div>
+            <h3 style="margin-top:12px;font-size:1.05rem;"><?php echo e($c['title']); ?></h3>
+            <p style="margin:6px 0 10px;color:var(--muted);font-weight:650;line-height:1.5;font-size:.85rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"><?php echo e($c['description'] ?? 'Learn with mentor guidance.'); ?></p>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+              <span class="chip" style="font-size:.72rem;"><i class="fa-regular fa-clock"></i> <?php echo e($c['duration'] ?? 'Flexible'); ?></span>
+              <span class="chip" style="font-size:.72rem;"><i class="fa-solid fa-user-tie"></i> <?php echo e($c['mentors'] ?? '2+ mentors'); ?></span>
+              <span class="chip" style="font-size:.72rem;"><i class="fa-solid fa-diagram-project"></i> <?php echo e($c['projects'] ?? '2+'); ?> projects</span>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <a class="btn btn--primary" href="field.php?field=<?php echo urlencode($c['field_slug'] ?? ''); ?>" style="flex:1;text-decoration:none;font-size:.82rem;">View Course</a>
+              <a class="btn btn--outline" href="enrollment.php?course=<?php echo urlencode($c['title']); ?>" style="flex:1;text-decoration:none;font-size:.82rem;">Enroll</a>
+            </div>
+          </article>
+        <?php endforeach; ?>
+      </div>
+    <?php else: ?>
+      <div class="course-grid">
+        <?php
+          $fallbackCourses = [
+            ['title'=>'Software Engineering Foundations','desc'=>'Build practical engineering habits.','level'=>'Intermediate','duration'=>'8 weeks','field'=>'Engineering'],
+            ['title'=>'Data Science Essentials','desc'=>'From data cleaning to modeling.','level'=>'Beginner','duration'=>'6 weeks','field'=>'IT'],
+            ['title'=>'Cyber Security Basics','desc'=>'Threats, defenses and secure thinking.','level'=>'Beginner','duration'=>'6 weeks','field'=>'IT'],
+            ['title'=>'Cloud Computing Fundamentals','desc'=>'Deploy, scale and secure in the cloud.','level'=>'Intermediate','duration'=>'8 weeks','field'=>'IT'],
+            ['title'=>'Networking for Developers','desc'=>'Understand routing, protocols, and performance.','level'=>'Intermediate','duration'=>'8 weeks','field'=>'IT'],
+            ['title'=>'AI Literacy & Applications','desc'=>'Hands-on overview of modern AI workflows.','level'=>'Advanced','duration'=>'10 weeks','field'=>'Engineering'],
+          ];
+        ?>
+        <?php foreach ($fallbackCourses as $c): ?>
+          <article class="course-card reveal" data-reveal style="padding:22px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+              <div class="avatar-photo" style="width:52px;height:52px;border-radius:16px;font-size:.95rem;">CS</div>
+              <span class="pill" style="background:#eef1ff;"><?php echo e($c['field']); ?></span>
+            </div>
+            <h3 style="margin-top:14px;font-size:1.05rem;"><?php echo e($c['title']); ?></h3>
+            <p style="margin:8px 0 12px;color:var(--muted);font-weight:650;line-height:1.6;font-size:.85rem;"><?php echo e($c['desc']); ?></p>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+              <span class="chip" style="font-size:.72rem;"><i class="fa-regular fa-clock"></i> <?php echo e($c['duration']); ?></span>
+              <span class="tag <?php echo e(strtolower($c['level']) === 'beginner' ? 'tag--green' : (strtolower($c['level']) === 'advanced' ? '' : 'tag--orange')); ?>"><?php echo e($c['level']); ?></span>
+            </div>
+            <a class="btn btn--primary" href="course.php" style="width:100%;text-decoration:none;">Explore course</a>
+          </article>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
   </section>
 
   <section class="container" style="padding:26px 0 8px;">

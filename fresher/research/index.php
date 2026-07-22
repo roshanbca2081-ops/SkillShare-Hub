@@ -1,16 +1,37 @@
-<?php include '../../config/config.php'; include '../../includes/functions.php'; ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Research Hub</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="../../assets/css/style.css" />
-</head>
-<body>
-  <div class="container py-5">
-    <div class="card p-4"><h2>Research Hub</h2><p class="text-light-emphasis">Access curated research and study materials.</p></div>
-  </div>
-</body>
-</html>
+<?php
+require_once '../../config/config.php';
+require_once '../../includes/functions.php';
+ensure_database_schema();
+require_login('fresher');
+?>
+<?php include '../../includes/header.php'; ?>
+<?php include '../../includes/navbar.php'; ?>
+<main class="page-shell">
+  <section class="container py-5">
+    <div class="card p-4 mb-4">
+      <div class="page-title">
+        <div>
+          <h1>Research Hub</h1>
+          <p>Access curated research and study materials.</p>
+        </div>
+      </div>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="card p-4">
+          <h3>Research Groups</h3>
+          <p class="text-light-emphasis">Join research groups by field and course to collaborate on projects.</p>
+          <span class="tag">Coming Soon</span>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card p-4">
+          <h3>Research Documents</h3>
+          <p class="text-light-emphasis">Share and access research papers, project documents, and guides.</p>
+          <span class="tag">Coming Soon</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<?php include '../../includes/footer.php'; ?>

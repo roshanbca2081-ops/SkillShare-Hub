@@ -5,6 +5,11 @@
   to{opacity:1;transform:translateY(0)}
 }
 
+@keyframes fadeInUp{
+  from{opacity:0;transform:translateY(24px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
 @keyframes slideUp{
   from{opacity:0;transform:translateY(18px)}
   to{opacity:1;transform:translateY(0)}
@@ -48,4 +53,56 @@
 }
 
 .sidebar-animate{animation:sidebarIn .4s ease both}
+
+/* Pulse animation for notification badge */
+@keyframes badgePulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.15)}
+}
+
+/* Shake animation for alerts */
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-6px)}
+  40%{transform:translateX(6px)}
+  60%{transform:translateX(-4px)}
+  80%{transform:translateX(4px)}
+}
+
+.shake{animation:shake .5s ease}
+
+/* Spin for loading */
+@keyframes spin{
+  to{transform:rotate(360deg)}
+}
+
+/* Skeleton loading shimmer */
+@keyframes shimmer{
+  0%{background-position:-200% 0}
+  100%{background-position:200% 0}
+}
+
+.skeleton{
+  background:linear-gradient(90deg, var(--bg-secondary) 25%, var(--bg-tertiary) 50%, var(--bg-secondary) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.5s infinite;
+  border-radius:var(--radius-sm);
+}
+
+/* Counter animation */
+@keyframes countUp{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* Reveal animation for scroll */
+.reveal{
+  opacity:0;
+  transform:translateY(20px);
+  transition:opacity .6s ease, transform .6s ease;
+}
+.reveal.revealed{
+  opacity:1;
+  transform:translateY(0);
+}
 

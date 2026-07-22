@@ -1,18 +1,109 @@
-/* Responsive tweaks (1200 / 992 / 768 / 576) */
+/* ============================================
+   RESPONSIVE STYLES - ShareSkill Hub
+   All breakpoints for full responsiveness
+   ============================================ */
 
+/* ---------- 1400px ---------- */
+@media(max-width:1400px){
+  .nav__link{font-size:.68rem;padding:7px 5px}
+  .search{flex:0 1 170px;max-width:170px}
+}
+
+/* ---------- 1200px ---------- */
 @media(max-width:1200px){
-  .nav__link{padding:8px 7px}
+  .nav__link{padding:8px 6px;font-size:.66rem}
 }
 
+/* ---------- 1100px ---------- */
+@media(max-width:1100px){
+  .brand__tag{display:none}
+  .nav__link i{display:none}
+}
+
+/* ---------- 992px ---------- */
 @media(max-width:992px){
-  .search{min-width:auto}
-}
-
-@media(max-width:768px){
+  .auth-grid,.app-layout{grid-template-columns:1fr}
+  .sidebar-nav{position:static}
+  .col-lg-3,.col-lg-5,.col-lg-7,.col-lg-9,.col-md-3,.col-md-4,.col-md-6{flex:0 0 100%;max-width:100%}
+  .stat-grid,.course-grid,.mentor-grid,.field-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hero-grid{grid-template-columns:1fr}
+  .hero-visual{order:-1;min-height:320px}
+  .hero-orbit{width:min(340px,80vw)}
+  .auth-brand{display:block}
+  .feature-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .how-it-works-grid,.research-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .placement-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .section{padding:56px 0}
+  .search{min-width:auto;flex:1;max-width:300px}
+  .footer-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .course-hero-grid{grid-template-columns:1fr}
+  .premium-hero,.premium-grid-2,.meeting-shell{grid-template-columns:1fr}
+  .premium-grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .booking-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .field-shell{grid-template-columns:1fr}
 }
 
+/* ---------- 768px ---------- */
+@media(max-width:768px){
+  .section{padding:48px 0}
+  .hero-section{padding:36px 0 18px}
+  .page-shell{padding:16px 0 32px}
+  .footer{padding:32px 0 20px}
+  .footer-grid{grid-template-columns:1fr;gap:24px}
+  .footer-brand{text-align:center}
+  .footer-social{justify-content:center}
+  .dashboard-hero-grid{grid-template-columns:1fr}
+  .dashboard-hero-actions{justify-content:flex-start}
+  .navbar__inner{min-height:62px}
+  .auth-panel{padding:28px 20px}
+  .auth-grid{gap:24px}
+  .card{padding:16px}
+  .container{width:min(1200px,96vw)}
+}
+
+/* ---------- 640px ---------- */
+@media(max-width:640px){
+  .auth-brand{display:none}
+  .stat-grid,.course-grid,.mentor-grid,.field-grid{grid-template-columns:1fr}
+  .page-title{display:block}
+  .hero-visual{min-height:280px}
+  .hero-orbit{width:min(300px,90vw)}
+  .hero-copy h1{font-size:clamp(1.8rem,6vw,2.8rem)}
+  .feature-strip,.how-it-works-grid,.research-grid{grid-template-columns:1fr}
+  .placement-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .footer-grid{grid-template-columns:1fr;text-align:center}
+}
+
+/* ---------- 576px ---------- */
 @media(max-width:576px){
   .hero{padding:48px 0 36px}
+  .hero-actions{flex-direction:column}
+  .hero-actions .btn{width:100%;justify-content:center}
+  .placement-grid{grid-template-columns:1fr}
+  .search{display:none}
+  .navbar__inner{gap:8px}
+  .footer-bottom{flex-direction:column;gap:8px;text-align:center}
+  .nav__link i{display:inline-block}
+}
+
+/* ---------- 480px ---------- */
+@media(max-width:480px){
+  .home-stats{grid-template-columns:1fr}
+  .stat-grid{grid-template-columns:1fr}
+  .hero-visual{min-height:240px}
+  .hero-orbit{width:min(260px,88vw)}
+  .orbit-icon{width:36px;height:36px;font-size:.85rem}
+  .orbit-person{width:52px;height:52px}
+  .field-icon-item__glass{height:110px;padding:12px}
+  .field-icon-item__label{font-size:.75rem;padding:4px 8px}
+  .btn{padding:8px 14px;font-size:.85rem}
+  .form-control{padding:10px 12px;min-height:42px}
+}
+
+/* ---------- 380px ---------- */
+@media(max-width:380px){
+  .hero-orbit{width:min(220px,90vw)}
+  .brand__name{font-size:.9rem}
+  .field-icon-grid{grid-template-columns:1fr}
 }
 

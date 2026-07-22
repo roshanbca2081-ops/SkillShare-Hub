@@ -1,174 +1,329 @@
 <?php
 require_once 'config/config.php';
 require_once 'includes/functions.php';
-require_once 'includes/field-data.php';
 ensure_database_schema();
 
 $fieldSlug = $_GET['field'] ?? '';
 $fieldSlug = preg_replace('/[^a-z0-9\-]/i', '', (string)$fieldSlug);
-$field = $academicFields[$fieldSlug] ?? null;
+
+// Try database first
+$field = get_field_by_slug($fieldSlug);
+
+// Fall back to static field data
+if (!$field) {
+    require_once 'includes/field-data.php';
+    if (isset($academicFields[$fieldSlug])) {
+        $staticField = $academicFields[$fieldSlug];
+        // Create a compatible array structure
+        $field = [
+            'id' => null,
+            'name' => $staticField['name'],
+            'slug' => $fieldSlug,
+            'icon' => $staticField['icon'] ?? 'fa-graduation-cap',
+            'description' => $staticField['description'] ?? '',
+            'logo_path' => null,
+            'course_count' => count($staticField['courses'] ?? [])
+        ];
+        $staticCourses = $staticField['courses'] ?? [];
+        $staticMentors = $staticField['mentors'] ?? [];
+        $staticTestimonials = $staticField['testimonials'] ?? [];
+        $staticDemand = $staticField['demand'] ?? '';
+        $staticOpportunities = $staticField['opportunities'] ?? [];
+        $staticSkills = $staticField['skills'] ?? [];
+    }
+}
+
 if (!$field) {
     header('Location: index.php');
     exit;
 }
 
-$assetBase = file_exists('assets/css/style.css') ? 'assets/' : (file_exists('../assets/css/style.css') ? '../assets/' : '../../assets/');
+// Get courses for this field
+$courses = [];
+if (!empty($field['id'])) {
+    $courses = get_courses_by_field($field['id']);
+}
+
+$icon = !empty($field['icon']) ? $field['icon'] : get_field_icon($field['slug'] ?? '');
+$courseCount = (int)($field['course_count'] ?? count($courses));
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title><?php echo e($field['name']); ?> | ShareSkill Hub</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="<?php echo $assetBase; ?>css/style.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="stylesheet" href="<?php echo $assetBase; ?>css/app.css" />
-  <style>
-    body{background:linear-gradient(135deg,#f6f7ff 0%,#ebf2ff 45%,#f7fbff 100%)}
-    .field-hero{position:relative;overflow:hidden;border-radius:28px;padding:26px;background:linear-gradient(135deg,rgba(14,58,128,.95),rgba(26,91,191,.95));color:#fff;min-height:340px;display:flex;align-items:flex-end;box-shadow:0 24px 60px rgba(13,31,71,.16)}
-    .field-hero::before{content:'';position:absolute;inset:0;background:url('<?php echo $field['banner']; ?>') center/cover no-repeat;opacity:.24;mix-blend-mode:screen}
-    .field-hero::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(6,15,40,.92) 10%,rgba(6,15,40,.45) 65%,transparent 100%)}
-    .field-hero > *{position:relative;z-index:1}
-    .field-hero .btn{background:#fff;color:var(--primary)}
-    .field-shell{display:grid;gap:22px;grid-template-columns:1.15fr .85fr;margin-top:24px}
-    .glass-panel{background:rgba(255,255,255,.8);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.55);border-radius:24px;padding:24px;box-shadow:0 24px 50px rgba(15,23,42,.12)}
-    .pill-list{display:flex;flex-wrap:wrap;gap:10px}
-    .pill-list span{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:8px 12px;background:rgba(26,91,191,.08);color:var(--primary);font-weight:700;font-size:.8rem}
-    .course-list{display:grid;gap:16px}
-
-    .field-course-card{display:grid;grid-template-rows:auto 1fr auto;gap:10px;padding:18px;border-radius:20px;background:var(--card);border:1px solid var(--border);box-shadow:var(--shadow);transition:transform var(--transition),box-shadow var(--transition),border-color var(--transition)}
-    .field-course-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:rgba(79,70,229,.18)}
-
-    .field-course-card__media{border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.12);background:rgba(79,70,229,.06)}
-    .field-course-card__img{display:block;width:100%;height:160px;object-fit:cover;filter:saturate(1.05)}
-
-    .field-course-card__body{display:grid;gap:10px}
-    .field-course-card__top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-
-    .field-course-card__actions{display:flex;justify-content:flex-end}
-    .field-course-card__details{position:relative;overflow:hidden}
-    .field-course-card__details .btn__ripple{position:absolute;inset:0;pointer-events:none;background:rgba(255,255,255,.18);transform:translateX(-120%) translateY(120%);transition:transform .6s ease, opacity .6s ease;opacity:0}
-    .field-course-card__details:hover .btn__ripple{transform:translateX(0) translateY(0);opacity:1}
-
-    .mentor-list{display:grid;gap:12px}
-    .mentor-list article{display:flex;gap:12px;align-items:center;padding:14px;border-radius:16px;background:var(--card);border:1px solid var(--border)}
-    .mentor-avatar{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;font-weight:800}
-    .testimonial-list{display:grid;gap:14px;margin-top:12px}
-    .testimonial-list blockquote{margin:0;padding:16px;border-radius:16px;background:rgba(26,91,191,.06);border:1px solid rgba(26,91,191,.12);color:var(--text)}
-    @media(max-width:960px){.field-shell{grid-template-columns:1fr}}
-  </style>
-</head>
-<body>
 <?php include 'includes/header.php'; ?>
 <?php include 'includes/navbar.php'; ?>
+<link rel="stylesheet" href="assets/css/premium-fields.css" />
 <main class="page-shell">
   <section class="container">
-    <div class="field-hero">
-      <div class="max-width-720">
-        <div class="pill-list" style="margin-bottom:14px;">
-          <span><i class="fa-solid fa-shapes"></i> Academic Focus</span>
-          <span><i class="fa-solid fa-chart-line"></i> High Industry Demand</span>
+    <!-- Hero Section -->
+    <div class="field-detail-hero" style="background:linear-gradient(135deg,rgba(14,58,128,.95),rgba(26,91,191,.95));color:#fff;">
+      <div class="field-detail-hero-bg" style="background-image:url('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1400&q=80');"></div>
+      <div class="field-detail-hero-overlay"></div>
+      <div class="field-detail-content">
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+          <span class="pill" style="background:rgba(255,255,255,.15);color:#fff;backdrop-filter:blur(8px);"><i class="fa-solid fa-shapes"></i> Academic Focus</span>
+          <span class="pill" style="background:rgba(255,255,255,.15);color:#fff;backdrop-filter:blur(8px);"><i class="fa-solid fa-book-open-reader"></i> <?php echo $courseCount; ?> Courses</span>
         </div>
-        <h1 style="font-size:clamp(2rem,3.7vw,3rem);margin-bottom:10px;"><?php echo e($field['name']); ?></h1>
-        <p style="max-width:720px;color:rgba(255,255,255,.9);font-size:1rem;line-height:1.7;"><?php echo e($field['description']); ?></p>
-        <div class="hero-actions" style="margin-top:18px;">
-          <a class="btn" href="course.php?field=<?php echo urlencode($field['name']); ?>">Explore Courses</a>
-          <a class="btn btn--outline" href="mentor.php" style="color:#fff;border-color:rgba(255,255,255,.2);">Meet Mentors</a>
+        <h1 class="field-detail-title"><?php echo e($field['name']); ?></h1>
+        <p class="field-detail-desc"><?php echo e($field['description'] ?? 'Explore courses and opportunities in this field.'); ?></p>
+        <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;">
+          <a class="btn" href="#courses-section" style="background:#fff;color:var(--primary);font-weight:800;"><i class="fa-solid fa-book-open-reader"></i> Browse Courses</a>
+          <a class="btn btn--outline" href="#" style="color:#fff;border-color:rgba(255,255,255,.2);" onclick="document.getElementById('book-modal')?.classList.add('is-visible')"><i class="fa-solid fa-calendar-check"></i> Book Mentor</a>
         </div>
       </div>
     </div>
 
-    <div class="field-shell">
-      <div class="glass-panel">
-        <div class="section-heading" style="margin-top:0;">
-          <h2>Field Overview</h2>
+    <div style="display:grid;gap:28px;grid-template-columns:1.2fr .8fr;">
+      <!-- Left Column: Courses -->
+      <div>
+        <div class="section-heading" id="courses-section">
+          <h2><i class="fa-solid fa-book-open-reader"></i> Available Courses (<?php echo count($courses); ?>)</h2>
         </div>
-        <div class="meta-list">
-          <span><strong>Career opportunities:</strong> <?php echo e(implode(', ', $field['opportunities'])); ?></span>
-          <span><strong>Industry demand:</strong> <?php echo e($field['demand']); ?></span>
-          <span><strong>Practical skills:</strong> <?php echo e(implode(', ', $field['skills'])); ?></span>
-          <span><strong>Available courses:</strong> <?php echo count($field['courses']); ?></span>
-        </div>
-        <div class="section-heading" style="margin-top:24px;">
-          <h2>Top Mentors</h2>
-        </div>
-        <div class="mentor-list">
-          <?php foreach ($field['mentors'] as $mentor): ?>
-            <article>
-              <div class="mentor-avatar"><i class="fa-solid fa-user-tie"></i></div>
-              <div>
-                <strong><?php echo e($mentor['name']); ?></strong>
-                <div class="small text-light-emphasis"><?php echo e($mentor['role']); ?></div>
+
+        <?php if (empty($courses) && empty($staticCourses)): ?>
+          <div class="card p-4 text-center">
+            <i class="fa-solid fa-graduation-cap" style="font-size:2.5rem;color:var(--muted);margin-bottom:12px;"></i>
+            <h3>No Courses Yet</h3>
+            <p class="text-light-emphasis">Courses for this field are being added. Check back soon.</p>
+          </div>
+        <?php else: ?>
+          <div style="display:grid;gap:20px;">
+            <?php
+            // Use DB courses first, then fallback to static
+            $displayCourses = !empty($courses) ? $courses : ($staticCourses ?? []);
+            foreach ($displayCourses as $course):
+              if (is_array($course) && isset($course['title'])):
+            ?>
+              <div class="course-card-premium">
+                <div style="display:grid;grid-template-columns:280px 1fr;gap:0;">
+                  <div style="overflow:hidden;">
+                    <?php if (!empty($course['image_path']) && file_exists('assets/images/courses/' . $course['image_path'])): ?>
+                      <img src="assets/images/courses/<?php echo e($course['image_path']); ?>" alt="<?php echo e($course['title']); ?>" class="course-card-image" style="height:100%;min-height:180px;" />
+                    <?php elseif (!empty($course['image'])): ?>
+                      <img src="<?php echo e($course['image']); ?>" alt="<?php echo e($course['title']); ?>" class="course-card-image" style="height:100%;min-height:180px;" />
+                    <?php else: ?>
+                      <div style="height:100%;min-height:180px;background:linear-gradient(135deg,rgba(26,91,191,.06),rgba(26,91,191,.02));display:grid;place-items:center;">
+                        <i class="fa-solid fa-graduation-cap" style="font-size:2.5rem;color:var(--muted);"></i>
+                      </div>
+                    <?php endif; ?>
+                  </div>
+                  <div>
+                    <div class="course-card-body">
+                      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+                        <h3 class="course-card-title"><?php echo e($course['title']); ?></h3>
+                        <span class="tag"><?php echo e($course['difficulty_level'] ?? $course['level'] ?? 'All Levels'); ?></span>
+                      </div>
+                      <p class="course-card-desc"><?php echo e($course['description'] ?? ''); ?></p>
+                      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                        <span class="chip"><i class="fa-solid fa-clock"></i> <?php echo e($course['duration'] ?? 'Flexible'); ?></span>
+                        <?php if (!empty($course['rating']) && $course['rating'] > 0): ?>
+                          <span class="chip" style="color:#f59e0b;">
+                            <i class="fa-solid fa-star"></i> <?php echo e($course['rating']); ?>
+                          </span>
+                        <?php endif; ?>
+                        <?php if (!empty($course['enrolled_students'])): ?>
+                          <span class="chip"><i class="fa-solid fa-users"></i> <?php echo e($course['enrolled_students']); ?> enrolled</span>
+                        <?php endif; ?>
+                      </div>
+                    </div>
+                    <div class="course-card-footer">
+                      <div class="course-card-mentor">
+                        <?php if (!empty($course['mentor_name'])): ?>
+                          <div class="course-card-mentor-avatar">
+                            <?php echo strtoupper(substr($course['mentor_name'], 0, 1)); ?>
+                          </div>
+                          <span class="course-card-mentor-name"><?php echo e($course['mentor_name']); ?></span>
+                        <?php else: ?>
+                          <span class="small text-light-emphasis">Multiple mentors available</span>
+                        <?php endif; ?>
+                      </div>
+                      <div style="display:flex;gap:8px;">
+                        <a class="btn btn--primary btn-sm" href="enrollment.php?course=<?php echo urlencode($course['title']); ?>"><i class="fa-solid fa-eye"></i> View Details</a>
+                        <button class="btn btn--outline btn-sm" onclick="openBookModal('<?php echo e($course['title']); ?>', '<?php echo e($course['mentor_name'] ?? ''); ?>')"><i class="fa-solid fa-calendar-check"></i> Book Mentor</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </article>
-          <?php endforeach; ?>
-        </div>
+            <?php
+              endif;
+            endforeach;
+            ?>
+          </div>
+        <?php endif; ?>
       </div>
-      <div class="glass-panel">
-        <div class="section-heading" style="margin-top:0;">
-          <h2>Featured Courses</h2>
-        </div>
-        <div class="course-list">
-          <?php foreach ($field['courses'] as $course): ?>
-            <article class="field-course-card">
-              <div class="field-course-card__media">
-                <?php if (!empty($course['image'])): ?>
-                  <img
-                    class="field-course-card__img"
-                    src="<?php echo e($course['image']); ?>"
-                    alt="<?php echo e($course['title']); ?>"
-                    loading="lazy"
-                  />
-                <?php endif; ?>
+
+      <!-- Right Column: Info Panel -->
+      <div>
+        <!-- Stats Card -->
+        <div class="glass-panel" style="background:rgba(255,255,255,.8);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.55);border-radius:24px;padding:24px;box-shadow:0 24px 50px rgba(15,23,42,.12);margin-bottom:24px;">
+          <div class="section-heading" style="margin-top:0;">
+            <h2>Field Overview</h2>
+          </div>
+          <div class="meta-list">
+            <span><strong>Field:</strong> <?php echo e($field['name']); ?></span>
+            <span><strong>Available Courses:</strong> <?php echo $courseCount; ?></span>
+            <span><strong>Expert Mentors:</strong> Available</span>
+            <span><strong>Career Opportunities:</strong> High demand field</span>
+          </div>
+          <?php if (!empty($staticOpportunities)): ?>
+            <div style="margin-top:16px;">
+              <strong class="small">Career Paths:</strong>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
+                <?php foreach ($staticOpportunities as $opp): ?>
+                  <span class="chip"><i class="fa-solid fa-briefcase"></i> <?php echo e($opp); ?></span>
+                <?php endforeach; ?>
               </div>
-
-              <div class="field-course-card__body">
-                <div class="field-course-card__top">
-                  <strong><?php echo e($course['title']); ?></strong>
-                  <span class="tag"><?php echo e($course['level']); ?></span>
-                </div>
-
-                <p class="small text-light-emphasis" style="margin:8px 0 12px;"><?php echo e($course['description']); ?></p>
-
-                <div class="pill-list">
-                  <span><i class="fa-solid fa-clock"></i> <?php echo e($course['duration']); ?></span>
-                  <span><i class="fa-solid fa-user-tie"></i> <?php echo e($course['mentors']); ?></span>
-                  <span><i class="fa-solid fa-diagram-project"></i> <?php echo e($course['projects']); ?> projects</span>
-                  <span><i class="fa-solid fa-clipboard-list"></i> <?php echo e($course['assignments']); ?> assignments</span>
-                  <span><i class="fa-solid fa-briefcase"></i> <?php echo e($course['placement']); ?></span>
-                </div>
+            </div>
+          <?php endif; ?>
+          <?php if (!empty($staticSkills)): ?>
+            <div style="margin-top:16px;">
+              <strong class="small">Key Skills:</strong>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
+                <?php foreach ($staticSkills as $skill): ?>
+                  <span class="tag"><?php echo e($skill); ?></span>
+                <?php endforeach; ?>
               </div>
+            </div>
+          <?php endif; ?>
+        </div>
 
-              <div class="field-course-card__actions">
-                <a
-                  class="btn btn--primary field-course-card__details"
-                  href="course.php?course=<?php echo urlencode($course['title']); ?>&field=<?php echo urlencode($field['name']); ?>"
-                >
-                  <span class="btn__ripple" aria-hidden="true"></span>
-                  View Details
-                </a>
-              </div>
-            </article>
-          <?php endforeach; ?>
+        <!-- Mentors Card -->
+        <div class="glass-panel" style="background:rgba(255,255,255,.8);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.55);border-radius:24px;padding:24px;box-shadow:0 24px 50px rgba(15,23,42,.12);margin-bottom:24px;">
+          <div class="section-heading" style="margin-top:0;">
+            <h2>Top Mentors</h2>
+          </div>
+          <?php if (!empty($staticMentors)): ?>
+            <div style="display:grid;gap:12px;">
+              <?php foreach ($staticMentors as $mentor): ?>
+                <article style="display:flex;gap:12px;align-items:center;padding:14px;border-radius:16px;background:var(--card);border:1px solid var(--border);">
+                  <div style="width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;font-weight:800;">
+                    <?php echo strtoupper(substr($mentor['name'], 0, 1)); ?>
+                  </div>
+                  <div>
+                    <strong><?php echo e($mentor['name']); ?></strong>
+                    <div class="small text-light-emphasis"><?php echo e($mentor['role'] ?? 'Expert Mentor'); ?></div>
+                  </div>
+                </article>
+              <?php endforeach; ?>
+            </div>
+          <?php else: ?>
+            <p class="text-light-emphasis small">Mentor profiles coming soon.</p>
+          <?php endif; ?>
+          <div style="margin-top:16px;">
+            <button class="btn btn--outline w-100" onclick="openBookModal('<?php echo e($field['name']); ?>', '')">
+              <i class="fa-solid fa-calendar-check"></i> Book a Mentor
+            </button>
+          </div>
         </div>
-        <div class="section-heading" style="margin-top:24px;">
-          <h2>Student Testimonials</h2>
-        </div>
-        <div class="testimonial-list">
-          <?php foreach ($field['testimonials'] as $testimonial): ?>
-            <blockquote>
-              “<?php echo e($testimonial['quote']); ?>”
-              <div class="small" style="margin-top:8px;font-weight:700;color:var(--primary);">— <?php echo e($testimonial['name']); ?></div>
-            </blockquote>
-          <?php endforeach; ?>
-        </div>
+
+        <!-- Testimonials -->
+        <?php if (!empty($staticTestimonials)): ?>
+          <div class="glass-panel" style="background:rgba(255,255,255,.8);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.55);border-radius:24px;padding:24px;box-shadow:0 24px 50px rgba(15,23,42,.12);">
+            <div class="section-heading" style="margin-top:0;">
+              <h2>Student Testimonials</h2>
+            </div>
+            <div style="display:grid;gap:14px;">
+              <?php foreach ($staticTestimonials as $testimonial): ?>
+                <blockquote style="margin:0;padding:16px;border-radius:16px;background:rgba(26,91,191,.06);border:1px solid rgba(26,91,191,.12);color:var(--text);">
+                  &ldquo;<?php echo e($testimonial['quote']); ?>&rdquo;
+                  <div class="small" style="margin-top:8px;font-weight:700;color:var(--primary);">&mdash; <?php echo e($testimonial['name']); ?></div>
+                </blockquote>
+              <?php endforeach; ?>
+            </div>
+          </div>
+        <?php endif; ?>
       </div>
     </div>
   </section>
 </main>
+
+<!-- Book Mentor Modal -->
+<div class="modal-overlay" id="book-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);z-index:2000;display:grid;place-items:center;padding:20px;opacity:0;visibility:hidden;transition:all .3s ease;">
+  <div class="modal-content" style="background:#fff;border-radius:24px;padding:32px;max-width:500px;width:100%;box-shadow:0 30px 60px rgba(0,0,0,.3);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h3 style="margin:0;">Book a Mentor</h3>
+      <button class="btn btn--ghost btn-sm" onclick="closeBookModal()" style="border:0;background:transparent;font-size:1.5rem;cursor:pointer;">&times;</button>
+    </div>
+    <form method="post" action="fresher/mentorship/book.php">
+      <input type="hidden" name="course" id="book-course" value="" />
+      <div class="mb-3">
+        <label class="form-label">Course / Field</label>
+        <input type="text" class="form-control" id="book-course-display" readonly style="background:#f5f7fa;" />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Mentor</label>
+        <input type="text" class="form-control" id="book-mentor-display" readonly style="background:#f5f7fa;" />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Your Message</label>
+        <textarea name="topic" class="form-control" rows="3" placeholder="What would you like to learn?" required></textarea>
+      </div>
+      <button type="submit" class="btn btn--primary w-100"><i class="fa-solid fa-paper-plane"></i> Send Request</button>
+    </form>
+  </div>
+</div>
+
+<style>
+.modal-overlay.is-visible {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  margin-top: 24px;
+}
+.section-heading h2 {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+}
+.glass-panel {
+  background: rgba(255,255,255,.8);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 24px 50px rgba(15,23,42,.12);
+}
+.meta-list {
+  display: grid;
+  gap: 10px;
+  color: var(--text);
+  font-size: .92rem;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: rgba(26,91,191,.06);
+}
+</style>
+
+<script>
+function openBookModal(course, mentor) {
+  const modal = document.getElementById('book-modal');
+  document.getElementById('book-course').value = course;
+  document.getElementById('book-course-display').value = course;
+  document.getElementById('book-mentor-display').value = mentor || 'Any available mentor';
+  modal.classList.add('is-visible');
+}
+
+function closeBookModal() {
+  document.getElementById('book-modal').classList.remove('is-visible');
+}
+
+// Close modal on overlay click
+document.getElementById('book-modal')?.addEventListener('click', function(e) {
+  if (e.target === this) closeBookModal();
+});
+</script>
+
 <?php include 'includes/footer.php'; ?>
-</body>
-</html>
+

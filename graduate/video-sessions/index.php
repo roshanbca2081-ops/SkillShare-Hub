@@ -1,44 +1,37 @@
-<?php include '../../config/config.php'; include '../../includes/functions.php'; ?>
+<?php
+require_once '../../config/config.php';
+require_once '../../includes/functions.php';
+ensure_database_schema();
+require_login('graduate');
+?>
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/navbar.php'; ?>
-
-<main class="page-shell premium-scene">
-  <section class="container">
-    <div class="page-title">
-      <div>
-        <span class="premium-kicker"><i class="fa-solid fa-video"></i> Live Session</span>
-        <h1>Video Session Room</h1>
-        <p>Jitsi-style mentorship interface with controls, participants, chat, timer and session notes.</p>
+<main class="page-shell">
+  <section class="container py-5">
+    <div class="card p-4 mb-4">
+      <div class="page-title">
+        <div>
+          <h1>Video Sessions</h1>
+          <p>Manage your mentorship video sessions.</p>
+        </div>
       </div>
-      <a class="btn btn--primary" href="schedule.php">Schedule Session</a>
     </div>
-
-    <div class="meeting-shell">
-      <section class="meeting-stage">
-        <div style="position:relative;z-index:1;text-align:center;">
-          <div class="avatar-photo" style="width:96px;height:96px;margin:0 auto 16px;">RT</div>
-          <h2>PHP & MySQL Mentorship</h2>
-          <p style="color:rgba(255,255,255,.72);">Session timer: <strong>00:42:18</strong></p>
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="card p-4">
+          <h3>Upcoming Sessions</h3>
+          <p class="text-light-emphasis small">View and join scheduled sessions with your students.</p>
+          <span class="tag">No upcoming sessions</span>
         </div>
-        <div class="meeting-controls">
-          <button class="round-btn" type="button" data-meeting-toggle aria-label="Camera"><i class="fa-solid fa-video"></i></button>
-          <button class="round-btn" type="button" data-meeting-toggle aria-label="Microphone"><i class="fa-solid fa-microphone"></i></button>
-          <button class="round-btn" type="button" data-meeting-toggle aria-label="Screen Share"><i class="fa-solid fa-display"></i></button>
-          <button class="round-btn round-btn--danger" type="button" aria-label="End Session"><i class="fa-solid fa-phone-slash"></i></button>
+      </div>
+      <div class="col-md-6">
+        <div class="card p-4">
+          <h3>Session History</h3>
+          <p class="text-light-emphasis small">Review past sessions and student attendance.</p>
+          <a class="btn btn--outline btn-sm" href="history.php">View History</a>
         </div>
-      </section>
-
-      <aside class="glass-card card--padded chat-panel">
-        <div><h3>Participants & Chat</h3><p class="text-light-emphasis">4 active participants</p></div>
-        <div class="chat-list">
-          <div class="chat-bubble"><strong>Roshan:</strong> Can we review the database schema?</div>
-          <div class="chat-bubble"><strong>Mentor:</strong> Yes, share your screen and open the ER diagram.</div>
-          <div class="chat-bubble"><strong>Anjali:</strong> Notes uploaded in session files.</div>
-        </div>
-        <div class="input-icon"><i class="fa-regular fa-message"></i><input class="form-control" placeholder="Type a message..." /></div>
-      </aside>
+      </div>
     </div>
   </section>
 </main>
-
 <?php include '../../includes/footer.php'; ?>

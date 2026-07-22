@@ -1,8 +1,14 @@
+/* ============================================
+   AUTH PREMIUM STYLES - ShareSkill Hub
+   Login, Register, Forgot/Reset Password
+   Glassmorphism, floating particles, password strength
+   ============================================ */
+
 :root{
   --logo-blur-size: 520px;
 }
 
-/* Shared blurred premium logo behind auth panels */
+/* ---------- Blurred Logo Background ---------- */
 .auth-bg-logo{
   position: absolute;
   inset: auto auto -140px -140px;
@@ -20,7 +26,6 @@
   transform: translate3d(0,0,0);
   animation: logoPulse 6.5s ease-in-out infinite;
 }
-
 .auth-bg-logo::after{
   content:"";
   position:absolute;
@@ -31,12 +36,19 @@
   opacity: .75;
 }
 
+/* ---------- Auth Panel Glassmorphism ---------- */
 .auth-panel{
   background:rgba(255,255,255,.70);
   border-color:rgba(255,255,255,.62);
   box-shadow:0 28px 70px rgba(15,35,71,.16);
+  backdrop-filter:blur(20px);
+}
+.dark .auth-panel{
+  background:rgba(16,32,63,.85);
+  border-color:rgba(58,123,223,.18);
 }
 
+/* ---------- Grid Glow Orbs ---------- */
 .auth-grid::before,
 .auth-grid::after{
   content:"";
@@ -53,12 +65,13 @@
 .auth-grid::before{right:3%;top:5%;background:radial-gradient(circle, rgba(26,91,191,.34), transparent 67%)}
 .auth-grid::after{left:4%;bottom:8%;background:radial-gradient(circle, rgba(255,140,0,.26), transparent 67%);animation-delay:-4s}
 
+/* ---------- Logo Pulse Animation ---------- */
 @keyframes logoPulse{
   0%,100%{transform: translate3d(0,0,0) scale(1); opacity:.52}
   50%{transform: translate3d(0,-10px,0) scale(1.03); opacity:.62}
 }
 
-/* Floating particles for auth pages */
+/* ---------- Floating Particles ---------- */
 .auth-particles{
   position:absolute;
   inset:-20% -20% -20% -20%;
@@ -72,19 +85,18 @@
   height: 7px;
   border-radius: 50%;
   background: rgba(255,255,255,.9);
-  box-shadow: 0 0 18px rgba(79,70,229,.35);
+  box-shadow: 0 0 18px rgba(26,91,191,.35);
   animation: authParticleFloat var(--d, 12s) linear infinite;
   left: var(--x);
   top: var(--y);
 }
-
 @keyframes authParticleFloat{
   0%{transform: translate3d(0,0,0) scale(.9); opacity:.65}
   50%{transform: translate3d(var(--dx, 22px), -26px, 0) scale(1.08); opacity:.9}
   100%{transform: translate3d(calc(var(--dx, 22px) * -1), -52px, 0) scale(.92); opacity:.55}
 }
 
-/* Intersection-friendly reveal */
+/* ---------- Reveal Animation ---------- */
 .reveal{
   opacity:0;
   transform: translateY(14px);
@@ -95,10 +107,208 @@
   transform: translateY(0);
 }
 
-/* Toast container glow refinement */
+/* ---------- Toast Container ---------- */
 .toast-container{position: fixed; top: 16px; right: 16px; z-index: 9999;}
 
-/* Ensure auth panels are above background layers */
+/* ---------- Auth Grid Layer ---------- */
 .auth-grid{position:relative;}
 .auth-grid > section{position:relative; z-index:1;}
+
+/* ---------- Password Strength Bar ---------- */
+.password-strength-bar{
+  display:flex;
+  gap:4px;
+  margin-top:8px;
+  height:4px;
+}
+.password-strength-bar span{
+  flex:1;
+  border-radius:4px;
+  background:var(--border);
+  transition:background .3s ease;
+}
+.password-strength-bar.weak span:nth-child(1){background:var(--pass-weak)}
+.password-strength-bar.medium span:nth-child(1),
+.password-strength-bar.medium span:nth-child(2){background:var(--pass-medium)}
+.password-strength-bar.strong span:nth-child(1),
+.password-strength-bar.strong span:nth-child(2),
+.password-strength-bar.strong span:nth-child(3){background:var(--pass-strong)}
+.password-strength-bar.very-strong span{background:var(--pass-very-strong)}
+.password-strength-text{
+  font-size:.75rem;
+  font-weight:700;
+  margin-top:4px;
+  transition:color .3s ease;
+}
+.password-strength-text.weak{color:var(--pass-weak)}
+.password-strength-text.medium{color:var(--pass-medium)}
+.password-strength-text.strong{color:var(--pass-strong)}
+.password-strength-text.very-strong{color:var(--pass-very-strong)}
+
+/* ---------- Validation States ---------- */
+.form-control.is-invalid{
+  border-color:var(--danger) !important;
+  box-shadow:0 0 0 3px rgba(220,38,38,.12) !important;
+}
+.form-control.is-valid{
+  border-color:var(--success) !important;
+  box-shadow:0 0 0 3px rgba(15,123,58,.12) !important;
+}
+.invalid-feedback{
+  display:none;
+  color:var(--danger);
+  font-size:.78rem;
+  font-weight:700;
+  margin-top:4px;
+}
+.form-control.is-invalid ~ .invalid-feedback{display:block}
+
+/* ---------- Social Login Buttons ---------- */
+.social-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  width:100%;
+  padding:12px 16px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:var(--card);
+  color:var(--foreground);
+  font-weight:800;
+  font-size:.88rem;
+  cursor:pointer;
+  transition:transform var(--transition), box-shadow var(--transition);
+}
+.social-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:var(--shadow-md);
+}
+.social-btn.google{color:#ea4335;border-color:rgba(234,67,53,.2)}
+.social-btn.google:hover{background:rgba(234,67,53,.04);border-color:rgba(234,67,53,.3)}
+.social-btn.facebook{color:#1877f2;border-color:rgba(24,119,242,.2)}
+.social-btn.facebook:hover{background:rgba(24,119,242,.04);border-color:rgba(24,119,242,.3)}
+.social-btn i{font-size:1.1rem}
+
+/* ---------- Remember Me Toggle ---------- */
+.remember-me{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  cursor:pointer;
+  font-size:.85rem;
+  color:var(--muted);
+  font-weight:700;
+}
+.remember-me input[type="checkbox"]{
+  width:18px;
+  height:18px;
+  min-height:auto;
+  accent-color:var(--primary);
+  cursor:pointer;
+}
+
+/* ---------- Auth Brand Enhanced ---------- */
+.auth-brand{
+  padding:32px;
+  background:linear-gradient(135deg,rgba(26,91,191,.08),rgba(124,58,237,.06));
+  border:1px solid rgba(26,91,191,.12);
+  border-radius:24px;
+  position:relative;
+  overflow:hidden;
+}
+.auth-brand::before{
+  content:"";
+  position:absolute;
+  right:-60px;
+  top:-60px;
+  width:200px;
+  height:200px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,140,0,.12),transparent 65%);
+  pointer-events:none;
+}
+.auth-brand h1{
+  font-size:2.8rem;
+  line-height:1.05;
+  margin:18px 0 12px;
+  color:var(--ink);
+}
+.auth-brand p{
+  color:var(--muted);
+  line-height:1.7;
+  font-size:1rem;
+  max-width:360px;
+}
+.auth-eyebrow{
+  color:var(--primary);
+  font-weight:900;
+  font-size:.82rem;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  margin-bottom:14px;
+}
+.auth-info-list{display:grid;gap:14px;margin-top:28px}
+.auth-info-list div{display:flex;align-items:flex-start;gap:12px;color:var(--text);font-weight:600}
+.auth-info-list div strong{width:32px;height:32px;border-radius:12px;background:rgba(26,91,191,.12);color:var(--primary);display:grid;place-items:center;font-size:.95rem}
+.auth-form-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+.auth-divider{position:relative;text-align:center;font-size:.87rem;color:var(--muted);margin:24px 0}
+.auth-divider::before,.auth-divider::after{content:'';position:absolute;top:50%;width:40%;height:1px;background:var(--border);transform:translateY(-50%)}
+.auth-divider::before{left:0}
+.auth-divider::after{right:0}
+.auth-divider span{position:relative;padding:0 14px;background:var(--card)}
+
+/* ---------- Terms Checkbox ---------- */
+.terms-checkbox{
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+  font-size:.82rem;
+  color:var(--muted);
+  font-weight:600;
+  margin-top:12px;
+}
+.terms-checkbox input[type="checkbox"]{
+  width:18px;
+  height:18px;
+  min-height:auto;
+  margin-top:2px;
+  accent-color:var(--primary);
+  cursor:pointer;
+}
+
+/* ---------- OTP Input ---------- */
+.otp-input-group{
+  display:flex;
+  gap:8px;
+  justify-content:center;
+}
+.otp-input{
+  width:48px;
+  height:56px;
+  text-align:center;
+  font-size:1.2rem;
+  font-weight:800;
+  border:2px solid var(--border-strong);
+  border-radius:12px;
+  background:var(--input-background);
+  color:var(--foreground);
+  outline:none;
+  transition:border-color var(--transition), box-shadow var(--transition);
+}
+.otp-input:focus{
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(26,91,191,.15);
+}
+
+/* ---------- Responsive Auth ---------- */
+@media(max-width:992px){
+  .auth-brand{display:block}
+  .otp-input{width:42px;height:48px;font-size:1rem}
+}
+@media(max-width:640px){
+  .auth-brand{display:none}
+  .auth-form-actions{flex-direction:column}
+  .auth-panel{padding:24px 16px}
+}
 
