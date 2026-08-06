@@ -1,0 +1,118 @@
+/* =============================================
+   SkillShare Hub - Responsive Styles
+   ============================================= */
+
+/* ===== Large Screens (default) ===== */
+
+/* ===== Tablets (max-width: 1199px) ===== */
+@media (max-width: 1199px) {
+    :root {
+        --font-size-5xl: 2.5rem;
+        --font-size-4xl: 2rem;
+        --font-size-3xl: 1.6rem;
+    }
+}
+
+/* ===== Tablets / Small Laptops (max-width: 991px) ===== */
+@media (max-width: 991px) {
+    /* Vertical navbar becomes off-canvas */
+    .v-navbar {
+        transform: translateX(-100%);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .v-navbar.show { transform: translateX(0); }
+
+    .with-v-nav,
+    body.nav-collapsed .with-v-nav,
+    .dashboard-main,
+    body.nav-collapsed .dashboard-main {
+        margin-left: 0;
+    }
+
+    .mobile-nav-toggle { display: flex; }
+
+    /* Hero */
+    .hero .hero-grid { grid-template-columns: 1fr; text-align: center; }
+    .hero .hero-actions, .hero .hero-stats { justify-content: center; }
+    .hero .hero-desc { margin-left: auto; margin-right: auto; }
+    .hero .float-1 { left: 0; }
+    .hero .float-2 { right: 0; }
+
+    /* Grids */
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(2, 1fr); }
+    .course-grid { grid-template-columns: repeat(2, 1fr); }
+    .research-grid { grid-template-columns: repeat(2, 1fr); }
+
+    /* Dashboard */
+    .dash-grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .dash-grid-3 { grid-template-columns: repeat(2, 1fr); }
+
+    /* Chat */
+    .chat-layout { grid-template-columns: 1fr; }
+    .chat-window { display: none; }
+    .chat-layout.show-chat .chat-window { display: flex; }
+    .chat-layout.show-chat .conv-list { display: none; }
+}
+
+/* ===== Mobile (max-width: 767px) ===== */
+@media (max-width: 767px) {
+    :root {
+        --font-size-5xl: 2rem;
+        --font-size-4xl: 1.75rem;
+    }
+
+    .section-heading h2 { font-size: var(--font-size-3xl); }
+
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+
+    .home-search form { flex-direction: column; }
+
+    .dash-topbar .dt-search { display: none; }
+
+    .data-table { font-size: var(--font-size-xs); }
+}
+
+/* ===== Small Mobile (max-width: 575px) ===== */
+@media (max-width: 575px) {
+    :root {
+        --font-size-5xl: 1.75rem;
+        --font-size-4xl: 1.5rem;
+        --font-size-3xl: 1.35rem;
+    }
+
+    .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+    .course-grid, .research-grid { grid-template-columns: 1fr; }
+    .dash-grid-4, .dash-grid-3, .dash-grid-2 { grid-template-columns: 1fr; }
+
+    .footer-grid { grid-template-columns: 1fr; }
+
+    .hero {
+        padding: var(--spacing-6) 0;
+        min-height: auto;
+    }
+
+    .hero .hero-float-card { display: none; }
+
+    .cta-inner { text-align: center; justify-content: center; }
+
+    .profile-head-wrap { flex-direction: column; align-items: flex-start; }
+    .achievement-list { grid-template-columns: 1fr; }
+
+    .booking-card { flex-direction: column; }
+    .booking-card .booking-date-box { width: 100%; flex-direction: row; }
+
+    .time-slots { grid-template-columns: repeat(2, 1fr); }
+
+    .chat-msg .msg-bubble { max-width: 85%; }
+
+    .back-to-top { bottom: 1rem; right: 1rem; width: 42px; height: 42px; }
+}
+
+/* ===== Print ===== */
+@media print {
+    .v-navbar, .site-topbar, .site-navbar, .site-footer, .back-to-top, .mobile-nav-toggle { display: none !important; }
+    .with-v-nav, .dashboard-main, body.nav-collapsed .with-v-nav, body.nav-collapsed .dashboard-main { margin-left: 0; }
+    body { background: #fff; }
+}

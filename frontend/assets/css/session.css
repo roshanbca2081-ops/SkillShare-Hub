@@ -1,0 +1,152 @@
+/* =============================================
+   SkillShare Hub - Session Styles
+   ============================================= */
+
+.session-card {
+    background: #fff;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: var(--transition-base);
+}
+
+.session-card:hover { box-shadow: var(--shadow-md); transform: translateY(-4px); }
+
+.session-card .session-head {
+    padding: var(--spacing-5);
+    background: var(--gradient-dark);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-4);
+}
+
+.session-card .session-head h5 { color: #fff; margin: 0; }
+.session-card .session-head .session-date { font-size: var(--font-size-sm); color: rgba(255, 255, 255, 0.7); }
+
+.session-card .session-body { padding: var(--spacing-5); }
+
+.session-card .session-body .session-instructor { display: flex; align-items: center; gap: var(--spacing-3); margin-bottom: var(--spacing-4); }
+
+.session-card .session-body .session-instructor img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+
+.session-card .session-body .session-instructor h6 { margin: 0; }
+.session-card .session-body .session-instructor p { margin: 0; font-size: var(--font-size-xs); color: var(--gray-500); }
+
+.session-card .session-info { display: flex; gap: var(--spacing-5); flex-wrap: wrap; margin-bottom: var(--spacing-4); }
+
+.session-card .session-info span { display: inline-flex; align-items: center; gap: 0.4rem; font-size: var(--font-size-sm); color: var(--gray-600); }
+.session-card .session-info i { color: var(--secondary-dark); }
+
+.session-card .session-actions { display: flex; gap: 0.5rem; }
+
+/* Live session banner */
+.live-banner {
+    background: var(--gradient-primary);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-5);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-4);
+    flex-wrap: wrap;
+    margin-bottom: var(--spacing-6);
+}
+
+.live-banner h4 { color: #fff; margin: 0; }
+.live-banner p { margin: 0; color: rgba(255, 255, 255, 0.85); }
+
+.live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.4rem 1rem;
+    border-radius: var(--border-radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+}
+
+.live-badge .live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1.5s infinite;
+}
+
+/* Video container */
+.video-container {
+    position: relative;
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    background: var(--dark);
+    aspect-ratio: 16 / 9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.video-container .video-placeholder { color: rgba(255, 255, 255, 0.3); text-align: center; }
+
+.video-container .video-placeholder i { font-size: 4rem; margin-bottom: 1rem; }
+
+.video-container .video-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--spacing-4);
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    color: #fff;
+}
+
+.video-container .video-controls button { background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; }
+
+/* Participant grid */
+.participant-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-4); }
+
+.participant-tile {
+    background: var(--dark);
+    border-radius: var(--border-radius-md);
+    aspect-ratio: 4 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.participant-tile .p-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--gradient-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.participant-tile .p-name {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-size: var(--font-size-xs);
+    text-align: center;
+}
+
+@media (max-width: 575px) {
+    .participant-grid { grid-template-columns: 1fr 1fr; }
+}

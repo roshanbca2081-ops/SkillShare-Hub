@@ -1,0 +1,121 @@
+/* =============================================
+   SkillShare Hub - Mentor Styles
+   ============================================= */
+
+.mentor-card {
+    background: #fff;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: var(--transition-base);
+    position: relative;
+}
+
+.mentor-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
+
+.mentor-card .mentor-cover { height: 110px; background: var(--gradient-primary); position: relative; }
+
+.mentor-card:nth-child(2n) .mentor-cover { background: var(--gradient-secondary); }
+.mentor-card:nth-child(3n) .mentor-cover { background: var(--gradient-accent); }
+
+.mentor-card .mentor-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    background: #fff;
+    position: absolute;
+    bottom: -45px;
+    left: 50%;
+    transform: translateX(-50%);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.mentor-card .mentor-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.mentor-card .mentor-body { padding: var(--spacing-6) var(--spacing-5) var(--spacing-5); text-align: center; }
+
+.mentor-card .mentor-body .mentor-verify { color: var(--info); font-size: 0.9rem; }
+
+.mentor-card .mentor-body h5 { margin-bottom: 0.2rem; }
+
+.mentor-card .mentor-body .mentor-title { color: var(--primary); font-size: var(--font-size-sm); font-weight: 500; margin-bottom: var(--spacing-3); }
+
+.mentor-card .mentor-body .mentor-rating {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    color: var(--warning);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--spacing-4);
+}
+
+.mentor-card .mentor-body .mentor-rating span { color: var(--gray-500); }
+
+.mentor-card .mentor-skills { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem; margin-bottom: var(--spacing-4); }
+
+.mentor-card .mentor-skills span {
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    padding: 0.25rem 0.7rem;
+    border-radius: var(--border-radius-full);
+}
+
+.mentor-card .mentor-stats {
+    display: flex;
+    justify-content: space-around;
+    padding: var(--spacing-4) var(--spacing-5);
+    border-top: 1px solid var(--gray-200);
+    background: var(--gray-100);
+}
+
+.mentor-card .mentor-stats .ms-box { text-align: center; }
+
+.mentor-card .mentor-stats .ms-box h6 { margin: 0; color: var(--gray-900); }
+.mentor-card .mentor-stats .ms-box p { margin: 0; font-size: var(--font-size-xs); color: var(--gray-500); }
+
+.mentor-card .mentor-actions { padding: var(--spacing-4); display: flex; gap: 0.5rem; }
+
+.mentor-card .mentor-actions .btn { flex: 1; }
+
+/* Mentor detail page */
+.mentor-profile-hero {
+    background: var(--gradient-dark);
+    color: #fff;
+    padding: var(--spacing-8) 0;
+}
+
+.mentor-profile-hero .mp-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--spacing-6);
+    align-items: center;
+}
+
+.mentor-profile-hero .mp-avatar {
+    width: 160px;
+    height: 160px;
+    border-radius: var(--border-radius-lg);
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+}
+
+.mentor-profile-hero .mp-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.mentor-profile-hero h1 { color: #fff; margin: 0; }
+
+.mentor-profile-hero .mp-title { color: var(--secondary); font-size: var(--font-size-lg); margin-bottom: var(--spacing-3); }
+
+.mentor-profile-hero .mp-meta { display: flex; gap: var(--spacing-5); flex-wrap: wrap; color: rgba(255, 255, 255, 0.7); font-size: var(--font-size-sm); }
+
+.mentor-profile-hero .mp-meta span { display: inline-flex; align-items: center; gap: 0.4rem; }
+
+@media (max-width: 575px) {
+    .mentor-profile-hero .mp-grid { grid-template-columns: 1fr; text-align: center; }
+    .mentor-profile-hero .mp-avatar { margin: 0 auto; }
+    .mentor-profile-hero .mp-meta { justify-content: center; }
+}

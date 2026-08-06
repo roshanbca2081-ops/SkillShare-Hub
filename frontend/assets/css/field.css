@@ -1,0 +1,59 @@
+/* =============================================
+   SkillShare Hub - Academic Fields Styles
+   ============================================= */
+.field-card {
+    background: #fff;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: var(--transition-base);
+    position: relative;
+}
+
+.field-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
+
+.field-card .field-media {
+    height: 190px;
+    overflow: hidden;
+    position: relative;
+}
+
+.field-card .field-media img { width: 100%; height: 100%; object-fit: cover; transition: var(--transition-slow); }
+
+.field-card:hover .field-media img { transform: scale(1.1); }
+
+.field-card .field-media .field-icon {
+    position: absolute;
+    bottom: -28px;
+    left: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--border-radius-md);
+    background: var(--gradient-primary);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: var(--shadow-primary);
+    z-index: 2;
+}
+
+.field-card:nth-child(2n) .field-media .field-icon { background: var(--gradient-secondary); color: var(--dark); }
+.field-card:nth-child(3n) .field-media .field-icon { background: var(--gradient-accent); }
+
+.field-card .field-body { padding: var(--spacing-6) var(--spacing-5) var(--spacing-5); }
+
+.field-card .field-body h5 { margin-bottom: 0.5rem; }
+
+.field-card .field-body p { color: var(--gray-500); font-size: var(--font-size-sm); margin-bottom: var(--spacing-4); }
+
+.field-card .field-meta { display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-5); border-top: 1px solid var(--gray-100); }
+
+.field-card .field-meta .field-count { color: var(--primary); font-weight: 600; font-size: var(--font-size-sm); }
+
+.field-card .field-meta .field-count i { margin-right: 0.3rem; }
+
+.field-card .field-meta a { font-size: var(--font-size-sm); font-weight: 600; }
+
+.field-card .field-meta a i { font-size: 0.7rem; }

@@ -1,0 +1,106 @@
+/* ============================================
+   SkillShare Hub - Register Page Styles
+   Centered glassmorphism with blurred learning background
+   ============================================ */
+
+/* Register uses wider card */
+.auth-wrapper.register-wrapper,
+.register-wrap .auth-wrapper { max-width: 560px; }
+
+/* Back to home link */
+.auth-home-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--auth-text-muted, rgba(255,255,255,0.4));
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+.auth-home-link:hover { color: var(--auth-primary-400, #60a5fa); }
+
+/* Two-column row for name fields */
+.auth-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+@media (max-width: 480px) {
+    .auth-row { grid-template-columns: 1fr; }
+}
+
+/* Terms row */
+.terms-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    color: var(--auth-text-secondary, rgba(255,255,255,0.8));
+    font-size: 0.85rem;
+    margin-bottom: 18px;
+}
+.terms-row input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--auth-primary-500, #3b82f6);
+    margin-top: 3px;
+    cursor: pointer;
+}
+.terms-row a {
+    color: var(--auth-primary-400, #60a5fa);
+    text-decoration: none;
+}
+.terms-row a:hover { text-decoration: underline; }
+
+/* Role selection (register extra) */
+.role-select {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-3, 12px);
+    margin-bottom: 18px;
+}
+
+.role-option {
+    position: relative;
+    text-align: center;
+    cursor: pointer;
+}
+
+.role-option input { position: absolute; opacity: 0; }
+
+.role-option .role-box {
+    padding: 16px 12px;
+    border: 1px solid var(--auth-glass-border, rgba(255,255,255,0.1));
+    border-radius: var(--auth-radius-md, 12px);
+    background: rgba(255,255,255,0.06);
+    transition: var(--auth-transition-bounce, all 0.3s ease);
+}
+
+.role-option .role-box i {
+    display: block;
+    font-size: 1.8rem;
+    color: var(--auth-text-muted, rgba(255,255,255,0.4));
+    margin-bottom: 0.4rem;
+    transition: all 0.3s ease;
+}
+
+.role-option .role-box span {
+    font-weight: 600;
+    font-size: var(--font-size-sm, 0.875rem);
+    color: var(--auth-text-secondary, rgba(255,255,255,0.8));
+    transition: all 0.3s ease;
+}
+
+.role-option input:checked + .role-box {
+    border-color: var(--auth-primary-500, #3b82f6);
+    background: rgba(59,130,246,0.12);
+    box-shadow: 0 0 0 4px rgba(59,130,246,0.1);
+}
+
+.role-option input:checked + .role-box i { color: var(--auth-primary-400, #60a5fa); }
+.role-option input:checked + .role-box span { color: #fff; }
+
+@media (max-width: 575px) {
+    .role-select { grid-template-columns: 1fr; }
+}

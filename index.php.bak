@@ -1,0 +1,329 @@
+<?php
+/**
+ * ShareSkill Hub - Landing Page
+ * The main entry point for the platform
+ */
+
+// Start session
+session_start();
+
+// Include configuration
+require_once 'config/config.php';
+require_once 'config/database.php';
+require_once 'includes/functions.php';
+require_once 'includes/session.php';
+
+// Check if user is logged in
+if (isLoggedIn()) {
+    redirectToDashboard($_SESSION['user_role']);
+}
+
+// Get statistics
+$totalGraduates = getCount('users', "role = 'graduate' AND status = 'active'");
+$totalFreshers = getCount('users', "role = 'fresher' AND status = 'active'");
+$totalSkills = getCount('practical_skills', "status = 'approved'");
+$totalSessions = getCount('mentorship_sessions', "status = 'completed'");
+
+// Get featured graduates
+$featuredGraduates = getRecords("
+    SELECT u.id, u.full_name, u.profile_picture, u.bio, u.hourly_rate, 
+           AVG(r.rating) as avg_rating, COUNT(r.id) as review_count
+    FROM users u
+    LEFT JOIN reviews r ON r.reviewee_id = u.id
+    WHERE u.role = 'graduate' AND u.status = 'active'
+    GROUP BY u.id
+    ORDER BY avg_rating DESC
+    LIMIT 6
+");
+
+// Get recent skills
+$recentSkills = getRecords("
+    SELECT ps.*, u.full_name, u.profile_picture
+    FROM practical_skills ps
+    JOIN users u ON u.id = ps.user_id
+    WHERE ps.status = 'approved'
+    ORDER BY ps.created_at DESC
+    LIMIT 6
+");
+
+// Get academic fields
+$academicFields = getRecords("
+    SELECT id, field_name, field_slug, description
+    FROM academic_fields
+    WHERE status = 'active'
+    ORDER BY sort_order ASC
+    LIMIT 8
+");
+
+include 'includes/header.php';
+?>
+
+<!-- Floating Background Elements -->
+<div class="floating-logo">SHARE SKILL HUB</div>
+
+<!-- Floating Academic Icons -->
+<div class="floating-icons-container">
+    <div class="floating-icon" style="top: 8%; left: 5%;"><i class="fas fa-robot"></i><span class="icon-label">Engineering</span></div>
+    <div class="floating-icon" style="top: 15%; right: 8%; animation-delay: 2s;"><i class="fas fa-laptop-code"></i><span class="icon-label">IT</span></div>
+    <div class="floating-icon" style="top: 45%; left: 3%; animation-delay: 4s;"><i class="fas fa-flask"></i><span class="icon-label">Science</span></div>
+    <div class="floating-icon" style="top: 55%; right: 4%; animation-delay: 6s;"><i class="fas fa-briefcase"></i><span class="icon-label">Management</span></div>
+    <div class="floating-icon" style="bottom: 20%; left: 8%; animation-delay: 8s;"><i class="fas fa-scale-balanced"></i><span class="icon-label">Law</span></div>
+    <div class="floating-icon" style="bottom: 30%; right: 10%; animation-delay: 10s;"><i class="fas fa-graduation-cap"></i><span class="icon-label">Education</span></div>
+    <div class="floating-icon" style="top: 30%; left: 12%; animation-delay: 3s;"><i class="fas fa-seedling"></i><span class="icon-label">Agriculture</span></div>
+    <div class="floating-icon" style="top: 70%; left: 15%; animation-delay: 7s;"><i class="fas fa-heart-pulse"></i><span class="icon-label">Health</span></div>
+    <div class="floating-icon" style="top: 85%; right: 15%; animation-delay: 5s;"><i class="fas fa-palette"></i><span class="icon-label">Arts</span></div>
+    <div class="floating-icon" style="top: 10%; left: 25%; animation-delay: 9s;"><i class="fas fa-newspaper"></i><span class="icon-label">Media</span></div>
+    <div class="floating-icon" style="bottom: 10%; left: 30%; animation-delay: 1s;"><i class="fas fa-umbrella-beach"></i><span class="icon-label">Hospitality</span></div>
+    <div class="floating-icon" style="top: 50%; left: 50%; animation-delay: 11s;"><i class="fas fa-microscope"></i><span class="icon-label">Research</span></div>
+</div>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <div class="hero-badge">
+                    <i class="fas fa-sparkles"></i> Bridging Education with Industry
+                </div>
+                <h1 class="hero-title">
+                    Learn from Industry<br>Experts & Build Your<br>Future Career
+                </h1>
+                <p class="hero-subtitle">
+                    Connect with experienced graduates, gain practical knowledge, 
+                    and become industry-ready before you graduate.
+                </p>
+                <div class="hero-buttons">
+                    <a href="register.php" class="btn btn-primary btn-hero">
+                        <i class="fas fa-rocket"></i> Get Started Free
+                    </a>
+                    <a href="#features" class="btn btn-outline-light btn-hero">
+                        <i class="fas fa-play-circle"></i> Learn More
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number"><?php echo number_format($totalGraduates); ?>+</div>
+                        <div class="stat-label">Expert Graduates</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number"><?php echo number_format($totalFreshers); ?>+</div>
+                        <div class="stat-label">Active Students</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number"><?php echo number_format($totalSkills); ?>+</div>
+                        <div class="stat-label">Practical Skills</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="hero-illustration">
+                    <div class="illustration-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="illustration-features">
+                        <div class="feature-item">
+                            <div class="feature-icon"><i class="fas fa-video"></i></div>
+                            <span>Mentorship</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon"><i class="fas fa-code"></i></div>
+                            <span>Practical</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon"><i class="fas fa-certificate"></i></div>
+                            <span>Certified</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="features-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Why Choose ShareSkill Hub?</h2>
+            <p>Everything you need to bridge the gap between education and industry</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h5>Expert Mentorship</h5>
+                    <p>Learn from experienced graduates with real-world industry knowledge</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="fas fa-laptop-code"></i>
+                    </div>
+                    <h5>Practical Skills</h5>
+                    <p>Access hands-on projects, assignments, and real-world case studies</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <h5>Video Sessions</h5>
+                    <p>One-on-one mentorship through live video calls and screen sharing</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <h5>Career Ready</h5>
+                    <p>Interview prep, placement materials, and career guidance for your dream job</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Graduates -->
+<section id="graduates" class="graduates-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Top Graduates</h2>
+            <p>Learn from the best industry experts</p>
+        </div>
+        <div class="row g-4">
+            <?php if (!empty($featuredGraduates)): ?>
+                <?php foreach ($featuredGraduates as $graduate): ?>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="graduate-card">
+                            <div class="graduate-avatar">
+                                <img src="<?php echo getProfilePicture($graduate['id']); ?>" alt="<?php echo $graduate['full_name']; ?>">
+                            </div>
+                            <h6 class="graduate-name"><?php echo $graduate['full_name']; ?></h6>
+                            <p class="graduate-field"><?php echo $graduate['bio'] ?? 'Industry Expert'; ?></p>
+                            <div class="graduate-rating">
+                                <?php 
+                                $avgRating = round($graduate['avg_rating'] ?? 0, 1);
+                                for ($i = 1; $i <= 5; $i++): ?>
+                                    <i class="fas fa-star<?php echo $i <= $avgRating ? '' : '-o'; ?>"></i>
+                                <?php endfor; ?>
+                                <span>(<?php echo $graduate['review_count'] ?? 0; ?>)</span>
+                            </div>
+                            <div class="graduate-rate">
+                                $<?php echo number_format($graduate['hourly_rate'] ?? 0, 2); ?> <span>/ hour</span>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="col-12 text-center text-white-50">
+                    <p>No featured graduates yet. Join now to become one!</p>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</section>
+
+<!-- Academic Fields -->
+<section id="fields" class="fields-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Explore Academic Fields</h2>
+            <p>Find your path across multiple disciplines</p>
+        </div>
+        <div class="row g-4">
+            <?php 
+            $fieldIcons = [
+                'engineering' => 'fa-robot',
+                'information-technology' => 'fa-laptop-code',
+                'science' => 'fa-flask',
+                'management-commerce' => 'fa-briefcase',
+                'law' => 'fa-scale-balanced',
+                'education' => 'fa-graduation-cap',
+                'agriculture' => 'fa-seedling',
+                'health-sciences' => 'fa-heart-pulse',
+                'arts-humanities' => 'fa-palette',
+                'media-communication' => 'fa-newspaper',
+                'hospitality-tourism' => 'fa-umbrella-beach',
+                'research-innovation' => 'fa-microscope'
+            ];
+            ?>
+            <?php if (!empty($academicFields)): ?>
+                <?php foreach ($academicFields as $field): ?>
+                    <div class="col-lg-3 col-md-4 col-6">
+                        <a href="academic-fields.php?slug=<?php echo $field['field_slug']; ?>" class="field-card">
+                            <span class="field-icon">
+                                <i class="fas <?php echo $fieldIcons[$field['field_slug']] ?? 'fa-book'; ?>"></i>
+                            </span>
+                            <div class="field-name"><?php echo $field['field_name']; ?></div>
+                            <div class="field-desc"><?php echo substr($field['description'] ?? '', 0, 40); ?></div>
+                        </a>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+    </div>
+</section>
+
+<!-- Recent Skills -->
+<section id="skills" class="skills-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Latest Practical Skills</h2>
+            <p>Hands-on learning resources shared by graduates</p>
+        </div>
+        <div class="row g-4">
+            <?php if (!empty($recentSkills)): ?>
+                <?php foreach ($recentSkills as $skill): ?>
+                    <div class="col-md-4">
+                        <div class="skill-card">
+                            <div class="skill-header">
+                                <div class="skill-icon"><i class="fas fa-file-alt"></i></div>
+                                <div>
+                                    <h6 class="skill-title"><?php echo $skill['skill_title']; ?></h6>
+                                    <p class="skill-author">
+                                        <i class="fas fa-user"></i> <?php echo $skill['full_name'] ?? 'Unknown'; ?>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="skill-tags">
+                                <span class="badge skill-category"><?php echo $skill['skill_category'] ?? 'General'; ?></span>
+                                <span class="badge skill-date">
+                                    <i class="far fa-clock"></i> <?php echo date('M d', strtotime($skill['created_at'])); ?>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="col-12 text-center text-white-50">
+                    <p>No skills shared yet. Be the first to share your knowledge!</p>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-content">
+            <h2>Ready to Start Your Journey?</h2>
+            <p>Join thousands of students and graduates who are already building their careers</p>
+            <div class="cta-buttons">
+                <a href="register.php" class="btn btn-primary btn-cta">
+                    <i class="fas fa-user-plus"></i> Join Now - It's Free
+                </a>
+                <a href="about.php" class="btn btn-outline-light btn-cta">
+                    Learn More
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<?php include 'includes/footer.php'; ?>

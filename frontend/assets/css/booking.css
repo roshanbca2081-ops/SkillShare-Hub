@@ -1,0 +1,113 @@
+/* =============================================
+   SkillShare Hub - Booking / Session Styles
+   ============================================= */
+
+.booking-card {
+    background: #fff;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: var(--transition-base);
+    display: flex;
+}
+
+.booking-card:hover { box-shadow: var(--shadow-md); }
+
+.booking-card .booking-date-box {
+    width: 110px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--gradient-primary);
+    color: #fff;
+    padding: var(--spacing-4);
+    flex-shrink: 0;
+}
+
+.booking-card .booking-date-box .day { font-size: var(--font-size-3xl); font-weight: 700; line-height: 1; }
+.booking-card .booking-date-box .month { font-size: var(--font-size-xs); text-transform: uppercase; letter-spacing: 1px; }
+.booking-card .booking-date-box .year { font-size: var(--font-size-xs); opacity: 0.8; }
+
+.booking-card:nth-child(2n) .booking-date-box { background: var(--gradient-secondary); color: var(--dark); }
+.booking-card:nth-child(3n) .booking-date-box { background: var(--gradient-accent); }
+
+.booking-card .booking-body { padding: var(--spacing-5); flex: 1; }
+
+.booking-card .booking-body h5 { margin-bottom: 0.3rem; }
+.booking-card .booking-body .booking-instructor { color: var(--gray-500); font-size: var(--font-size-sm); margin-bottom: var(--spacing-3); }
+.booking-card .booking-body .booking-instructor i { color: var(--primary); }
+
+.booking-card .booking-info { display: flex; gap: var(--spacing-5); flex-wrap: wrap; margin-bottom: var(--spacing-4); }
+
+.booking-card .booking-info span { display: inline-flex; align-items: center; gap: 0.4rem; font-size: var(--font-size-sm); color: var(--gray-600); }
+.booking-card .booking-info i { color: var(--secondary-dark); }
+
+.booking-card .booking-actions { display: flex; gap: 0.5rem; }
+
+/* Booking form */
+.booking-form-side {
+    background: #fff;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: var(--spacing-5);
+    position: sticky;
+    top: 100px;
+}
+
+.booking-form-side .mentor-mini { display: flex; align-items: center; gap: var(--spacing-4); padding-bottom: var(--spacing-5); border-bottom: 1px solid var(--gray-200); margin-bottom: var(--spacing-5); }
+
+.booking-form-side .mentor-mini img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; }
+
+.booking-form-side .mentor-mini h6 { margin: 0; }
+.booking-form-side .mentor-mini p { margin: 0; color: var(--gray-500); font-size: var(--font-size-xs); }
+
+/* Time slots */
+.time-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+
+.time-slot {
+    padding: 0.6rem 0.4rem;
+    text-align: center;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--border-radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--gray-600);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    background: #fff;
+}
+
+.time-slot:hover { border-color: var(--primary); color: var(--primary); }
+
+.time-slot.selected { background: var(--gradient-primary); border-color: transparent; color: #fff; box-shadow: var(--shadow-primary); }
+
+.time-slot.disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Calendar mini */
+.calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.4rem; }
+
+.calendar-days .cd-head { font-size: var(--font-size-xs); font-weight: 600; color: var(--gray-500); text-align: center; padding: 0.4rem; }
+
+.calendar-days .cd-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius-md);
+    font-size: var(--font-size-sm);
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    border: none;
+    background: var(--gray-100);
+}
+
+.calendar-days .cd-day:hover { background: var(--primary-soft); color: var(--primary); }
+.calendar-days .cd-day.selected { background: var(--gradient-primary); color: #fff; }
+.calendar-days .cd-day.disabled { opacity: 0.3; cursor: not-allowed; }
+
+@media (max-width: 575px) {
+    .booking-card { flex-direction: column; }
+    .booking-card .booking-date-box { width: 100%; flex-direction: row; gap: 0.5rem; padding: var(--spacing-3); }
+}
