@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Course Card
 // Accepts optional $courses array (each: id, title, image, category, price, old_price, rating, reviews, instructor, instructor_img, lessons, duration, students)
 $courses = isset($courses) && is_array($courses) ? $courses : [
@@ -26,7 +26,7 @@ $courses = isset($courses) && is_array($courses) ? $courses : [
                     <i class="fa-solid fa-star"></i> <?php echo $course['rating']; ?>
                     <span>(<?php echo number_format($course['reviews']); ?> reviews)</span>
                 </div>
-                <h5><a href="courses.php?id=<?php echo $course['id']; ?>"><?php echo $course['title']; ?></a></h5>
+<h5><a href="course-detail.php?course=<?php echo isset($course['slug']) ? $course['slug'] : 'software-engineering'; ?>"><?php echo $course['title']; ?></a></h5>
                 <div class="course-instructor">
                     <img src="<?php echo $course['instructor_img']; ?>" alt="<?php echo $course['instructor']; ?>">
                     <span><?php echo $course['instructor']; ?></span>

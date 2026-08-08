@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Mentor Cards
 // Accepts optional $mentors array (each: name, title, image, rating, reviews, skills, students, courses, verified)
 $mentors = isset($mentors) && is_array($mentors) ? $mentors : [

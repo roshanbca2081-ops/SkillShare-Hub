@@ -1,56 +1,37 @@
-# SkillShare Hub - Frontend Complete Build ✅
+# TODO - Academic Fields DB-Driven Navigation
 
-## Phase 1: Design System (COMPLETE)
-- [x] varables.css - CSS custom properties
-- [x] main.css - Global base styles, buttons, utilities
-- [x] responsive.css - Mobile responsiveness
-- [x] navbar.css - Vertical sidebar navigation styles
-- [x] footer.css - Footer styles
-- [x] home.css - Homepage section styles
-- [x] about.css, contact.css, login.css, register.css, field.css, course.css, mentor.css, research.css, dashboard.css, profile.css, booking.css, session.css, assignment.css, payment.css, notification.css, message.css, setting.css
+## Steps
+- [x] Create dedicated DB tables (acad_fields, acad_courses, acad_subjects, acad_skills, acad_mentors, acad_mentor_skills) in skillsharehub
+- [x] Create shared DB helper (`frontend/components/acad-db.php`)
+- [x] Build `academic-fields.php` (field cards, no skill lists, shared navbar)
+- [x] Build `courses.php?field_id=` (courses for field)
+- [x] Build `subjects.php?course_id=` (subjects for course)
+- [x] Build `skills.php?subject_id=` (skills for subject)
+- [x] Build `mentors.php?skill_id=` (mentors for skill)
+- [x] Breadcrumbs + Back buttons on each level
+- [x] Update navbar link (academic-filed.php -> academic-fields.php)
+- [x] Fix api/config.php DB name to skillsharehub
+- [x] Replace old academic-filed.php behavior (redirect)
 
-## Phase 2: Core Components (COMPLETE)
-- [x] loader.php, topbar.php, header.php, navbar.php, sidebar.php, footer.php
-- [x] hero.php, search-bar.php, field-card.php, course-card.php, mentor-card.php, profile-card.php
-- [x] statistics.php, testimonial-card.php, modal.php, pagination.php
-- [x] about-section.php, why-choose-us.php, research-section.php, cta.php
+## Expanded data (user request)
+- [x] 30 academic fields
+- [x] ~200 courses (194 seeded)
+- [x] ~400+ subjects (795 records, each course has its subjects)
+- [x] Auto-generated skills (3976) for every subject
+- [x] 20 mentors + mentor-skill links (3960)
+- [x] `database/academic_data.php` - central data source
+- [x] `database/academic_install.php` - idempotent installer
+- [x] `database/academic_export_sql.php` - generates full SQL seed
+- [x] `database/academic_seed_full.sql` - complete SQL dump (imported)
 
-## Phase 3: Public Pages (COMPLETE)
-- [x] index.php, about.php, courses.php, mentor.php, research.php, academic-filed.php
-- [x] contact.php, login.php, register.php, forget-password.php
-- [x] search.php, faq.php, privacy-policy.php, terms.php, 404.php
-
-## Phase 4: Dashboard Pages (COMPLETE)
-- [x] Admin dashboard (18 files)
-- [x] Mentor dashboard (16 files)
-- [x] Fresher dashboard (17 files)
-
-## Phase 5: JavaScript (COMPLETE)
-- [x] main.js, navbar.js, home.js, search.js, booking.js, validation.js
-- [x] animation.js, dashboard.js, profile.js, setting.js
-
-## Phase 6: Assets (COMPLETE)
-- [x] Placeholder SVG images (profile avatars, course thumbnails, logo)
-
-## Final Verification
-- [x] No empty PHP/CSS/JS files remaining
-- [x] All dashboards wired to sidebar via _shared.php
-- [x] Responsive layout with off-canvas mobile sidebar
-- [x] Orbitally complete vertical-sidebar frontend across all 3 roles
-
-## Path Fix (applied)
-- [x] Root public pages now use `frontend/components/` and `frontend/assets/` prefixes
-- [x] Dashboard pages use correct `../../` relative paths
-- [x] Component image references updated to `frontend/assets/images/...`
-- [x] Verified: index.php, about.php, and admin dashboard render with NO include errors (OK_RENDER, ABOUT_OK, ADMIN_OK)
-- [x] PHP syntax lint passes on all key files
-
-## Auth Page Redesign (applied)
-- [x] login.php & register.php rebuilt as centered glassmorphism cards
-- [x] Blurred learning-related background image (`auth-learning-bg.svg`) with floating animated icons
-- [x] Sign In option present on register page, Create Account on login page
-- [x] API integration created: `api/config.php`, `api/login.php`, `api/register.php`
-- [x] `frontend/assets/js/auth.js` handles login/register fetch API calls + validation + toasts
-- [x] Password strength meter, show/hide password, remember me, role selection
-- [x] Verified: login.php & register.php render (LOGIN_OK, REG_OK), all PHP lint clean
+## Final fix (this session)
+- [x] Rewrote root `courses.php` as DB-driven PHP/MySQL page matching existing page style
+  - [x] Reads & validates field_id from GET
+  - [x] Queries acad_courses WHERE field_id = ? (prepared statements)
+  - [x] Breadcrumb: Academic Fields > [Field] > Courses
+  - [x] Title: "Courses in [Field]"
+  - [x] Shows ONLY that field's courses -> subjects.php?course_id=X
+  - [x] "No courses available for this academic field." empty state
+  - [x] "Back to Academic Fields" button
+- [x] Verified php -l passes for courses.php, subjects.php, skills.php, mentors.php, academic-fields.php
 

@@ -4,7 +4,7 @@
 $nav_items = isset($nav_items) ? $nav_items : [
     ['label' => 'Home', 'icon' => 'fa-house', 'link' => 'index.php'],
     ['label' => 'About', 'icon' => 'fa-circle-info', 'link' => 'about.php'],
-    ['label' => 'Academic Fields', 'icon' => 'fa-layer-group', 'link' => 'academic-filed.php'],
+    ['label' => 'Academic Fields', 'icon' => 'fa-layer-group', 'link' => 'academic-fields.php'],
     ['label' => 'Courses', 'icon' => 'fa-book-open', 'link' => 'courses.php'],
     ['label' => 'Mentors', 'icon' => 'fa-user-tie', 'link' => 'mentor.php'],
     ['label' => 'Research', 'icon' => 'fa-flask', 'link' => 'research.php'],
@@ -18,7 +18,9 @@ $nav_items = isset($nav_items) ? $nav_items : [
     </button>
 
     <div class="nav-brand">
-        <div class="brand-logo"><i class="fa-solid fa-graduation-cap"></i></div>
+        <div class="brand-logo">
+            <img src="frontend/assets/images/logo/skillshare hub.png" alt="SkillShare Hub logo">
+        </div>
         <div class="brand-text">
             <span>SkillShare</span>
             <small>Hub</small>

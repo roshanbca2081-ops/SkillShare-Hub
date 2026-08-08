@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Profile Card - used in dashboards and user listings
 // Accepts optional $profile (array: name, role, image, location, rating, joined, verified)
 $profile = isset($profile) && is_array($profile) ? $profile : [

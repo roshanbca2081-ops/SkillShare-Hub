@@ -29,17 +29,23 @@
 }
 
 .v-navbar .nav-brand .brand-logo {
-    width: 46px;
-    height: 46px;
+    width: 34px;
+    height: 34px;
     border-radius: var(--border-radius-md);
     background: var(--gradient-primary);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.4rem;
-    color: #fff;
+    overflow: hidden;
     flex-shrink: 0;
     box-shadow: var(--shadow-primary);
+}
+
+.v-navbar .nav-brand .brand-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
 }
 
 .v-navbar .nav-brand .brand-text {
@@ -50,7 +56,7 @@
 .v-navbar .nav-brand .brand-text span {
     display: block;
     font-weight: 700;
-    font-size: 1.15rem;
+    font-size: 1rem;
     color: #fff;
 }
 
@@ -235,6 +241,8 @@
     margin-left: var(--sidebar-width);
     transition: var(--transition-base);
 }
+/* ensure main content starts close to the top of the viewport */
+.with-v-nav { padding-top: 6px; }
 
 body.nav-collapsed .with-v-nav { margin-left: var(--sidebar-collapsed-width); }
 
@@ -251,6 +259,29 @@ body.nav-collapsed .with-v-nav { margin-left: var(--sidebar-collapsed-width); }
 
 .nav-overlay.show { opacity: 1; visibility: visible; }
 
+/* Mobile responsive for vertical navbar */
+@media (max-width: 991px) {
+    .v-navbar {
+        transform: translateX(-100%);
+        box-shadow: var(--shadow-lg);
+    }
+    .v-navbar.mobile-open {
+        transform: translateX(0);
+    }
+    .with-v-nav {
+        margin-left: 0 !important;
+    }
+    body.nav-collapsed .with-v-nav {
+        margin-left: 0 !important;
+    }
+    .v-navbar .nav-toggle-btn {
+        display: none;
+    }
+    .mobile-nav-toggle-container {
+        display: flex !important;
+    }
+}
+
 /* Mobile nav toggle for small screens */
 .mobile-nav-toggle {
     display: none;
@@ -266,6 +297,12 @@ body.nav-collapsed .with-v-nav { margin-left: var(--sidebar-collapsed-width); }
     justify-content: center;
     box-shadow: var(--shadow-primary);
     z-index: 1060;
+}
+
+@media (max-width: 991px) {
+    .mobile-nav-toggle {
+        display: flex;
+    }
 }
 
 /* =============================================

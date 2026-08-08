@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 session_start();
 $navbar_active = 'Contact';
 ?>

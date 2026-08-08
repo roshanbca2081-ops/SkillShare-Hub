@@ -11,7 +11,9 @@ $sidebar_role = isset($sidebar_role) ? $sidebar_role : 'user';
     </button>
 
     <div class="nav-brand">
-        <div class="brand-logo"><i class="fa-solid fa-graduation-cap"></i></div>
+        <div class="brand-logo">
+            <img src="frontend/assets/images/logo/skillshare hub.png" alt="SkillShare Hub logo">
+        </div>
         <div class="brand-text">
             <span>SkillShare</span>
             <small>Dashboard</small>

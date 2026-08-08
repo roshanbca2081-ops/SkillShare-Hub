@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // About Section for homepage
 ?>
 <section class="section-padding" id="about">

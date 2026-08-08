@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Testimonial Cards
 $testimonials = isset($testimonials) && is_array($testimonials) ? $testimonials : [
     ['name' => 'Sarah Johnson', 'role' => 'CS Fresher', 'image' => 'frontend/assets/images/profile/avatar-1.svg', 'rating' => 5, 'text' => 'The mentorship program completely transformed my career. My mentor guided me every step of the way, and I landed my dream job within 4 months!'],

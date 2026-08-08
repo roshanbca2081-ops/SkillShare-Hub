@@ -10,7 +10,7 @@ if (!$footer_visible) return;
                 <!-- Brand -->
                 <div class="footer-brand">
                     <div class="f-logo">
-                        <i class="fa-solid fa-graduation-cap"></i>
+                        <img src="frontend/assets/images/logo/skillshare hub.png" alt="SkillShare Hub logo">
                         <span>SkillShare Hub</span>
                     </div>
                     <p>Empowering learners and mentors to share skills, grow together, and shape the future of education through a vibrant community.</p>

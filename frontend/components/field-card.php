@@ -18,15 +18,21 @@ $fields = isset($fields) && is_array($fields) ? $fields : [
             <p>Discover the right path for your career across multiple disciplines guided by expert mentors.</p>
         </div>
 
-        <div class="grid-3">
+        <div class="field-grid">
             <?php foreach ($fields as $field): ?>
-                <div class="feature-card reveal">
-                    <div class="feature-icon"><i class="fa-solid <?php echo $field['icon']; ?>"></i></div>
-                    <h5><?php echo $field['title']; ?></h5>
-                    <p><?php echo $field['desc']; ?></p>
-                    <a href="<?php echo $field['link']; ?>" class="btn btn-ghost btn-sm" style="margin-top:1rem;color:var(--primary);border-color:var(--primary);">
-                        <?php echo $field['count']; ?> Courses <i class="fa-solid fa-arrow-right"></i>
-                    </a>
+                <div class="field-card reveal">
+                    <div class="field-card-top">
+                        <div class="field-card-icon"><i class="fa-solid <?php echo $field['icon']; ?>"></i></div>
+                        <div class="field-meta">
+                            <span>Program</span>
+                            <h3><?php echo $field['title']; ?></h3>
+                        </div>
+                    </div>
+                    <p class="field-card-content"><?php echo $field['desc']; ?></p>
+                    <div class="field-card-footer">
+                        <div class="badge-pill"><i class="fa-solid fa-arrow-trend-up"></i> <?php echo $field['count']; ?> Courses</div>
+                        <a href="<?php echo $field['link']; ?>">Explore <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
                 </div>
             <?php endforeach; ?>
         </div>
