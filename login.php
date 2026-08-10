@@ -584,7 +584,7 @@ session_start();
    ANIMATED BACKGROUND
    ============================================ -->
 <div class="bg-animated"></div>
-<div class="floating-logo">SHARE SKILL HUB</div>
+<div class="floating-logo">SkillShare Hub</div>
 
 <div class="floating-icons">
     <div class="icon" style="top:8%;left:5%;"><i class="fas fa-robot"></i><span class="label">Engineering</span></div>
@@ -617,7 +617,9 @@ session_start();
            ============================================ -->
         <div id="loginForm" class="auth-card">
             <div class="auth-brand">
-                <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+               <div class="logo-icon">
+                    <img src="frontend/assets/images/logo/skillshare%20hub.png" alt="SkillShare Hub Logo" style="max-width:120px; height:auto;">
+                </div>
                 <h1>ShareSkill Hub</h1>
                 <p>Bridging Education with Industry</p>
                 <div class="tagline">

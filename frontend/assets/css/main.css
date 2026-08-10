@@ -67,7 +67,7 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
 }
 
 .page-content {
-    padding: var(--spacing-8) 0;
+    padding: var(--spacing-4) 0;
 }
 
 .section-padding {

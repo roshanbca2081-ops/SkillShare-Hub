@@ -609,7 +609,7 @@ session_start();
    ANIMATED BACKGROUND
    ============================================ -->
 <div class="bg-animated"></div>
-<div class="floating-logo"> SKILLSHARE HUB</div>
+<div class="floating-logo">SkillShare Hub</div>
 
 <!-- ============================================
    NAVBAR

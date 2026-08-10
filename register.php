@@ -22,7 +22,7 @@ session_start();
 <body>
 
 <div class="bg-animated"></div>
-<div class="floating-logo">SkillShare HUB</div>
+<div class="floating-logo">SkillShare Hub</div>
 
 
 
@@ -34,7 +34,9 @@ session_start();
         <!-- LOGIN FORM (hidden on register.php) -->
         <div id="loginForm" class="auth-card" style="display:none;">
             <div class="auth-brand">
-                <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+            <div class="logo-icon">
+                <img src="frontend/assets/images/logo/skillshare-hub.png" alt="SkillShare Hub Logo" style="max-width:120px; height:auto;">
+            </div>
                 <h1>ShareSkill Hub</h1>
                 <p>Bridging Education with Industry</p>
                 <div class="tagline">

@@ -135,6 +135,7 @@
         "arts-design": { name: "Arts & Design", icon: "fa-palette", color: "#ec4899", description: "Study visual arts, graphic design, and creative media", mentors: 75, skills: 46, courses: ["BFA", "Graphic Design", "Multimedia", "Fashion Design"], subjects: ["Drawing & Sketching", "Painting", "Color Theory", "Graphic Design", "Typography", "Photoshop", "Illustrator", "Digital Art", "Illustration", "Photography", "Video Editing", "Adobe After Effects", "Animation", "Fashion Design", "Textile Design", "Branding", "Portfolio Development", "Creative Thinking"] },
         "journalism-media": { name: "Journalism & Media", icon: "fa-newspaper", color: "#f59e0b", description: "Study reporting, digital media, and broadcasting", mentors: 62, skills: 40, courses: ["BJMC", "BA Journalism", "Mass Communication"], subjects: ["News Reporting", "Feature Writing", "Editing", "Mass Communication", "Broadcasting", "Media Ethics", "Public Relations", "Digital Media", "Social Media", "Photography", "Video Production", "Content Writing", "Copywriting", "Media Law", "Investigative Journalism", "Interviewing", "Podcasting"] },
         "psychology": { name: "Psychology", icon: "fa-brain", color: "#8b5cf6", description: "Study human mind, behavior, and counseling", mentors: 70, skills: 44, courses: ["BSc Psychology", "BA Psychology", "MA Clinical Psychology"], subjects: ["Cognitive Psychology", "Developmental Psychology", "Social Psychology", "Abnormal Psychology", "Clinical Psychology", "Counseling Psychology", "Psychological Assessment", "Behavioral Psychology", "Research Methods", "Statistics in Psychology", "Psychometrics", "Human Development", "Physiological Psychology", "Personality", "Motivation & Emotion", "Psychotherapy", "Ethics in Psychology"] }
+
     };
 
     // ============================================
@@ -224,6 +225,6 @@
         afRenderFields();
     });
 
-    console.log('🏛️ ShareSkill Hub - Academic Fields (' + Object.keys(afFieldsData).length + ' fields)');
+    console.log('🏛️ SkillShare Hub - Academic Fields (' + Object.keys(afFieldsData).length + ' fields)');
 </script>
 

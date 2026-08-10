@@ -865,7 +865,7 @@ $navbar_active = 'Home';
    ANIMATED BACKGROUND
    ============================================ -->
 <div class="bg-animated"></div>
-<div class="floating-logo">SHARE SKILL HUB</div>
+<div class="floating-logo">SkillShare Hub</div>
 
 <div class="floating-icons">
     <div class="icon" style="top:8%;left:5%;"><i class="fas fa-robot"></i><span class="label">Engineering</span></div>
