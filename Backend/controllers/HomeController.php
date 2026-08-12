@@ -4,140 +4,109 @@
  * Handles homepage and general site content
  */
 
-require_once __DIR__ . '/../models/User.php';
-require_once __DIR__ . '/../models/AcademicField.php';
-require_once __DIR__ . '/../models/Course.php';
+class HomeController
+{
+    private $db;
 
-class HomeController {
-    private $userModel;
-    private $academicFieldModel;
-    private $courseModel;
-
-    public function __construct() {
-        $this->userModel = new User();
-        $this->academicFieldModel = new AcademicField();
-        $this->courseModel = new Course();
+    public function __construct()
+    {
+        $this->db = Database::getInstance();
     }
 
-    /**
-     * Display homepage
-     */
-    public function index() {
-        // Get statistics for dashboard
+    public function index()
+    {
         $stats = [
-            'total_users' => $this->userModel->getTotalUsers(),
-            'total_mentors' => $this->userModel->getTotalMentors(),
-            'total_courses' => $this->courseModel->getTotalCourses(),
-            'total_fields' => $this->academicFieldModel->getTotalFields(),
+            'fields' => $this->db->count('academic_fields', "status = 'active'"),
+            'courses' => $this->db->count('courses', "status = 'active'"),
+            'mentors' => $this->db->count('users', "role = 'mentor' AND status = 'active'"),
+            'freshers' => $this->db->count('users', "role = 'fresher' AND status = 'active'"),
+            'sessions' => $this->db->count('sessions', "status = 'completed'"),
+            'skills' => $this->db->count('skills', "status = 'active'"),
+            'reviews' => $this->db->count('reviews')
         ];
 
-        // Get recent courses
-        $recentCourses = $this->courseModel->getRecentCourses(6);
+        $fields = $this->db->fetchAll(
+            "SELECT * FROM academic_fields WHERE status = 'active' ORDER BY sort_order LIMIT 8"
+        );
 
-        // Get popular fields
-        $popularFields = $this->academicFieldModel->getPopularFields(4);
+        $mentors = $this->db->fetchAll(
+            "SELECT u.*, m.rating, m.reviews_count, m.total_sessions FROM users u JOIN mentors m ON u.id = m.user_id WHERE u.role = 'mentor' AND u.status = 'active' AND m.is_verified = 1 ORDER BY m.rating DESC LIMIT 6"
+        );
 
-        // Get featured mentors
-        $featuredMentors = $this->userModel->getFeaturedMentors(4);
-
-        // Include homepage view
-        include __DIR__ . '/../views/home/index.php';
+        $data = [
+            'title' => 'Home',
+            'stats' => $stats,
+            'fields' => $fields,
+            'mentors' => $mentors
+        ];
+        $this->render('home/index', $data);
     }
 
-    /**
-     * Display about page
-     */
-    public function about() {
-        // Get team members
-        $teamMembers = $this->userModel->getTeamMembers();
-
-        // Include about page view
-        include __DIR__ . '/../views/pages/about.php';
+    public function about()
+    {
+        $this->render('home/about', ['title' => 'About']);
     }
 
-    /**
-     * Display contact page
-     */
-    public function contact() {
-        // Include contact page view
-        include __DIR__ . '/../views/pages/contact.php';
+    public function contact()
+    {
+        $this->render('contact/index', ['title' => 'Contact']);
     }
 
-    /**
-     * Handle contact form submission
-     */
-    public function submitContact() {
-        // Validate CSRF token
-        if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
-            $_SESSION['errors']['general'] = 'Invalid request. Please try again.';
-            header('Location: /contact');
-            exit;
+    public function sendContact()
+    {
+        $name = sanitize($_POST['name'] ?? '');
+        $email = sanitize($_POST['email'] ?? '');
+        $subject = sanitize($_POST['subject'] ?? '');
+        $message = sanitize($_POST['message'] ?? '');
+
+        // Validate
+        if (empty($name) || empty($email) || empty($subject) || empty($message)) {
+            setFlash('error', 'All fields are required');
+            redirectBack();
+            return;
         }
 
-        // Get form data
-        $name = $_POST['name'] ?? '';
-        $email = $_POST['email'] ?? '';
-        $subject = $_POST['subject'] ?? '';
-        $message = $_POST['message'] ?? '';
-
-        // Validate input
-        $errors = validateContactInput($name, $email, $subject, $message);
-
-        if (!empty($errors)) {
-            $_SESSION['errors'] = $errors;
-            $_SESSION['old_input'] = $_POST;
-            header('Location: /contact');
-            exit;
+        if (!validateEmail($email)) {
+            setFlash('error', 'Valid email is required');
+            redirectBack();
+            return;
         }
 
-        // Save contact message
-        $contactId = $this->userModel->saveContactMessage([
+        $this->db->insert('contact_messages', [
             'name' => $name,
             'email' => $email,
             'subject' => $subject,
-            'message' => $message
+            'message' => $message,
+            'created_at' => date('Y-m-d H:i:s')
         ]);
 
-        if ($contactId) {
-            // Set success message
-            setFlashMessage('success', 'Your message has been sent successfully. We will get back to you soon.');
-
-            // Redirect to contact page
-            header('Location: /contact');
-            exit;
-        } else {
-            // Set error message
-            $_SESSION['errors']['general'] = 'Failed to send your message. Please try again.';
-            $_SESSION['old_input'] = $_POST;
-            header('Location: /contact');
-            exit;
-        }
+        setFlash('success', 'Message sent successfully! We\'ll get back to you soon.');
+        redirect(APP_URL . 'contact');
     }
 
-    /**
-     * Display terms of service
-     */
-    public function terms() {
-        // Include terms page view
-        include __DIR__ . '/../views/pages/terms.php';
+    public function submitContact()
+    {
+        $this->sendContact();
     }
 
-    /**
-     * Display privacy policy
-     */
-    public function privacy() {
-        // Include privacy policy page view
-        include __DIR__ . '/../views/pages/privacy.php';
+    public function terms()
+    {
+        $this->render('terms', ['title' => 'Terms of Service']);
     }
 
-    /**
-     * Display FAQ page
-     */
-    public function faq() {
-        // Get FAQ categories
-        $faqCategories = $this->userModel->getFAQCategories();
+    public function privacy()
+    {
+        $this->render('privacy-policy', ['title' => 'Privacy Policy']);
+    }
 
-        // Include FAQ page view
-        include __DIR__ . '/../views/pages/faq.php';
+    public function faq()
+    {
+        $this->render('faq', ['title' => 'FAQ']);
+    }
+
+    private function render($view, $data = [])
+    {
+        extract($data);
+        include __DIR__ . '/../views/' . $view . '.php';
     }
 }

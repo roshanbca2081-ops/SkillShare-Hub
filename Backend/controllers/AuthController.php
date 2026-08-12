@@ -4,491 +4,429 @@
  * Handles user authentication, registration, and password management
  */
 
-require_once __DIR__ . '/../models/User.php';
-require_once __DIR__ . '/../middleware/AuthMiddleware.php';
-require_once __DIR__ . '/../helpers/validator.php';
-require_once __DIR__ . '/../services/AuthService.php';
-require_once __DIR__ . '/../config/mail.php';
+class AuthController
+{
+    private $db;
 
-class AuthController {
-    private $userModel;
-    private $authService;
-    private $mailer;
-
-    public function __construct() {
-        $this->userModel = new User();
-        $this->authService = new AuthService();
-        $this->mailer = new MailConfig();
+    public function __construct()
+    {
+        $this->db = Database::getInstance();
     }
 
-    /**
-     * Show login form
-     */
-    public function showLoginForm() {
-        // If user is already logged in, redirect to dashboard
-        if (AuthMiddleware::check()) {
-            header('Location: /dashboard');
-            exit;
+    public function loginForm()
+    {
+        if (isLoggedIn()) {
+            $this->redirectToDashboard();
         }
-
-        // Include login form view
-        include __DIR__ . '/../views/auth/login.php';
+        $data = [
+            'title' => 'Login',
+            'csrf_token' => generateCSRFToken()
+        ];
+        $this->render('auth/login', $data);
     }
 
-    /**
-     * Show registration form
-     */
-    public function showRegistrationForm() {
-        // If user is already logged in, redirect to dashboard
-        if (AuthMiddleware::check()) {
-            header('Location: /dashboard');
-            exit;
+    public function login()
+    {
+        if (isLoggedIn()) {
+            $this->redirectToDashboard();
         }
 
-        // Include registration form view
-        include __DIR__ . '/../views/auth/register.php';
-    }
+        checkCSRF();
 
-    /**
-     * Handle user login
-     */
-    public function login() {
-        // Validate CSRF token
-        if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
-            $_SESSION['errors']['general'] = 'Invalid request. Please try again.';
-            header('Location: /login');
-            exit;
-        }
-
-        // Get form data
-        $email = $_POST['email'] ?? '';
+        $email = sanitize($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
-        $remember = isset($_POST['remember']) ? true : false;
+        $remember = isset($_POST['remember']) && $_POST['remember'] === 'on';
 
-        // Validate input
+        // Validate
         $errors = [];
-
-        if (empty($email)) {
-            $errors['email'] = 'Email is required';
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Please enter a valid email address';
+        if (empty($email) || !validateEmail($email)) {
+            $errors['email'] = 'Valid email is required';
         }
-
-        if (empty($password)) {
+        if (empty($password) || !validatePassword($password)) {
             $errors['password'] = 'Password is required';
         }
 
         if (!empty($errors)) {
-            $_SESSION['errors'] = $errors;
-            $_SESSION['old_input'] = $_POST;
-            header('Location: /login');
-            exit;
+            setFlash('errors', $errors);
+            setFlash('old', ['email' => $email]);
+            redirectBack();
+            return;
         }
 
-        // Attempt login
-        $user = $this->authService->login($email, $password, $remember);
-
-        if ($user) {
-            // Set flash message
-            setFlashMessage('success', 'Welcome back, ' . htmlspecialchars($user->name) . '!');
-
-            // Redirect to dashboard
-            header('Location: /dashboard');
-            exit;
-        } else {
-            // Set error message
-            $_SESSION['errors']['general'] = 'Invalid email or password';
-            $_SESSION['old_input'] = $_POST;
-            header('Location: /login');
-            exit;
-        }
-    }
-
-    /**
-     * Handle user registration
-     */
-    public function register() {
-        // Validate CSRF token
-        if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
-            $_SESSION['errors']['general'] = 'Invalid request. Please try again.';
-            header('Location: /register');
-            exit;
-        }
-
-        // Get form data
-        $name = $_POST['name'] ?? '';
-        $email = $_POST['email'] ?? '';
-        $password = $_POST['password'] ?? '';
-        $confirm_password = $_POST['confirm_password'] ?? '';
-        $role = $_POST['role'] ?? 'fresher';
-
-        // Validate input
-        $errors = validateRegistrationInput($name, $email, $password, $confirm_password, $role);
-
-        if (!empty($errors)) {
-            $_SESSION['errors'] = $errors;
-            $_SESSION['old_input'] = $_POST;
-            header('Location: /register');
-            exit;
-        }
-
-        // Check if email already exists
-        if ($this->userModel->emailExists($email)) {
-            $_SESSION['errors']['email'] = 'This email is already registered';
-            $_SESSION['old_input'] = $_POST;
-            header('Location: /register');
-            exit;
-        }
-
-        // Create user
-        $user = $this->userModel->create([
-            'name' => $name,
-            'email' => $email,
-            'password' => password_hash($password, PASSWORD_DEFAULT),
-            'role' => $role,
-            'status' => 'pending',
-            'email_verified' => false
-        ]);
-
-        if ($user) {
-            // Send verification email
-            $token = $this->authService->generateVerificationToken($user->id);
-            $this->mailer->sendVerificationEmail($email, $token);
-
-            // Set success message
-            setFlashMessage('success', 'Registration successful! Please check your email to verify your account.');
-
-            // Redirect to login page
-            header('Location: /login');
-            exit;
-        } else {
-            // Set error message
-            $_SESSION['errors']['general'] = 'Registration failed. Please try again.';
-            $_SESSION['old_input'] = $_POST;
-            header('Location: /register');
-            exit;
-        }
-    }
-
-    /**
-     * Handle user logout
-     */
-    public function logout() {
-        // Clear session data
-        $this->authService->logout();
-
-        // Set success message
-        setFlashMessage('success', 'You have been logged out successfully.');
-
-        // Redirect to login page
-        header('Location: /login');
-        exit;
-    }
-
-    /**
-     * Show forgot password form
-     */
-    public function showForgotPasswordForm() {
-        // If user is already logged in, redirect to dashboard
-        if (AuthMiddleware::check()) {
-            header('Location: /dashboard');
-            exit;
-        }
-
-        // Include forgot password form view
-        include __DIR__ . '/../views/auth/forgot-password.php';
-    }
-
-    /**
-     * Handle forgot password request
-     */
-    public function forgotPassword() {
-        // Validate CSRF token
-        if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
-            $_SESSION['errors']['general'] = 'Invalid request. Please try again.';
-            header('Location: /forgot-password');
-            exit;
-        }
-
-        // Get form data
-        $email = $_POST['email'] ?? '';
-
-        // Validate input
-        $errors = [];
-
-        if (empty($email)) {
-            $errors['email'] = 'Email is required';
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Please enter a valid email address';
-        }
-
-        if (!empty($errors)) {
-            $_SESSION['errors'] = $errors;
-            $_SESSION['old_input'] = $_POST;
-            header('Location: /forgot-password');
-            exit;
-        }
-
-        // Check if user exists
-        $user = $this->userModel->findByEmail($email);
-
-        if ($user) {
-            // Generate reset token
-            $token = $this->authService->generateResetToken($user->id);
-
-            // Send reset email
-            $this->mailer->sendPasswordResetEmail($email, $token);
-
-            // Set success message
-            setFlashMessage('success', 'Password reset instructions have been sent to your email.');
-        } else {
-            // Set success message (don't reveal if email exists or not)
-            setFlashMessage('success', 'Password reset instructions have been sent to your email.');
-        }
-
-        // Redirect to login page
-        header('Location: /login');
-        exit;
-    }
-
-    /**
-     * Show reset password form
-     */
-    public function showResetPasswordForm() {
-        // If user is already logged in, redirect to dashboard
-        if (AuthMiddleware::check()) {
-            header('Location: /dashboard');
-            exit;
-        }
-
-        // Check if token is provided
-        if (!isset($_GET['token']) || empty($_GET['token'])) {
-            setFlashMessage('error', 'Invalid reset token.');
-            header('Location: /forgot-password');
-            exit;
-        }
-
-        // Validate token
-        $token = $_GET['token'];
-        $userId = $this->authService->validateResetToken($token);
-
-        if (!$userId) {
-            setFlashMessage('error', 'Invalid or expired reset token.');
-            header('Location: /forgot-password');
-            exit;
-        }
-
-        // Include reset password form view
-        include __DIR__ . '/../views/auth/reset-password.php';
-    }
-
-    /**
-     * Handle password reset
-     */
-    public function resetPassword() {
-        // Validate CSRF token
-        if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
-            $_SESSION['errors']['general'] = 'Invalid request. Please try again.';
-            header('Location: /forgot-password');
-            exit;
-        }
-
-        // Get form data
-        $token = $_POST['token'] ?? '';
-        $password = $_POST['password'] ?? '';
-        $confirm_password = $_POST['confirm_password'] ?? '';
-
-        // Validate input
-        $errors = validatePasswordResetInput($password, $confirm_password);
-
-        if (!empty($errors)) {
-            $_SESSION['errors'] = $errors;
-            $_SESSION['old_input'] = $_POST;
-            header('Location: /reset-password?token=' . $token);
-            exit;
-        }
-
-        // Validate token
-        $userId = $this->authService->validateResetToken($token);
-
-        if (!$userId) {
-            setFlashMessage('error', 'Invalid or expired reset token.');
-            header('Location: /forgot-password');
-            exit;
-        }
-
-        // Update password
-        $result = $this->userModel->updatePassword($userId, password_hash($password, PASSWORD_DEFAULT));
-
-        if ($result) {
-            // Invalidate the token
-            $this->authService->invalidateResetToken($token);
-
-            // Set success message
-            setFlashMessage('success', 'Your password has been reset successfully. Please login.');
-
-            // Redirect to login page
-            header('Location: /login');
-            exit;
-        } else {
-            // Set error message
-            $_SESSION['errors']['general'] = 'Password reset failed. Please try again.';
-            $_SESSION['old_input'] = $_POST;
-            header('Location: /reset-password?token=' . $token);
-            exit;
-        }
-    }
-
-    /**
-     * Verify user email
-     */
-    public function verifyEmail() {
-        // Check if token is provided
-        if (!isset($_GET['token']) || empty($_GET['token'])) {
-            setFlashMessage('error', 'Invalid verification token.');
-            header('Location: /login');
-            exit;
-        }
-
-        // Validate token
-        $token = $_GET['token'];
-        $userId = $this->authService->validateVerificationToken($token);
-
-        if (!$userId) {
-            setFlashMessage('error', 'Invalid or expired verification token.');
-            header('Location: /login');
-            exit;
-        }
-
-        // Mark email as verified
-        $result = $this->userModel->markEmailAsVerified($userId);
-
-        if ($result) {
-            // Invalidate the token
-            $this->authService->invalidateVerificationToken($token);
-
-            // Set success message
-            setFlashMessage('success', 'Your email has been verified successfully. Please login.');
-
-            // Redirect to login page
-            header('Location: /login');
-            exit;
-        } else {
-            // Set error message
-            setFlashMessage('error', 'Email verification failed. Please try again.');
-            header('Location: /login');
-            exit;
-        }
-    }
-
-    /**
-     * API: Get current user
-     */
-    public function getCurrentUser() {
-        // Check if user is authenticated
-        if (!AuthMiddleware::check()) {
-            http_response_code(401);
-            echo json_encode(['error' => 'Unauthorized']);
-            exit;
-        }
-
-        // Get current user
-        $user = AuthMiddleware::user();
-
-        // Remove sensitive data
-        unset($user->password);
-        unset($user->remember_token);
-
-        // Return user data
-        echo json_encode(['user' => $user]);
-        exit;
-    }
-
-    /**
-     * API: Handle user login
-     */
-    public function apiLogin() {
-        // Get JSON data
-        $json = file_get_contents('php://input');
-        $data = json_decode($json, true);
-
-        // Validate input
-        if (!isset($data['email']) || !isset($data['password'])) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Email and password are required']);
-            exit;
-        }
-
-        // Attempt login
-        $user = $this->authService->login($data['email'], $data['password'], false);
-
-        if ($user) {
-            // Remove sensitive data
-            unset($user->password);
-            unset($user->remember_token);
-
-            // Return user data
-            echo json_encode(['user' => $user]);
-            exit;
-        } else {
-            http_response_code(401);
-            echo json_encode(['error' => 'Invalid email or password']);
-            exit;
-        }
-    }
-
-    /**
-     * API: Handle user registration
-     */
-    public function apiRegister() {
-        // Get JSON data
-        $json = file_get_contents('php://input');
-        $data = json_decode($json, true);
-
-        // Validate input
-        $errors = validateRegistrationInput(
-            $data['name'] ?? '',
-            $data['email'] ?? '',
-            $data['password'] ?? '',
-            $data['confirm_password'] ?? '',
-            $data['role'] ?? 'fresher'
+        // Find user
+        $user = $this->db->fetch(
+            "SELECT * FROM users WHERE email = ? AND status = 'active'",
+            [$email]
         );
 
-        if (!empty($errors)) {
-            http_response_code(422);
-            echo json_encode(['errors' => $errors]);
-            exit;
+        if (!$user || !password_verify($password, $user['password_hash'])) {
+            setFlash('error', 'Invalid email or password');
+            redirectBack();
+            return;
         }
 
-        // Check if email already exists
-        if ($this->userModel->emailExists($data['email'])) {
-            http_response_code(422);
-            echo json_encode(['errors' => ['email' => 'This email is already registered']]);
-            exit;
+        if ($user['is_verified'] == 0) {
+            setFlash('error', 'Please verify your email first');
+            redirectBack();
+            return;
+        }
+
+        // Login
+        $this->loginUser($user, $remember);
+        $this->redirectToDashboard($user['role']);
+    }
+
+    public function registerForm()
+    {
+        if (isLoggedIn()) {
+            $this->redirectToDashboard();
+        }
+        $data = [
+            'title' => 'Register',
+            'csrf_token' => generateCSRFToken(),
+            'fields' => $this->db->fetchAll("SELECT * FROM academic_fields WHERE status = 'active' ORDER BY name")
+        ];
+        $this->render('auth/register', $data);
+    }
+
+    public function register()
+    {
+        if (isLoggedIn()) {
+            $this->redirectToDashboard();
+        }
+
+        checkCSRF();
+
+        $data = [
+            'full_name' => sanitize($_POST['full_name'] ?? ''),
+            'email' => sanitize($_POST['email'] ?? ''),
+            'phone' => sanitize($_POST['phone'] ?? ''),
+            'password' => $_POST['password'] ?? '',
+            'password_confirm' => $_POST['password_confirm'] ?? '',
+            'role' => sanitize($_POST['role'] ?? 'fresher'),
+            'academic_field' => sanitize($_POST['academic_field'] ?? ''),
+            'course' => sanitize($_POST['course'] ?? ''),
+            'agree_terms' => isset($_POST['agree_terms']) && $_POST['agree_terms'] === 'on'
+        ];
+
+        // Validate
+        $errors = [];
+        if (empty($data['full_name']) || strlen($data['full_name']) < 2) {
+            $errors['full_name'] = 'Full name is required';
+        }
+        if (empty($data['email']) || !validateEmail($data['email'])) {
+            $errors['email'] = 'Valid email is required';
+        } elseif ($this->db->fetch("SELECT id FROM users WHERE email = ?", [$data['email']])) {
+            $errors['email'] = 'Email already registered';
+        }
+        if (!empty($data['phone']) && !validatePhone($data['phone'])) {
+            $errors['phone'] = 'Valid phone number required';
+        }
+        if (empty($data['password']) || strlen($data['password']) < 6) {
+            $errors['password'] = 'Password must be at least 6 characters';
+        } elseif ($data['password'] !== $data['password_confirm']) {
+            $errors['password_confirm'] = 'Passwords do not match';
+        }
+        if (empty($data['academic_field'])) {
+            $errors['academic_field'] = 'Academic field is required';
+        }
+        if (empty($data['course'])) {
+            $errors['course'] = 'Course is required';
+        }
+        if (!$data['agree_terms']) {
+            $errors['agree_terms'] = 'You must agree to the terms';
+        }
+
+        if (!empty($errors)) {
+            setFlash('errors', $errors);
+            setFlash('old', $data);
+            redirectBack();
+            return;
         }
 
         // Create user
-        $user = $this->userModel->create([
-            'name' => $data['name'],
+        $verificationToken = bin2hex(random_bytes(32));
+        $userId = $this->db->insert('users', [
+            'full_name' => $data['full_name'],
             'email' => $data['email'],
-            'password' => password_hash($data['password'], PASSWORD_DEFAULT),
+            'phone' => $data['phone'],
+            'password_hash' => password_hash($data['password'], PASSWORD_BCRYPT, ['cost' => PASSWORD_BCRYPT_ROUNDS]),
             'role' => $data['role'],
-            'status' => 'pending',
-            'email_verified' => false
+            'academic_field' => $data['academic_field'],
+            'course' => $data['course'],
+            'is_verified' => 0,
+            'verification_token' => $verificationToken,
+            'status' => 'active',
+            'created_at' => date('Y-m-d H:i:s')
         ]);
 
-        if ($user) {
-            // Remove sensitive data
-            unset($user->password);
-            unset($user->remember_token);
+        if ($userId) {
+            // Create role specific record
+            if ($data['role'] === 'mentor') {
+                $this->db->insert('mentors', ['user_id' => $userId]);
+            } elseif ($data['role'] === 'fresher') {
+                $this->db->insert('freshers', ['user_id' => $userId]);
+            }
 
-            // Return user data
-            echo json_encode(['user' => $user]);
-            exit;
+            // Send verification email (placeholder)
+            // $this->sendVerificationEmail($data['email'], $verificationToken);
+
+            setFlash('success', 'Registration successful! Please check your email.');
+            redirect(APP_URL . 'login');
         } else {
-            http_response_code(500);
-            echo json_encode(['error' => 'Registration failed']);
-            exit;
+            setFlash('error', 'Registration failed. Please try again.');
+            redirectBack();
         }
+    }
+
+    public function logout()
+    {
+        if (isset($_COOKIE['remember_token'])) {
+            setcookie('remember_token', '', time() - 3600, '/');
+        }
+        session_destroy();
+        setFlash('success', 'Logged out successfully');
+        redirect(APP_URL . 'login');
+    }
+
+    public function verify($token)
+    {
+        $user = $this->db->fetch(
+            "SELECT id FROM users WHERE verification_token = ? AND is_verified = 0",
+            [$token]
+        );
+
+        if ($user) {
+            $this->db->update('users', [
+                'is_verified' => 1,
+                'verification_token' => null,
+                'email_verified_at' => date('Y-m-d H:i:s')
+            ], 'id = ?', [$user['id']]);
+            setFlash('success', 'Email verified successfully! Please login.');
+        } else {
+            setFlash('error', 'Invalid verification token');
+        }
+
+        redirect(APP_URL . 'login');
+    }
+
+    public function forgotPasswordForm()
+    {
+        $this->render('auth/forgot-password', ['title' => 'Forgot Password']);
+    }
+
+    public function forgotPassword()
+    {
+        $email = sanitize($_POST['email'] ?? '');
+        if (empty($email) || !validateEmail($email)) {
+            setFlash('error', 'Valid email is required');
+            redirectBack();
+            return;
+        }
+
+        $user = $this->db->fetch("SELECT id FROM users WHERE email = ?", [$email]);
+        if ($user) {
+            $token = bin2hex(random_bytes(32));
+            $this->db->update('users', [
+                'reset_token' => $token,
+                'reset_token_expiry' => date('Y-m-d H:i:s', time() + 3600)
+            ], 'id = ?', [$user['id']]);
+
+            // Send reset email (placeholder)
+            // $this->sendPasswordResetEmail($email, $token);
+
+            setFlash('success', 'Password reset link sent to your email');
+        } else {
+            setFlash('success', 'If your email is registered, you will receive a reset link');
+        }
+
+        redirect(APP_URL . 'login');
+    }
+
+    public function resetPasswordForm($token)
+    {
+        $user = $this->db->fetch(
+            "SELECT id FROM users WHERE reset_token = ? AND reset_token_expiry > NOW()",
+            [$token]
+        );
+
+        if (!$user) {
+            setFlash('error', 'Invalid or expired reset token');
+            redirect(APP_URL . 'forgot-password');
+            return;
+        }
+
+        $this->render('auth/reset-password', ['title' => 'Reset Password', 'token' => $token]);
+    }
+
+    public function resetPassword()
+    {
+        $token = sanitize($_POST['token'] ?? '');
+        $password = $_POST['password'] ?? '';
+        $password_confirm = $_POST['password_confirm'] ?? '';
+
+        if (empty($password) || strlen($password) < 6) {
+            setFlash('error', 'Password must be at least 6 characters');
+            redirectBack();
+            return;
+        }
+
+        if ($password !== $password_confirm) {
+            setFlash('error', 'Passwords do not match');
+            redirectBack();
+            return;
+        }
+
+        $user = $this->db->fetch(
+            "SELECT id FROM users WHERE reset_token = ? AND reset_token_expiry > NOW()",
+            [$token]
+        );
+
+        if (!$user) {
+            setFlash('error', 'Invalid or expired reset token');
+            redirect(APP_URL . 'forgot-password');
+            return;
+        }
+
+        $this->db->update('users', [
+            'password_hash' => password_hash($password, PASSWORD_BCRYPT, ['cost' => PASSWORD_BCRYPT_ROUNDS]),
+            'reset_token' => null,
+            'reset_token_expiry' => null
+        ], 'id = ?', [$user['id']]);
+
+        setFlash('success', 'Password reset successfully. Please login.');
+        redirect(APP_URL . 'login');
+    }
+
+    // Alias for existing API endpoint compatibility
+    public function apiLogin()
+    {
+        $json = file_get_contents('php://input');
+        $data = json_decode($json, true) ?: $_POST;
+
+        $email = sanitize($data['email'] ?? '');
+        $password = $data['password'] ?? '';
+
+        $user = $this->db->fetch(
+            "SELECT * FROM users WHERE email = ? AND status = 'active' AND is_verified = 1",
+            [$email]
+        );
+
+        if (!$user || !password_verify($password, $user['password_hash'])) {
+            errorResponse('Invalid email or password', 401);
+            return;
+        }
+
+        $this->loginUser($user, false);
+        unset($user['password_hash'], $user['verification_token'], $user['reset_token'], $user['remember_token']);
+        successResponse($user, 'Login successful');
+    }
+
+    // Alias for existing API endpoint compatibility
+    public function apiRegister()
+    {
+        $json = file_get_contents('php://input');
+        $data = json_decode($json, true) ?: $_POST;
+
+        $fullName = sanitize($data['full_name'] ?? $data['name'] ?? '');
+        $email = sanitize($data['email'] ?? '');
+        $password = $data['password'] ?? '';
+        $role = sanitize($data['role'] ?? 'fresher');
+
+        if (empty($fullName) || empty($email) || strlen($password) < 6) {
+            errorResponse('Invalid registration data', 422);
+            return;
+        }
+
+        if ($this->db->fetch("SELECT id FROM users WHERE email = ?", [$email])) {
+            errorResponse('Email already registered', 422);
+            return;
+        }
+
+        $verificationToken = bin2hex(random_bytes(32));
+        $userId = $this->db->insert('users', [
+            'full_name' => $fullName,
+            'email' => $email,
+            'password_hash' => password_hash($password, PASSWORD_BCRYPT, ['cost' => PASSWORD_BCRYPT_ROUNDS]),
+            'role' => $role,
+            'is_verified' => 1,
+            'verification_token' => $verificationToken,
+            'status' => 'active',
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+
+        if (!$userId) {
+            errorResponse('Registration failed', 500);
+            return;
+        }
+
+        if ($role === 'mentor') {
+            $this->db->insert('mentors', ['user_id' => $userId]);
+        } elseif ($role === 'fresher') {
+            $this->db->insert('freshers', ['user_id' => $userId]);
+        }
+
+        successResponse(['user_id' => $userId], 'Registration successful');
+    }
+
+    // Alias for existing API endpoint compatibility
+    public function getCurrentUser()
+    {
+        if (!isLoggedIn()) {
+            errorResponse('Unauthorized', 401);
+            return;
+        }
+
+        $user = $this->db->fetch("SELECT * FROM users WHERE id = ?", [getUserId()]);
+        if (!$user) {
+            errorResponse('User not found', 404);
+            return;
+        }
+
+        unset($user['password_hash'], $user['verification_token'], $user['reset_token'], $user['remember_token']);
+        successResponse($user);
+    }
+
+    private function loginUser($user, $remember = false)
+    {
+        session_regenerate_id(true);
+
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_name'] = $user['full_name'];
+        $_SESSION['user_email'] = $user['email'];
+        $_SESSION['user_role'] = $user['role'];
+        $_SESSION['user_avatar'] = $user['profile_picture'] ?? 'default.png';
+
+        $this->db->update('users', [
+            'last_login' => date('Y-m-d H:i:s'),
+            'last_ip' => $_SERVER['REMOTE_ADDR'] ?? ''
+        ], 'id = ?', [$user['id']]);
+
+        if ($remember) {
+            $token = bin2hex(random_bytes(32));
+            $this->db->update('users', [
+                'remember_token' => $token,
+                'remember_expiry' => date('Y-m-d H:i:s', time() + REMEMBER_ME_LIFETIME)
+            ], 'id = ?', [$user['id']]);
+            setcookie('remember_token', $token, time() + REMEMBER_ME_LIFETIME, '/');
+        }
+    }
+
+    private function redirectToDashboard($role = null)
+    {
+        if (!$role) {
+            $role = getUserRole();
+        }
+        $url = APP_URL . 'dashboard';
+        if ($role === 'admin') $url = APP_URL . 'admin';
+        elseif ($role === 'mentor') $url = APP_URL . 'mentor/dashboard';
+        elseif ($role === 'fresher') $url = APP_URL . 'fresher/dashboard';
+        redirect($url);
+    }
+
+    private function render($view, $data = [])
+    {
+        extract($data);
+        include __DIR__ . '/../views/' . $view . '.php';
     }
 }

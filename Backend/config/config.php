@@ -24,7 +24,7 @@ define('SITE_URL', 'http://localhost/SkillShare-Hub');
 
 // Database credentials
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'skillsharehub');
+define('DB_NAME', 'shareskill_hub');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 define('DB_CHARSET', 'utf8mb4');

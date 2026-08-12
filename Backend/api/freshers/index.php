@@ -9,4 +9,10 @@ require_once __DIR__ . '/../../helpers/response.php';
 require_once __DIR__ . '/../../controllers/FresherController.php';
 
 $controller = new FresherController();
-$controller->index();
+$id = $_GET['id'] ?? null;
+
+if ($id) {
+    $controller->show($id);
+} else {
+    $controller->index();
+}

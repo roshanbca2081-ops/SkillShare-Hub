@@ -8,12 +8,30 @@
 define('APP_ENV', ENVIRONMENT ?? 'development');
 define('APP_DEBUG', APP_ENV === 'development');
 
+// Application Configuration
+define('APP_NAME', 'ShareSkill Hub');
+define('APP_URL', SITE_URL . '/');
+define('APP_VERSION', '1.0.0');
+
+// Security
+define('PASSWORD_BCRYPT_ROUNDS', 12);
+define('CSRF_TOKEN_LIFETIME', 3600);
+define('SESSION_LIFETIME', 3600);
+define('REMEMBER_ME_LIFETIME', 2592000);
+
+// Pagination
+define('ITEMS_PER_PAGE', 12);
+
+// Date Formats
+define('DATE_DISPLAY', 'F j, Y');
+define('TIME_DISPLAY', 'g:i A');
+
 // Paths
 define('BASE_PATH', dirname(__DIR__));
 define('CONFIG_PATH', BASE_PATH . '/config');
 define('CONTROLLER_PATH', BASE_PATH . '/controllers');
 define('MODEL_PATH', BASE_PATH . '/models');
-define('VIEW_PATH', BASE_PATH . '/../views');
+define('VIEW_PATH', BASE_PATH . '/views');
 define('UPLOAD_PATH', BASE_PATH . '/uploads');
 define('STORAGE_PATH', BASE_PATH . '/storage');
 
@@ -86,6 +104,5 @@ define('RATE_LIMIT_WINDOW', 60); // 1 minute
 define('RATE_LIMIT_ATTEMPTS', 30); // 30 requests per minute
 
 // File Size Limits (in bytes)
-define('MAX_FILE_SIZE', 10 * 1024 * 1024); // 10MB
 define('MAX_IMAGE_SIZE', 5 * 1024 * 1024); // 5MB
 define('MAX_DOCUMENT_SIZE', 20 * 1024 * 1024); // 20MB

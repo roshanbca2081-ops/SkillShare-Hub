@@ -165,19 +165,23 @@ async function handleLogin(event) {
 async function handleRegister(event) {
 event.preventDefault();
 
-    const firstname = document.getElementById('regFname').value.trim();
-    const lastname = document.getElementById('regLname').value.trim();
+    const fullName = document.getElementById('regName') ? document.getElementById('regName').value.trim() : '';
+    const [firstname, lastname] = fullName.split(/\s+/, 2);
     const email = document.getElementById('regEmail').value.trim();
     const role = document.querySelector('input[name="role"]:checked') ?
         document.querySelector('input[name="role"]:checked').value :
         (document.getElementById('regRole') ? document.getElementById('regRole').value : 'fresher');
     const password = document.getElementById('regPassword').value;
-    const confirmPassword = document.getElementById('regConfirm').value;
-    const terms = document.getElementById('agreeTerms') ? document.getElementById('agreeTerms').checked : false;
+    const confirmPassword = document.getElementById('regConfirmPassword') ? document.getElementById('regConfirmPassword').value : '';
+    const terms = document.getElementById('regTerms') ? document.getElementById('regTerms').checked : false;
+    const phone = document.getElementById('regContact') ? document.getElementById('regContact').value.trim() : '';
+    const address = document.getElementById('regAddress') ? document.getElementById('regAddress').value.trim() : '';
+    const field = document.getElementById('regField') ? document.getElementById('regField').value : '';
+    const course = document.getElementById('regCourse') ? document.getElementById('regCourse').value : '';
     const alertDiv = document.getElementById('registerAlert');
 
     // Validation
-    if (!firstname || !lastname || !email || !role || !password || !confirmPassword) {
+    if (!fullName || !email || !role || !password || !confirmPassword) {
         alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Please fill in all fields</div>`;
         return false;
     }
@@ -208,7 +212,7 @@ event.preventDefault();
         const res = await fetch('api/register.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ firstname, lastname, email, role, password, confirm_password: confirmPassword })
+            body: JSON.stringify({ full_name: fullName, firstname, lastname, email, role, password, confirm_password: confirmPassword, phone, address, field, course })
         });
 
         const data = await res.json();

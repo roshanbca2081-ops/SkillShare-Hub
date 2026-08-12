@@ -745,14 +745,31 @@ $sidebar_active = 'Dashboard';
             </a>
         </nav>
 
-        <div class="sidebar-footer">
-            <a href="settings.php" class="nav-item">
-                <i class="fas fa-cog"></i> Settings
+          <!-- ============================================
+              STATS CARDS
+              ============================================ -->
             </a>
             <a href="../../login.php" class="nav-item">
                 <i class="fas fa-sign-out-alt"></i> Logout
             </a>
         </div>
+
+        <script>
+            const mentorId = <?php echo isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0; ?>;
+            if (mentorId) {
+                fetch('../../Backend/api/mentors?id=' + mentorId)
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success && res.data) {
+                            const d = res.data;
+                            document.querySelectorAll('.stat-number')[0].textContent = (d.students ?? 0);
+                            document.querySelectorAll('.stat-number')[1].textContent = (d.bookings || []).length;
+                            document.querySelectorAll('.stat-number')[2].textContent = (d.reviews ?? 0);
+                        }
+                    })
+                    .catch(err => console.error('Mentor data error', err));
+            }
+        </script>
     </aside>
 
     <!-- ============================================

@@ -16,4 +16,13 @@ class GuestMiddleware
         }
         return true;
     }
+
+    public static function handle()
+    {
+        if (isLoggedIn()) {
+            redirect(APP_URL . 'dashboard');
+            exit;
+        }
+        return true;
+    }
 }

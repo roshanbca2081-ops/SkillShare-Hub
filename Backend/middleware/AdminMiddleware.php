@@ -18,4 +18,15 @@ class AdminMiddleware
         }
         return true;
     }
+
+    public static function handle()
+    {
+        AuthMiddleware::handle();
+        if (!isAdmin()) {
+            setFlash('error', 'Access denied. Admin only.');
+            redirect(APP_URL . 'dashboard');
+            exit;
+        }
+        return true;
+    }
 }

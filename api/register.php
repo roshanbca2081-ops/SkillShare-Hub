@@ -16,14 +16,17 @@ $data = getRequestData();
 
 $firstname = trim($data['firstname'] ?? '');
 $lastname  = trim($data['lastname'] ?? '');
+$fullName  = trim($data['full_name'] ?? trim($firstname . ' ' . $lastname));
 $email     = trim($data['email'] ?? '');
 $role      = trim($data['role'] ?? 'fresher');
 $password  = $data['password'] ?? '';
 $confirm   = $data['confirm_password'] ?? '';
+$phone     = trim($data['phone'] ?? '');
+$address   = trim($data['address'] ?? '');
 
 // Validate required fields
-if ($firstname === '' || $lastname === '' || $email === '' || $password === '') {
-    respond(false, 'All fields are required.', null, 422);
+if ($fullName === '' || $email === '' || $password === '') {
+    respond(false, 'Full name, email and password are required.', null, 422);
 }
 
 // Validate email
@@ -61,15 +64,17 @@ try {
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
     // Insert new user
-    $sql = 'INSERT INTO users (firstname, lastname, email, password, role, status, created_at)
-            VALUES (:firstname, :lastname, :email, :password, :role, :active, NOW())';
+    $sql = 'INSERT INTO users (full_name, email, password_hash, role, status, phone, address, created_at)
+            VALUES (:full_name, :email, :password, :role, :status, :phone, :address, NOW())';
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
-        ':firstname' => $firstname,
-        ':lastname'  => $lastname,
+        ':full_name' => $fullName,
         ':email'     => $email,
         ':password'  => $hashedPassword,
         ':role'      => $role,
+        ':status'    => 'active',
+        ':phone'     => $phone,
+        ':address'   => $address,
     ]);
 
     $userId = (int) $pdo->lastInsertId();
@@ -84,13 +89,13 @@ try {
     $dashboard = '';
     switch ($role) {
         case 'mentor':
-            $dashboard = 'frontend/dashboard/mentor/index.php';
+            $dashboard = 'dashboard/mentor/index.php';
             break;
         case 'admin':
-            $dashboard = 'frontend/dashboard/admin/index.php';
+            $dashboard = 'dashboard/admin/index.php';
             break;
         default:
-            $dashboard = 'frontend/dashboard/fresher/index.php';
+            $dashboard = 'dashboard/fresher/index.php';
             break;
     }
 

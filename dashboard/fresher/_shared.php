@@ -1,5 +1,27 @@
 <?php
 // Shared fresher sidebar configuration
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (empty($_SESSION['user_id']) || empty($_SESSION['user_role'])) {
+    header('Location: /SkillShare-Hub/login.php');
+    exit;
+}
+$expectedRole = 'fresher';
+if ($_SESSION['user_role'] !== $expectedRole) {
+    switch ($_SESSION['user_role']) {
+        case 'admin':
+            header('Location: /SkillShare-Hub/dashboard/admin/index.php');
+            break;
+        case 'mentor':
+            header('Location: /SkillShare-Hub/dashboard/mentor/index.php');
+            break;
+        default:
+            header('Location: /SkillShare-Hub/login.php');
+            break;
+    }
+    exit;
+}
 $sidebar_role = 'fresher';
 $sidebar_items = [
     'Main' => [

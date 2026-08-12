@@ -32,7 +32,7 @@ try {
     $pdo = getDB();
 
     // Query user by email
-    $stmt = $pdo->prepare('SELECT id, firstname, lastname, email, password, role, status FROM users WHERE email = :email LIMIT 1');
+    $stmt = $pdo->prepare('SELECT id, full_name, email, password_hash, role, status FROM users WHERE email = :email LIMIT 1');
     $stmt->execute([':email' => $email]);
     $user = $stmt->fetch();
 
@@ -46,13 +46,13 @@ try {
     }
 
     // Verify password
-    if (!password_verify($password, $user['password'])) {
+    if (!password_verify($password, $user['password_hash'])) {
         respond(false, 'Invalid email or password.', null, 401);
     }
 
     // Set session variables
     $_SESSION['user_id']   = $user['id'];
-    $_SESSION['user_name'] = trim($user['firstname'] . ' ' . $user['lastname']);
+    $_SESSION['user_name'] = $user['full_name'];
     $_SESSION['user_email'] = $user['email'];
     $_SESSION['user_role'] = $user['role'];
 
@@ -67,14 +67,14 @@ try {
     $dashboard = '';
     switch ($user['role']) {
         case 'admin':
-            $dashboard = 'frontend/dashboard/admin/index.php';
+            $dashboard = 'dashboard/admin/index.php';
             break;
         case 'mentor':
-            $dashboard = 'frontend/dashboard/mentor/index.php';
+            $dashboard = 'dashboard/mentor/index.php';
             break;
         case 'fresher':
         default:
-            $dashboard = 'frontend/dashboard/fresher/index.php';
+            $dashboard = 'dashboard/fresher/index.php';
             break;
     }
 

@@ -18,4 +18,15 @@ class MentorMiddleware
         }
         return true;
     }
+
+    public static function handle()
+    {
+        AuthMiddleware::handle();
+        if (!isMentor()) {
+            setFlash('error', 'Access denied. Mentor only.');
+            redirect(APP_URL . 'dashboard');
+            exit;
+        }
+        return true;
+    }
 }

@@ -1,15 +1,14 @@
 <?php
 session_start();
-$sidebar_role = 'fresher';
+$sidebar_role = 'admin';
 $sidebar_active = 'Dashboard';
-require_once __DIR__ . '/_shared.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fresher Dashboard | ShareSkill Hub</title>
+    <title>Admin Dashboard | ShareSkill Hub</title>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -712,30 +711,51 @@ require_once __DIR__ . '/_shared.php';
             <h4>ShareSkill <span>Hub</span></h4>
         </div>
 
+        <script>
+            // Fetch admin stats and populate stat cards
+            fetch('../../Backend/api/admin')
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success && res.data) {
+                        const d = res.data;
+                        document.querySelectorAll('.stat-number')[0].textContent = d.users ?? '0';
+                        document.querySelectorAll('.stat-number')[1].textContent = d.courses ?? '0';
+                        document.querySelectorAll('.stat-number')[2].textContent = d.mentors ?? '0';
+                        // Revenue not implemented server-side yet
+                        document.querySelectorAll('.stat-number')[3].textContent = '$0';
+                    }
+                })
+                .catch(err => console.error('Admin stats error', err));
+        </script>
+
         <nav class="sidebar-nav">
             <a href="index.php" class="nav-item active">
                 <i class="fas fa-th-large"></i> Dashboard
             </a>
-            <a href="courses.php" class="nav-item">
-                <i class="fas fa-book-open"></i> Courses
-                <span class="badge">6</span>
+            <a href="users.php" class="nav-item">
+                <i class="fas fa-users"></i> Users
+                <span class="badge">1.2k</span>
             </a>
             <a href="mentors.php" class="nav-item">
                 <i class="fas fa-user-tie"></i> Mentors
                 <span class="badge">24</span>
             </a>
+            <a href="freshers.php" class="nav-item">
+                <i class="fas fa-user-graduate"></i> Freshers
+            </a>
+            <a href="courses.php" class="nav-item">
+                <i class="fas fa-book-open"></i> Courses
+                <span class="badge">48</span>
+            </a>
             <a href="academic-fields.php" class="nav-item">
                 <i class="fas fa-layer-group"></i> Academic Fields
             </a>
+            <a href="bookings.php" class="nav-item">
+                <i class="fas fa-calendar-check"></i> Bookings
+                <span class="badge">5</span>
+            </a>
             <a href="research.php" class="nav-item">
                 <i class="fas fa-microscope"></i> Research
-            </a>
-            <a href="assignments.php" class="nav-item">
-                <i class="fas fa-file-pen"></i> Assignments
-            </a>
-            <a href="messages.php" class="nav-item">
-                <i class="fas fa-envelope"></i> Messages
-                <span class="badge">4</span>
             </a>
         </nav>
 
@@ -764,19 +784,19 @@ require_once __DIR__ . '/_shared.php';
                         <i class="fas fa-bars"></i>
                     </button>
                     <div>
-                        <h2>Welcome back, Alex! 👋</h2>
-                        <p>Here's what's happening with your learning journey</p>
+                        <h2>Welcome back, Admin! 👋</h2>
+                        <p>Here's what's happening on the platform</p>
                     </div>
                 </div>
             </div>
             <div class="header-actions">
                 <div class="search-box">
                     <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search courses...">
+                    <input type="text" placeholder="Search dashboard...">
                 </div>
                 <div class="profile">
-                    <img src="../../assets/images/profile/avatar-1.svg" alt="Profile">
-                    <span>Alex</span>
+                    <img src="../../assets/images/profile/avatar-1.svg" alt="Admin">
+                    <span>Admin</span>
                 </div>
             </div>
         </header>
@@ -788,37 +808,37 @@ require_once __DIR__ . '/_shared.php';
             <div class="stat-card">
                 <div class="stat-top">
                     <div>
-                        <div class="stat-number">6</div>
-                        <div class="stat-label">Enrolled Courses</div>
+                        <div class="stat-number">1,250</div>
+                        <div class="stat-label">Total Users</div>
                     </div>
-                    <div class="stat-icon"><i class="fas fa-book-open"></i></div>
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-top">
                     <div>
-                        <div class="stat-number">12</div>
-                        <div class="stat-label">Completed Sessions</div>
+                        <div class="stat-number">320</div>
+                        <div class="stat-label">Active Courses</div>
                     </div>
-                    <div class="stat-icon"><i class="fas fa-circle-check"></i></div>
+                    <div class="stat-icon"><i class="fas fa-graduation-cap"></i></div>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-top">
                     <div>
-                        <div class="stat-number">3</div>
-                        <div class="stat-label">Certificates</div>
+                        <div class="stat-number">85</div>
+                        <div class="stat-label">Mentors</div>
                     </div>
-                    <div class="stat-icon"><i class="fas fa-award"></i></div>
+                    <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-top">
                     <div>
-                        <div class="stat-number">68%</div>
-                        <div class="stat-label">Overall Progress</div>
+                        <div class="stat-number">$45k</div>
+                        <div class="stat-label">Revenue</div>
                     </div>
-                    <div class="stat-icon"><i class="fas fa-gauge-high"></i></div>
+                    <div class="stat-icon"><i class="fas fa-circle-dollar"></i></div>
                 </div>
             </div>
         </div>
@@ -878,4 +898,249 @@ require_once __DIR__ . '/_shared.php';
                 <div class="icon"><i class="fas fa-laptop-code"></i></div>
                 <div class="name">Information Technology</div>
                 <div class="count">8 Courses</div>
-           
+            </div>
+            <div class="field-card">
+                <div class="icon"><i class="fas fa-flask"></i></div>
+                <div class="name">Science</div>
+                <div class="count">5 Courses</div>
+            </div>
+            <div class="field-card">
+                <div class="icon"><i class="fas fa-briefcase"></i></div>
+                <div class="name">Management</div>
+                <div class="count">6 Courses</div>
+            </div>
+            <div class="field-card">
+                <div class="icon"><i class="fas fa-scale-balanced"></i></div>
+                <div class="name">Law</div>
+                <div class="count">4 Courses</div>
+            </div>
+            <div class="field-card">
+                <div class="icon"><i class="fas fa-graduation-cap"></i></div>
+                <div class="name">Education</div>
+                <div class="count">4 Courses</div>
+            </div>
+            <div class="field-card">
+                <div class="icon"><i class="fas fa-heart-pulse"></i></div>
+                <div class="name">Health Sciences</div>
+                <div class="count">5 Courses</div>
+            </div>
+            <div class="field-card">
+                <div class="icon"><i class="fas fa-palette"></i></div>
+                <div class="name">Arts & Humanities</div>
+                <div class="count">4 Courses</div>
+            </div>
+        </div>
+
+        <!-- ============================================
+           POPULAR COURSES
+           ============================================ -->
+        <div class="section-header">
+            <h3><i class="fas fa-fire" style="color:var(--warning);margin-right:8px;"></i>Popular Courses</h3>
+            <a href="courses.php">View All →</a>
+        </div>
+        <div class="courses-grid">
+            <div class="course-card">
+                <div class="course-top">
+                    <div class="course-icon"><i class="fas fa-code"></i></div>
+                    <span class="course-badge">IT</span>
+                </div>
+                <div class="course-name">Software Engineering</div>
+                <div class="course-meta">
+                    <span><i class="far fa-clock"></i> 4 Years</span>
+                    <span><i class="fas fa-users"></i> 1.2k</span>
+                </div>
+                <button class="course-btn" onclick="viewCourse('Software Engineering')">
+                    <i class="fas fa-arrow-right"></i> View Course
+                </button>
+            </div>
+
+            <div class="course-card">
+                <div class="course-top">
+                    <div class="course-icon"><i class="fas fa-cloud"></i></div>
+                    <span class="course-badge">IT</span>
+                </div>
+                <div class="course-name">Cloud Computing</div>
+                <div class="course-meta">
+                    <span><i class="far fa-clock"></i> 4 Years</span>
+                    <span><i class="fas fa-users"></i> 680</span>
+                </div>
+                <button class="course-btn" onclick="viewCourse('Cloud Computing')">
+                    <i class="fas fa-arrow-right"></i> View Course
+                </button>
+            </div>
+
+            <div class="course-card">
+                <div class="course-top">
+                    <div class="course-icon"><i class="fas fa-brain"></i></div>
+                    <span class="course-badge">IT</span>
+                </div>
+                <div class="course-name">Artificial Intelligence</div>
+                <div class="course-meta">
+                    <span><i class="far fa-clock"></i> 4 Years</span>
+                    <span><i class="fas fa-users"></i> 950</span>
+                </div>
+                <button class="course-btn" onclick="viewCourse('Artificial Intelligence')">
+                    <i class="fas fa-arrow-right"></i> View Course
+                </button>
+            </div>
+
+            <div class="course-card">
+                <div class="course-top">
+                    <div class="course-icon"><i class="fas fa-microchip"></i></div>
+                    <span class="course-badge">Engineering</span>
+                </div>
+                <div class="course-name">Computer Engineering</div>
+                <div class="course-meta">
+                    <span><i class="far fa-clock"></i> 4 Years</span>
+                    <span><i class="fas fa-users"></i> 1.3k</span>
+                </div>
+                <button class="course-btn" onclick="viewCourse('Computer Engineering')">
+                    <i class="fas fa-arrow-right"></i> View Course
+                </button>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- ============================================
+   TOAST CONTAINER
+   ============================================ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<style>
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 380px;
+    width: 100%;
+}
+.toast {
+    background: rgba(20,20,40,0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    color: var(--text-primary);
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.4s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.toast.success { border-left: 4px solid var(--success); }
+.toast.error { border-left: 4px solid var(--danger); }
+.toast.info { border-left: 4px solid var(--primary-500); }
+.toast .icon { font-size: 1.2rem; flex-shrink: 0; }
+.toast .content { flex: 1; }
+.toast .title { font-weight: 600; font-size: 0.9rem; }
+.toast .message { font-size: 0.8rem; color: var(--text-secondary); }
+.toast .close {
+    cursor: pointer;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    font-size: 1rem;
+    padding: 4px;
+}
+.toast .close:hover { color: var(--text-primary); }
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<!-- ============================================
+   JAVASCRIPT
+   ============================================ -->
+<script>
+    // ============================================
+    // TOAST SYSTEM
+    // ============================================
+    function showToast(title, message, type = 'info', duration = 4000) {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+
+        const icons = {
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            info: 'fa-info-circle'
+        };
+        const colors = {
+            success: '#22c55e',
+            error: '#ef4444',
+            info: '#3b82f6'
+        };
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+            <span class="icon" style="color:${colors[type]}"><i class="fas ${icons[type] || icons.info}"></i></span>
+            <div class="content">
+                <div class="title">${title}</div>
+                <div class="message">${message}</div>
+            </div>
+            <button class="close"><i class="fas fa-times"></i></button>
+        `;
+
+        toast.querySelector('.close').addEventListener('click', () => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(50px)';
+            setTimeout(() => toast.remove(), 300);
+        });
+
+        container.appendChild(toast);
+
+        if (duration > 0) {
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(50px)';
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+    }
+
+    // ============================================
+    // SIDEBAR TOGGLE (Mobile)
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+            });
+
+            // Close sidebar on outside click (mobile)
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 992) {
+                    if (!sidebar.contains(e.target) && !toggle.contains(e.target)) {
+                        sidebar.classList.remove('open');
+                    }
+                }
+            });
+        }
+    });
+
+    // ============================================
+    // VIEW COURSE
+    // ============================================
+    function viewCourse(courseName) {
+        showToast('📚 Course', `Loading "${courseName}" details...`, 'info', 3000);
+    }
+
+    // ============================================
+    // CONSOLE
+    // ============================================
+    console.log('📊 ShareSkill Hub - Admin Dashboard Loaded');
+    console.log('🎓 1,250 Users | 320 Courses | 85 Mentors | $45k Revenue');
+</script>
+
+</body>
+</html>

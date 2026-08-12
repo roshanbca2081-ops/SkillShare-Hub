@@ -1,0 +1,18 @@
+2026-08-11 19:53:21 Install started
+Step 1: Creating tables
+Tables created ok
+user_courses table created
+Seeding fields
+30 fields seeded
+Seeding courses
+194 courses seeded
+Seeding subjects
+795 subjects seeded
+Seeding skills
+3975 skills seeded
+Seeding mentors
+20 mentors seeded
+Linking mentors to skills
+3960 mentor-skill links created
+2026-08-11 19:53:37 Install finished
+

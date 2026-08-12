@@ -1,5 +1,27 @@
 <?php
 // Shared admin sidebar configuration
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (empty($_SESSION['user_id']) || empty($_SESSION['user_role'])) {
+    header('Location: /SkillShare-Hub/login.php');
+    exit;
+}
+$expectedRole = 'admin';
+if ($_SESSION['user_role'] !== $expectedRole) {
+    switch ($_SESSION['user_role']) {
+        case 'mentor':
+            header('Location: /SkillShare-Hub/dashboard/mentor/index.php');
+            break;
+        case 'fresher':
+            header('Location: /SkillShare-Hub/dashboard/fresher/index.php');
+            break;
+        default:
+            header('Location: /SkillShare-Hub/login.php');
+            break;
+    }
+    exit;
+}
 $sidebar_role = 'admin';
 $sidebar_items = [
     'Main' => [

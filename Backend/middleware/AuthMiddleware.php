@@ -28,8 +28,10 @@ class AuthMiddleware
     public static function handle()
     {
         if (!self::check()) {
-            header('Location: /login');
-            exit();
+            setFlash('error', 'Please login to continue');
+            redirect(APP_URL . 'login');
+            exit;
         }
+        return true;
     }
 }

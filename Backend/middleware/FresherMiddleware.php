@@ -18,4 +18,15 @@ class FresherMiddleware
         }
         return true;
     }
+
+    public static function handle()
+    {
+        AuthMiddleware::handle();
+        if (!isFresher()) {
+            setFlash('error', 'Access denied. Fresher only.');
+            redirect(APP_URL . 'dashboard');
+            exit;
+        }
+        return true;
+    }
 }

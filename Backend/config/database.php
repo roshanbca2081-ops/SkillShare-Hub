@@ -16,6 +16,7 @@ class Database {
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES => false,
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES " . DB_CHARSET,
             ];
 
             $this->connection = new PDO($dsn, DB_USER, DB_PASS, $options);
@@ -42,6 +43,11 @@ class Database {
         return $this->connection;
     }
 
+    // Prepare a SQL statement
+    public function prepare($sql) {
+        return $this->connection->prepare($sql);
+    }
+
     // Prepare and execute a SQL query
     public function query($sql, $params = []) {
         try {
@@ -61,6 +67,64 @@ class Database {
         }
     }
 
+    // Execute a prepared statement
+    public function execute($sql, $params = []) {
+        $stmt = $this->prepare($sql);
+        $stmt->execute($params);
+        return $stmt;
+    }
+
+    // Fetch a single row
+    public function fetch($sql, $params = []) {
+        $stmt = $this->execute($sql, $params);
+        return $stmt->fetch();
+    }
+
+    // Fetch all rows
+    public function fetchAll($sql, $params = []) {
+        $stmt = $this->execute($sql, $params);
+        return $stmt->fetchAll();
+    }
+
+    // Insert data into table
+    public function insert($table, $data) {
+        $columns = array_keys($data);
+        $placeholders = array_fill(0, count($columns), '?');
+        $sql = "INSERT INTO {$table} (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")";
+        $stmt = $this->execute($sql, array_values($data));
+        return $this->connection->lastInsertId();
+    }
+
+    // Update data in table
+    public function update($table, $data, $where, $whereParams = []) {
+        $set = [];
+        foreach ($data as $key => $value) {
+            $set[] = "{$key} = ?";
+        }
+        $sql = "UPDATE {$table} SET " . implode(', ', $set) . " WHERE {$where}";
+        $params = array_merge(array_values($data), $whereParams);
+        $stmt = $this->execute($sql, $params);
+        return $stmt->rowCount();
+    }
+
+    // Delete data from table
+    public function delete($table, $where, $params = []) {
+        $sql = "DELETE FROM {$table} WHERE {$where}";
+        $stmt = $this->execute($sql, $params);
+        return $stmt->rowCount();
+    }
+
+    // Count rows in table
+    public function count($table, $where = '', $params = []) {
+        $sql = "SELECT COUNT(*) as total FROM {$table}";
+        if (!empty($where)) {
+            $sql .= " WHERE {$where}";
+        }
+        $stmt = $this->execute($sql, $params);
+        $result = $stmt->fetch();
+        return (int) $result['total'];
+    }
+
     // Begin a transaction
     public function beginTransaction() {
         return $this->connection->beginTransaction();
@@ -72,7 +136,7 @@ class Database {
     }
 
     // Rollback a transaction
-    public function rollback() {
+    public function rollBack() {
         return $this->connection->rollback();
     }
 
