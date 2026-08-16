@@ -1,6 +1,12 @@
 <?php
 session_start();
 $navbar_active = 'Home';
+include 'config.php';
+$pdo = getDB();
+
+$featuredFields = $pdo->query("SELECT id, name, slug, icon, description, color, total_courses FROM academic_fields WHERE status = 'active' ORDER BY sort_order, name ASC LIMIT 4")->fetchAll();
+$featuredCourses = $pdo->query("SELECT c.id, c.name, c.slug, c.icon, c.description, c.duration, c.level, c.rating, f.name as field_name, f.id as academic_field_id FROM courses c JOIN academic_fields f ON f.id = c.academic_field_id WHERE c.status = 'active' ORDER BY c.rating DESC, c.name ASC LIMIT 4")->fetchAll();
+$realMentors = $pdo->query("SELECT u.id, u.full_name, u.profile_picture, u.bio, u.hourly_rate, m.rating, m.reviews_count, m.specialization, m.experience_years, f.name as field_name FROM users u JOIN mentors m ON u.id = m.user_id LEFT JOIN academic_fields f ON u.academic_field_id = f.id WHERE u.role = 'mentor' AND u.status = 'active' AND m.is_verified = 1 ORDER BY m.rating DESC LIMIT 3")->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -1050,45 +1056,51 @@ $navbar_active = 'Home';
                 <div class="divider"></div>
             </div>
             <div class="fields-grid">
-                <a href="academic-filed.php" class="field-card">
-                    <div class="f-icon" style="color:#60a5fa;"><i class="fas fa-robot"></i></div>
-                    <div class="f-name">Engineering</div>
-                    <div class="f-count">10 Courses</div>
+                <?php foreach ($featuredFields as $f): 
+                    $icon = $f['icon'] ?: 'fa-book';
+                    $color = $f['color'] ?: 'var(--primary-400)';
+                ?>
+                <a href="academic-fields.php?field_id=<?php echo (int)$f['id']; ?>" class="field-card">
+                    <div class="f-icon" style="color:<?php echo htmlspecialchars($color); ?>;"><i class="fas <?php echo htmlspecialchars($icon); ?>"></i></div>
+                    <div class="f-name"><?php echo htmlspecialchars($f['name']); ?></div>
+                    <div class="f-count"><?php echo (int)($f['total_courses'] ?: 0); ?> Courses</div>
                 </a>
-                <a href="academic-filed.php" class="field-card">
-                    <div class="f-icon" style="color:#8b5cf6;"><i class="fas fa-laptop-code"></i></div>
-                    <div class="f-name">Information Technology</div>
-                    <div class="f-count">12 Courses</div>
+                <?php endforeach; ?>
+            </div>
+            <div style="text-align:center;margin-top:24px;">
+                <a href="academic-fields.php" class="btn-view" style="display:inline-block;padding:10px 32px;border-radius:var(--radius-full);background:var(--gradient-primary);color:#fff;text-decoration:none;font-weight:600;font-size:0.9rem;border:none;cursor:pointer;transition:all 0.3s ease;">
+                    <i class="fas fa-arrow-right"></i> View All Academic Fields
                 </a>
-                <a href="academic-filed.php" class="field-card">
-                    <div class="f-icon" style="color:#22c55e;"><i class="fas fa-flask"></i></div>
-                    <div class="f-name">Science</div>
-                    <div class="f-count">8 Courses</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+       FEATURED COURSES SECTION
+       ============================================ -->
+    <section class="section" id="courses">
+        <div class="container">
+            <div class="section-header">
+                <h2>Featured Courses</h2>
+                <p>Discover popular courses across all fields</p>
+                <div class="divider"></div>
+            </div>
+            <div class="fields-grid">
+                <?php foreach ($featuredCourses as $c): 
+                    $icon = $c['icon'] ?: 'fa-graduation-cap';
+                    $color = 'var(--primary-400)';
+                ?>
+                <a href="courses.php?field_id=<?php echo (int)$c['academic_field_id']; ?>&course_id=<?php echo (int)$c['id']; ?>" class="field-card">
+                    <div class="f-icon" style="color:<?php echo htmlspecialchars($color); ?>;"><i class="fas <?php echo htmlspecialchars($icon); ?>"></i></div>
+                    <div class="f-name"><?php echo htmlspecialchars($c['name']); ?></div>
+                    <div class="field-desc"><?php echo htmlspecialchars($c['field_name']); ?></div>
+                    <div class="field-count"><?php echo htmlspecialchars($c['level'] ?: 'Course'); ?></div>
                 </a>
-                <a href="academic-filed.php" class="field-card">
-                    <div class="f-icon" style="color:#f59e0b;"><i class="fas fa-briefcase"></i></div>
-                    <div class="f-name">Management</div>
-                    <div class="f-count">10 Courses</div>
-                </a>
-                <a href="academic-filed.php" class="field-card">
-                    <div class="f-icon" style="color:#ef4444;"><i class="fas fa-scale-balanced"></i></div>
-                    <div class="f-name">Law</div>
-                    <div class="f-count">6 Courses</div>
-                </a>
-                <a href="academic-filed.php" class="field-card">
-                    <div class="f-icon" style="color:#8b5cf6;"><i class="fas fa-graduation-cap"></i></div>
-                    <div class="f-name">Education</div>
-                    <div class="f-count">5 Courses</div>
-                </a>
-                <a href="academic-filed.php" class="field-card">
-                    <div class="f-icon" style="color:#22c55e;"><i class="fas fa-seedling"></i></div>
-                    <div class="f-name">Agriculture</div>
-                    <div class="f-count">5 Courses</div>
-                </a>
-                <a href="academic-filed.php" class="field-card">
-                    <div class="f-icon" style="color:#ec4899;"><i class="fas fa-heart-pulse"></i></div>
-                    <div class="f-name">Health Sciences</div>
-                    <div class="f-count">7 Courses</div>
+                <?php endforeach; ?>
+            </div>
+            <div style="text-align:center;margin-top:24px;">
+                <a href="courses.php" class="btn-view" style="display:inline-block;padding:10px 32px;border-radius:var(--radius-full);background:var(--gradient-primary);color:#fff;text-decoration:none;font-weight:600;font-size:0.9rem;border:none;cursor:pointer;transition:all 0.3s ease;">
+                    <i class="fas fa-arrow-right"></i> Explore All Courses
                 </a>
             </div>
         </div>
@@ -1100,41 +1112,41 @@ $navbar_active = 'Home';
     <section class="section" id="mentors">
         <div class="container">
             <div class="section-header">
-                <h2>Top Graduates</h2>
-                <p>Learn from the best industry experts</p>
+                <h2>Featured Mentors</h2>
+                <p>Learn from verified industry experts</p>
                 <div class="divider"></div>
             </div>
             <div class="mentors-grid">
-                <div class="mentor-card">
-                    <div class="m-avatar" style="background:#60a5fa;">JD</div>
-                    <div class="m-name">Roshan Timalsina</div>
-                    <div class="m-title">full stack developerand learning AI/ML</div>
-                    <div class="m-rating">
-                        ★★★★★ <span>(156 reviews)</span>
+                <?php if (count($realMentors) === 0): ?>
+                    <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">
+                        <i class="fas fa-user-tie" style="font-size:2rem;display:block;margin-bottom:12px;"></i>
+                        <p>No mentors available yet.</p>
                     </div>
-                    <div class="m-rate">$45 <span>/ hour</span></div>
-                    <button class="m-btn" onclick="showToast('Success', 'Viewing Roshan Timalsina\'s profile...', 'success')">View Profile</button>
-                </div>
+                <?php else: foreach ($realMentors as $m): 
+                    $initials = strtoupper(substr($m['full_name'], 0, 2));
+                    $avatar = $m['profile_picture'] ? 'frontend/assets/images/profiles/' . $m['profile_picture'] : '';
+                    $rating = number_format((float)($m['rating'] ?: 5.0), 1);
+                    $reviews = (int)($m['reviews_count'] ?: 0);
+                    $hourly = htmlspecialchars($m['hourly_rate'] ?: '50');
+                ?>
                 <div class="mentor-card">
-                    <div class="m-avatar" style="background:#8b5cf6;">SM</div>
-                    <div class="m-name">Abiral Rai</div>
-                    <div class="m-title">UI/UX designer and currently running full g</div>
-                    <div class="m-rating">
-                        ★★★★★ <span>(128 reviews)</span>
-                    </div>
-                    <div class="m-rate">$50 <span>/ hour</span></div>
-                    <button class="m-btn" onclick="showToast('Success', 'Viewing Abiral Rai\'s profile...', 'success')">View Profile</button>
+                    <?php if ($avatar): ?>
+                        <img src="<?php echo $avatar; ?>" alt="<?php echo htmlspecialchars($m['full_name']); ?>" class="m-avatar" style="background:transparent;">
+                    <?php else: ?>
+                        <div class="m-avatar" style="background:var(--gradient-primary);"><?php echo $initials; ?></div>
+                    <?php endif; ?>
+                    <div class="m-name"><?php echo htmlspecialchars($m['full_name']); ?></div>
+                    <div class="m-title"><?php echo htmlspecialchars($m['specialization'] ?: 'Mentor'); ?></div>
+                    <div class="m-rating">★ <?php echo $rating; ?> <span>(<?php echo $reviews; ?> reviews)</span></div>
+                    <div class="m-rate">$<?php echo $hourly; ?> <span>/ hour</span></div>
+                    <a href="mentor.php?id=<?php echo (int)$m['id']; ?>" class="m-btn" style="display:block;text-align:center;">View Profile</a>
                 </div>
-                <div class="mentor-card">
-                    <div class="m-avatar" style="background:#22c55e;">AK</div>
-                    <div class="m-name">Alex Kumar</div>
-                    <div class="m-title">Full Stack Developer at Microsoft</div>
-                    <div class="m-rating">
-                        ★★★★★ <span>(142 reviews)</span>
-                    </div>
-                    <div class="m-rate">$40 <span>/ hour</span></div>
-                    <button class="m-btn" onclick="showToast('Success', 'Viewing Alex Kumar\'s profile...', 'success')">View Profile</button>
-                </div>
+                <?php endforeach; endif; ?>
+            </div>
+            <div style="text-align:center;margin-top:24px;">
+                <a href="mentors.php" class="btn-view" style="display:inline-block;padding:10px 32px;border-radius:var(--radius-full);background:var(--gradient-primary);color:#fff;text-decoration:none;font-weight:600;font-size:0.9rem;border:none;cursor:pointer;transition:all 0.3s ease;">
+                    <i class="fas fa-arrow-right"></i> View All Mentors
+                </a>
             </div>
         </div>
     </section>
@@ -1390,7 +1402,7 @@ $navbar_active = 'Home';
     // CONSOLE
     // ============================================
     console.log('🏠 SkillShare Hub - Homepage Loaded');
-    console.log('📚 8 Academic Fields | 4 Features | 3 Mentors');
+    console.log('📚 ' + <?php echo count($featuredFields); ?> + ' Featured Fields | ' + <?php echo count($featuredCourses); ?> + ' Featured Courses | ' + <?php echo count($realMentors); ?> + ' Mentors');
     console.log('🎓 Start your learning journey today!');
 </script>
 

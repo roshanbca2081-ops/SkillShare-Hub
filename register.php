@@ -168,104 +168,41 @@ session_start();
 
                  <!-- Background Field -->
                  <div class="form-group">
-                     <label>Background Field</label>
+                      <label>Background Field</label>
+                      <div class="input-wrapper">
+                          <span class="input-icon"><i class="fas fa-book"></i></span>
+                          <select id="regField" required>
+                              <option value="">Select your field</option>
+                          </select>
+                      </div>
+                  </div>
+
+                 <!-- Interested Course -->
+                 <div class="form-group">
+                     <label>Interested Course</label>
                      <div class="input-wrapper">
-                         <span class="input-icon"><i class="fas fa-book"></i></span>
-                         <select id="regField" required>
-                             <option value="">Select your field</option>
-                             <option value="engineering">Engineering</option>
-                             <option value="information-technology">Information Technology</option>
-                             <option value="science">Science</option>
-                             <option value="management">Management & Commerce</option>
-                             <option value="law">Law</option>
-                             <option value="education">Education</option>
-                             <option value="agriculture">Agriculture</option>
-                             <option value="health-sciences">Health Sciences</option>
-                             <option value="arts">Arts & Humanities</option>
-                             <option value="media">Media & Communication</option>
-                             <option value="hospitality">Hospitality & Tourism</option>
-                             <option value="research">Research & Innovation</option>
+                         <span class="input-icon"><i class="fas fa-graduation-cap"></i></span>
+                         <select id="regCourse" required>
+                             <option value="">Select your course</option>
                          </select>
                      </div>
                  </div>
 
-                <!-- Interested Course -->
-                <div class="form-group">
-                    <label>Interested Course</label>
-                    <div class="input-wrapper">
-                        <span class="input-icon"><i class="fas fa-graduation-cap"></i></span>
-                        <select id="regCourse" required>
-                            <option value="">Select your course</option>
-                            <optgroup label="Engineering">
-                                <option value="software-engineering">Software Engineering</option>
-                                <option value="computer-engineering">Computer Engineering</option>
-                                <option value="civil-engineering">Civil Engineering</option>
-                                <option value="mechanical-engineering">Mechanical Engineering</option>
-                                <option value="electrical-engineering">Electrical Engineering</option>
-                            </optgroup>
-                            <optgroup label="Information Technology">
-                                <option value="bsc-csit">BSc CSIT</option>
-                                <option value="bit">BIT</option>
-                                <option value="bca">BCA</option>
-                                <option value="cyber-security">Cyber Security</option>
-                                <option value="artificial-intelligence">Artificial Intelligence</option>
-                                <option value="data-science">Data Science</option>
-                            </optgroup>
-                            <optgroup label="Science">
-                                <option value="physics">Physics</option>
-                                <option value="chemistry">Chemistry</option>
-                                <option value="biology">Biology</option>
-                                <option value="mathematics">Mathematics</option>
-                                <option value="biotechnology">Biotechnology</option>
-                            </optgroup>
-                            <optgroup label="Management">
-                                <option value="bba">BBA</option>
-                                <option value="bbs">BBS</option>
-                                <option value="bim">BIM</option>
-                                <option value="accounting">Accounting</option>
-                                <option value="finance">Finance</option>
-                                <option value="marketing">Marketing</option>
-                            </optgroup>
-                            <optgroup label="Law">
-                                <option value="llb">LLB</option>
-                                <option value="corporate-law">Corporate Law</option>
-                                <option value="criminal-law">Criminal Law</option>
-                            </optgroup>
-                            <optgroup label="Education">
-                                <option value="bed">B.Ed</option>
-                                <option value="med">M.Ed</option>
-                            </optgroup>
-                            <optgroup label="Health Sciences">
-                                <option value="mbbs">MBBS</option>
-                                <option value="nursing">Nursing</option>
-                                <option value="pharmacy">Pharmacy</option>
-                                <option value="public-health">Public Health</option>
-                            </optgroup>
-                            <optgroup label="Arts & Humanities">
-                                <option value="english">English</option>
-                                <option value="psychology">Psychology</option>
-                                <option value="sociology">Sociology</option>
-                                <option value="journalism">Journalism</option>
-                            </optgroup>
-                            <optgroup label="Media & Communication">
-                                <option value="digital-marketing">Digital Marketing</option>
-                                <option value="graphic-design">Graphic Design</option>
-                                <option value="photography">Photography</option>
-                                <option value="videography">Videography</option>
-                            </optgroup>
-                            <optgroup label="Hospitality & Tourism">
-                                <option value="hotel-management">Hotel Management</option>
-                                <option value="tourism-management">Tourism Management</option>
-                                <option value="culinary-arts">Culinary Arts</option>
-                            </optgroup>
-                            <optgroup label="Research & Innovation">
-                                <option value="research-methodology">Research Methodology</option>
-                                <option value="data-analysis">Data Analysis</option>
-                                <option value="academic-writing">Academic Writing</option>
-                            </optgroup>
-                        </select>
-                    </div>
-                </div>
+                 <!-- Course Detail -->
+                 <div id="courseDetail" style="display:none; padding: 12px 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: var(--radius-md); margin-bottom: 18px;">
+                     <div id="courseDetailContent"></div>
+                 </div>
+
+                  <!-- Skills / Area of Interest -->
+                  <div class="form-group" id="skillsGroup" style="display:none;">
+                      <label id="skillsLabel">Skills / Area of Interest</label>
+                      <div class="input-wrapper">
+                          <span class="input-icon"><i class="fas fa-star"></i></span>
+                          <select id="regSkills" required>
+                              <option value="">Select your skill</option>
+                          </select>
+                      </div>
+                  </div>
 
                 <!-- Password -->
                 <div class="form-group">
@@ -321,7 +258,112 @@ session_start();
     document.addEventListener('DOMContentLoaded', function() {
         initPasswordStrength();
         initToastSystem();
+        loadFields();
+        updateSkillsLabel();
     });
+
+    function loadFields() {
+        fetch('api/registration.php?action=fields')
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    const sel = document.getElementById('regField');
+                    sel.innerHTML = '<option value="">Select your field</option>';
+                    res.data.forEach(f => {
+                        const opt = document.createElement('option');
+                        opt.value = f.id;
+                        opt.textContent = f.name;
+                        sel.appendChild(opt);
+                    });
+                }
+            });
+    }
+
+    function updateSkillsLabel() {
+        const role = document.getElementById('regRole').value;
+        const label = document.getElementById('skillsLabel');
+        if (label) {
+            label.textContent = role === 'mentor' ? 'Skills I Can Teach' : 'Skills / Area of Interest';
+        }
+    }
+
+    document.getElementById('regField').addEventListener('change', function() {
+        const fieldId = this.value;
+        const courseSel = document.getElementById('regCourse');
+        const skillsGroup = document.getElementById('skillsGroup');
+        const skillsSel = document.getElementById('regSkills');
+        
+        courseSel.innerHTML = '<option value="">Select your course</option>';
+        skillsGroup.style.display = 'none';
+        skillsSel.innerHTML = '';
+        
+        if (!fieldId) return;
+        
+        fetch('api/registration.php?action=courses&field_id=' + fieldId)
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    res.data.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.textContent = c.name;
+                        courseSel.appendChild(opt);
+                    });
+                }
+            });
+    });
+
+    document.getElementById('regCourse').addEventListener('change', function() {
+        const courseId = this.value;
+        const skillsGroup = document.getElementById('skillsGroup');
+        const skillsSel = document.getElementById('regSkills');
+        const courseDetail = document.getElementById('courseDetail');
+        const courseDetailContent = document.getElementById('courseDetailContent');
+        
+        skillsSel.innerHTML = '<option value="">Select your skill</option>';
+        courseDetail.style.display = 'none';
+        
+        if (!courseId) {
+            skillsGroup.style.display = 'none';
+            return;
+        }
+        
+        fetch('api/registration.php?action=course-detail&course_id=' + courseId)
+            .then(r => r.json())
+            .then(res => {
+                if (res.success && res.data) {
+                    const c = res.data;
+                    courseDetailContent.innerHTML = `
+                        <div style="font-weight:600;font-size:1rem;color:var(--text-primary);margin-bottom:6px;">${c.name}</div>
+                        <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">${c.field_name || ''}</div>
+                        ${c.description ? `<div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:8px;line-height:1.5;">${c.description}</div>` : ''}
+                        <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:0.8rem;color:var(--text-muted);">
+                            ${c.duration ? `<span><i class="fas fa-clock" style="margin-right:4px;"></i>${c.duration}</span>` : ''}
+                            ${c.level ? `<span><i class="fas fa-signal" style="margin-right:4px;"></i>${c.level}</span>` : ''}
+                            ${typeof c.skill_count !== 'undefined' ? `<span><i class="fas fa-star" style="margin-right:4px;"></i>${c.skill_count} skills</span>` : ''}
+                            ${typeof c.mentor_count !== 'undefined' ? `<span><i class="fas fa-chalkboard-teacher" style="margin-right:4px;"></i>${c.mentor_count} mentors</span>` : ''}
+                        </div>
+                    `;
+                    courseDetail.style.display = 'block';
+                }
+            });
+        
+        fetch('api/registration.php?action=skills&course_id=' + courseId)
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    res.data.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s.id;
+                        opt.textContent = s.name;
+                        skillsSel.appendChild(opt);
+                    });
+                    skillsGroup.style.display = 'block';
+                }
+            });
+    });
+
+    document.getElementById('regRole').addEventListener('change', updateSkillsLabel);
 
     function showRegister() {
         document.getElementById('loginForm').style.display = 'none';
@@ -460,7 +502,8 @@ session_start();
         const confirmPassword = document.getElementById('regConfirmPassword').value;
         const terms = document.getElementById('regTerms').checked;
         const alertDiv = document.getElementById('registerAlert');
-
+        const skillIds = document.getElementById('regSkills').value ? [document.getElementById('regSkills').value] : [];
+        
         if (!name || !email || !address || !contact || !role || !password || !confirmPassword) {
             alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Please fill in all fields</div>`;
             return false;
@@ -504,6 +547,9 @@ session_start();
                 phone: contact,
                 address: address,
                 role: role,
+                academic_field_id: document.getElementById('regField').value || null,
+                course_id: document.getElementById('regCourse').value || null,
+                skill_ids: skillIds,
                 password: password,
                 confirm_password: confirmPassword
             })
@@ -530,7 +576,6 @@ session_start();
         });
 
         return false;
-    }
     }
 
     function isValidEmail(email) { return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email); }

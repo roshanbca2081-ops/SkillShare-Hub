@@ -8,7 +8,7 @@ $pdo = getDB();
 $action = $_GET['action'] ?? 'list';
 
 if ($action === 'list') {
-    $sql = "SELECT c.id, c.name, c.slug, c.description, c.duration, c.level, c.rating, c.total_mentors, c.total_students, c.status, f.name as field_name, f.slug as field_slug, f.icon as field_icon, f.color as field_color FROM courses c JOIN academic_fields f ON c.academic_field_id = f.id WHERE c.status = 'active'";
+    $sql = "SELECT c.id, c.name, c.slug, c.description, c.duration, c.level, c.rating, c.total_mentors, c.total_skills, c.status, f.name as field_name, f.slug as field_slug, f.icon as field_icon, f.color as field_color FROM courses c JOIN academic_fields f ON c.academic_field_id = f.id WHERE c.status = 'active'";
     $params = [];
 
     if (isset($_GET['field_id']) && $_GET['field_id']) {

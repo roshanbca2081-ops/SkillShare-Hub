@@ -20,6 +20,9 @@ $email     = trim($data['email'] ?? '');
 $role      = trim($data['role'] ?? 'fresher');
 $password  = $data['password'] ?? '';
 $confirm   = $data['confirm_password'] ?? '';
+$academicFieldId = isset($data['academic_field_id']) ? (int)$data['academic_field_id'] : 0;
+$courseId    = isset($data['course_id']) ? (int)$data['course_id'] : 0;
+$skillIds    = isset($data['skill_ids']) && is_array($data['skill_ids']) ? array_map('intval', $data['skill_ids']) : [];
 
 // Validate required fields
 if ($firstname === '' || $lastname === '' || $email === '' || $password === '') {
@@ -47,6 +50,25 @@ if (!in_array($role, $validRoles)) {
     respond(false, 'Invalid role selected.', null, 422);
 }
 
+// Validate academic field and course relationship
+if ($academicFieldId && $courseId) {
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM courses WHERE id = ? AND academic_field_id = ? AND status = 'active'");
+    $stmt->execute([$courseId, $academicFieldId]);
+    if (!$stmt->fetchColumn()) {
+        respond(false, 'Selected course does not belong to the chosen academic field.', null, 422);
+    }
+}
+
+// Validate skills belong to the selected course
+if (!empty($skillIds) && $courseId) {
+    $placeholders = implode(',', array_fill(0, count($skillIds), '?'));
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM skills WHERE id IN ($placeholders) AND course_id = ? AND status = 'active'");
+    $stmt->execute(array_merge($skillIds, [$courseId]));
+    if ($stmt->fetchColumn() !== count($skillIds)) {
+        respond(false, 'One or more selected skills do not belong to the chosen course.', null, 422);
+    }
+}
+
 try {
     $pdo = getDB();
 
@@ -63,8 +85,8 @@ try {
     $fullName  = trim($firstname . ' ' . $lastname);
 
     // Insert new user
-    $sql = 'INSERT INTO users (full_name, firstname, lastname, email, password, password_hash, role, status, created_at)
-            VALUES (:full_name, :firstname, :lastname, :email, :password, :password_hash, :role, :status, NOW())';
+    $sql = 'INSERT INTO users (full_name, firstname, lastname, email, password, password_hash, role, status, academic_field_id, course_id, created_at)
+            VALUES (:full_name, :firstname, :lastname, :email, :password, :password_hash, :role, :status, :academic_field_id, :course_id, NOW())';
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
         ':full_name' => $fullName,
@@ -75,9 +97,19 @@ try {
         ':password_hash' => $hashedPassword,
         ':role'      => $role,
         ':status'    => 'active',
+        ':academic_field_id' => $academicFieldId ?: null,
+        ':course_id' => $courseId ?: null,
     ]);
 
     $userId = (int) $pdo->lastInsertId();
+
+    // Insert user skills
+    if (!empty($skillIds)) {
+        $stmt = $pdo->prepare("INSERT IGNORE INTO user_skills (user_id, skill_id, created_at) VALUES (?, ?, NOW())");
+        foreach ($skillIds as $skillId) {
+            $stmt->execute([$userId, $skillId]);
+        }
+    }
 
     // Auto-login the new user
     session_regenerate_id(true);

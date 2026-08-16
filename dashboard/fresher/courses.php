@@ -79,7 +79,7 @@ function renderCourses(courses) {
             '<div class="course-mentor">' + SkillShare.escapeHtml(c.field_name || 'General') + '</div>' +
             '<div class="course-meta">' +
                 '<span><i class="fas fa-star"></i> ' + parseFloat(c.rating || 0).toFixed(1) + '</span>' +
-                '<span><i class="fas fa-users"></i> ' + (c.total_students || 0) + '</span>' +
+                '<span><i class="fas fa-user-tie"></i> ' + (c.total_mentors || 0) + ' mentors</span>' +
                 '<span><i class="fas fa-clock"></i> ' + SkillShare.escapeHtml(c.duration || '') + '</span>' +
                 '<span class="course-rating">' + SkillShare.escapeHtml(c.level || '') + '</span>' +
             '</div>' +
