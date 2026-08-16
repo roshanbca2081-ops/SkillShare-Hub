@@ -4,7 +4,7 @@
 <div class="preloader" id="preloader">
     <div class="loader-content">
         <div class="loader-logo">
-            <i class="fa-solid fa-graduation-cap"></i>
+            <img src="frontend/assets/images/logo/skillshare hub.png" alt="SkillShare Hub Logo" style="width:100%; height:auto; object-fit:contain; padding:10px;">
         </div>
         <div class="loader-spinner"></div>
         <p>SkillShare Hub</p>

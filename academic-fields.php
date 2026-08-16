@@ -2,13 +2,18 @@
 session_start();
 $page_title = 'Academic Fields | SkillShare Hub';
 $page_active = 'Academic Fields';
+include 'config.php';
 include 'frontend/components/platform-header.php';
 include 'frontend/components/acad-db.php';
+
+$pdo = getDB();
+$fields = $pdo->query("SELECT af.*,
+                (SELECT COUNT(*) FROM courses c WHERE c.academic_field_id = af.id AND c.status='active') AS course_count
+                FROM academic_fields af
+                WHERE af.status='active'
+                ORDER BY af.sort_order, af.name ASC")->fetchAll();
 ?>
 
-<!-- ============================================
-   ACADEMIC FIELDS PAGE STYLES (scoped)
-   ============================================ -->
 <style>
     .acad-page-header { text-align: center; padding: 20px 0 30px; }
     .acad-page-header h1 {
@@ -87,21 +92,14 @@ include 'frontend/components/acad-db.php';
     </div>
 
     <div class="acad-fields-grid">
-        <?php
-        $fields = acad_query("SELECT af.*,
-                        (SELECT COUNT(*) FROM acad_courses c WHERE c.field_id = af.id AND c.status='active') AS course_count
-                        FROM acad_fields af
-                        WHERE af.status='active'
-                        ORDER BY af.name ASC");
-
-        if (!$fields || count($fields) === 0): ?>
+        <?php if (count($fields) === 0): ?>
             <div class="research-no-results" style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">
                 <i class="fa-solid fa-layer-group" style="font-size:2rem;display:block;margin-bottom:12px;"></i>
-                <p>No academic fields found. Please run the installer: <code>database/academic_install.php</code></p>
+                <p>No academic fields found. Please add fields from the admin panel.</p>
             </div>
         <?php else: foreach ($fields as $f): ?>
             <a href="courses.php?field_id=<?php echo (int)$f['id']; ?>" class="acad-field-card reveal">
-                <div class="af-icon"><i class="fa-solid <?php echo htmlspecialchars($f['icon']); ?>"></i></div>
+                <div class="af-icon"><i class="fa-solid <?php echo htmlspecialchars($f['icon'] ?: 'fa-layer-group'); ?>"></i></div>
                 <div class="af-name"><?php echo htmlspecialchars($f['name']); ?></div>
                 <div class="af-desc"><?php echo htmlspecialchars($f['description']); ?></div>
                 <span class="af-courses"><i class="fa-solid fa-graduation-cap"></i> <?php echo (int)$f['course_count']; ?> Courses</span>
@@ -112,4 +110,3 @@ include 'frontend/components/acad-db.php';
 </div>
 
 <?php include 'frontend/components/platform-footer.php'; ?>
-

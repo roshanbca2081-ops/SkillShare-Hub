@@ -363,6 +363,6 @@ const afnFieldsData = {
         afnRenderFields();
     });
 
-    console.log('🏛️ ShareSkill Hub - Academic Fields (names only) (' + Object.keys(afnFieldsData).length + ' fields)');
+    console.log('🏛️ SkillShare Hub - Academic Fields (names only) (' + Object.keys(afnFieldsData).length + ' fields)');
 </script>
 

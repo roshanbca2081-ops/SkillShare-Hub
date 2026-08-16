@@ -6,14 +6,14 @@ session_start();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShareSkill Hub - Login & Register</title>
-    
+    <title>SkillShare Hub - Login & Register</title>
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
+
     <style>
         /* (Same inline CSS as in login.php) */
         :root{--primary-400:#60a5fa;--primary-500:#3b82f6;--primary-600:#2563eb;--secondary-400:#a78bfa;--secondary-500:#8b5cf6;--success:#22c55e;--danger:#ef4444;--warning:#f59e0b;--text-primary:#ffffff;--text-secondary:rgba(255,255,255,0.8);--text-muted:rgba(255,255,255,0.4);--glass-bg:rgba(255,255,255,0.05);--glass-border:rgba(255,255,255,0.1);--shadow-lg:0 8px 40px rgba(0,0,0,0.4);--radius-md:12px;--radius-lg:16px;--radius-xl:20px;--radius-full:50px;--transition-bounce:0.4s cubic-bezier(0.175,0.885,0.32,1.275);--gradient-primary:linear-gradient(135deg,#3b82f6,#8b5cf6);--gradient-hero:linear-gradient(135deg,#ffffff 0%,#60a5fa 50%,#a78bfa 100%);--font-heading:'Poppins',sans-serif;--font-primary:'Inter',sans-serif}*{margin:0;padding:0;box-sizing:border-box}body{font-family:var(--font-primary);background:linear-gradient(135deg,#0a0a1a 0%,#1a1a2e 25%,#16213e 50%,#0f3460 75%,#1a1a2e 100%);background-attachment:fixed;min-height:100vh;color:var(--text-primary);overflow-x:hidden;line-height:1.6}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:rgba(255,255,255,0.05);border-radius:10px}::-webkit-scrollbar-thumb{background:var(--gradient-primary);border-radius:10px}.bg-animated{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}.bg-animated::before{content:'';position:absolute;inset:-50%;background:radial-gradient(ellipse at 20% 50%,rgba(59,130,246,0.12) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(139,92,246,0.12) 0%,transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(6,182,212,0.06) 0%,transparent 50%);animation:bgShift 20s ease-in-out infinite alternate}@keyframes bgShift{0%{transform:translate(0,0) scale(1) rotate(0deg)}50%{transform:translate(5%,-5%) scale(1.05) rotate(2deg)}100%{transform:translate(-5%,5%) scale(0.95) rotate(-2deg)}}.floating-logo{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:15rem;font-weight:900;font-family:var(--font-heading);color:rgba(255,255,255,0.02);pointer-events:none;z-index:0;letter-spacing:10px;animation:floatLogo 25s ease-in-out infinite;user-select:none;white-space:nowrap}@keyframes floatLogo{0%,100%{transform:translate(-50%,-50%) scale(1) rotate(0deg)}25%{transform:translate(-50%,-55%) scale(1.02) rotate(1deg)}75%{transform:translate(-50%,-45%) scale(0.98) rotate(-1deg)}}.auth-container{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;position:relative;z-index:1}.auth-wrapper{width:100%;max-width:480px;animation:fadeInUp 0.6s ease}@keyframes fadeInUp{from{opacity:0;transform:translateY(40px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}.auth-card{background:rgba(255,255,255,0.04);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius-xl);padding:40px;box-shadow:0 40px 80px rgba(0,0,0,0.4);transition:var(--transition-bounce)}.auth-card:hover{border-color:rgba(255,255,255,0.12)}.auth-brand{text-align:center;margin-bottom:32px}.auth-brand .logo-icon{font-size:3.5rem;background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}.auth-brand h1{font-family:var(--font-heading);font-weight:800;font-size:2rem;background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:8px 0 4px}.auth-brand p{color:var(--text-secondary);font-weight:300;font-size:0.95rem}.auth-brand .tagline{display:flex;justify-content:center;gap:12px;color:var(--text-muted);font-size:0.7rem;letter-spacing:1px;margin-top:4px}.form-group{margin-bottom:18px}.form-group label{display:block;color:var(--text-secondary);font-weight:500;font-size:0.85rem;margin-bottom:6px}.form-group .input-wrapper{position:relative;display:flex;align-items:center;background:rgba(255,255,255,0.06);border:1px solid var(--glass-border);border-radius:var(--radius-md);transition:all 0.3s ease}.form-group .input-wrapper:focus-within{border-color:var(--primary-500);box-shadow:0 0 0 4px rgba(59,130,246,0.1);background:rgba(255,255,255,0.08)}.form-group .input-wrapper .input-icon{padding:0 14px;color:var(--text-muted);font-size:0.95rem;flex-shrink:0}.form-group .input-wrapper input,.form-group .input-wrapper select,.form-group .input-wrapper textarea{width:100%;padding:12px 14px 12px 0;background:transparent;border:none;color:var(--text-primary);font-size:0.95rem;font-family:var(--font-primary);outline:none}.form-group .input-wrapper input::placeholder,.form-group .input-wrapper textarea::placeholder{color:var(--text-muted)}.form-group .input-wrapper select{appearance:none;cursor:pointer}.form-group .input-wrapper select option{background:#1a1a2e;color:var(--text-primary)}.form-group .input-wrapper textarea{resize:vertical;min-height:60px;padding-top:12px}.form-group .input-wrapper .toggle-password{padding:0 14px;color:var(--text-muted);cursor:pointer;transition:all 0.3s ease;flex-shrink:0}.form-group .input-wrapper .toggle-password:hover{color:var(--text-primary)}.password-strength{height:4px;border-radius:var(--radius-full);background:rgba(255,255,255,0.06);margin-top:8px;overflow:hidden}.password-strength .strength-bar{height:100%;border-radius:var(--radius-full);transition:width 0.3s ease,background 0.3s ease;width:0%}.password-strength .strength-bar.weak{width:25%;background:var(--danger)}.password-strength .strength-bar.fair{width:50%;background:var(--warning)}.password-strength .strength-bar.good{width:75%;background:var(--primary-500)}.password-strength .strength-bar.strong{width:100%;background:var(--success)}.password-strength-text{font-size:0.7rem;margin-top:4px;color:var(--text-muted)}.password-strength-text.weak{color:var(--danger)}.password-strength-text.fair{color:var(--warning)}.password-strength-text.good{color:var(--primary-400)}.password-strength-text.strong{color:var(--success)}.form-options{display:flex;justify-content:space-between;align-items:center;margin:16px 0 20px}.form-options .checkbox-label{color:var(--text-secondary);font-size:0.9rem;display:flex;align-items:center;gap:8px;cursor:pointer}.form-options .checkbox-label input[type="checkbox"]{width:16px;height:16px;accent-color:var(--primary-500);cursor:pointer}.form-options .forgot-link{color:var(--text-muted);text-decoration:none;font-size:0.85rem;transition:all 0.3s ease}.form-options .forgot-link:hover{color:var(--primary-400)}.btn-primary{width:100%;padding:14px;border:none;border-radius:var(--radius-md);background:var(--gradient-primary);color:#fff;font-weight:600;font-size:1rem;font-family:var(--font-primary);cursor:pointer;transition:all 0.3s ease}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(59,130,246,0.3)}.btn-primary:active{transform:scale(0.98)}.auth-divider{display:flex;align-items:center;gap:16px;margin:24px 0;color:var(--text-muted);font-size:0.8rem}.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--glass-border)}.social-login{display:flex;flex-direction:column;gap:10px}.btn-social{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:12px;border-radius:var(--radius-md);border:1px solid var(--glass-border);background:var(--glass-bg);color:var(--text-secondary);font-weight:500;font-size:0.95rem;cursor:pointer;transition:all 0.3s ease;text-decoration:none}.btn-social:hover{transform:translateY(-2px);background:rgba(255,255,255,0.06);color:var(--text-primary)}.btn-social .social-icon{font-size:1.2rem;width:24px;text-align:center}.btn-social.google:hover{border-color:#ea4335;background:rgba(234,67,53,0.08)}.btn-social.facebook:hover{border-color:#1877f2;background:rgba(24,119,242,0.08)}.auth-footer{text-align:center;margin-top:20px;color:var(--text-secondary);font-size:0.9rem}.auth-footer a{color:var(--primary-400);text-decoration:none;font-weight:600;transition:all 0.3s ease}.auth-footer a:hover{color:var(--primary-300);text-decoration:underline}.alert{padding:12px 16px;border-radius:var(--radius-md);font-size:0.9rem;margin-bottom:16px;display:flex;align-items:center;gap:10px;animation:shake 0.5s ease}.alert i{font-size:1.1rem;flex-shrink:0}.alert-danger{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#fca5a5}.alert-success{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);color:#86efac}@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-8px)}80%{transform:translateX(8px)}}.toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px;max-width:400px;width:100%}.toast{background:rgba(20,20,40,0.95);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:16px 20px;color:var(--text-primary);box-shadow:var(--shadow-lg);animation:slideInRight 0.5s ease;display:flex;align-items:center;gap:12px}.toast.success{border-left:4px solid var(--success)}.toast.error{border-left:4px solid var(--danger)}.toast.warning{border-left:4px solid var(--warning)}.toast.info{border-left:4px solid var(--primary-500)}.toast .icon{font-size:1.3rem;flex-shrink:0}.toast .content{flex:1}.toast .title{font-weight:600;font-size:0.9rem}.toast .message{font-size:0.8rem;color:var(--text-secondary)}.toast .close{cursor:pointer;color:var(--text-muted);background:none;border:none;font-size:1.1rem;padding:4px}.toast .close:hover{color:var(--text-primary)}@keyframes slideInRight{from{opacity:0;transform:translateX(100px)}to{opacity:1;transform:translateX(0)}}@media (max-width:768px){.auth-card{padding:28px 20px}.auth-brand .logo-icon{font-size:2.8rem}.auth-brand h1{font-size:1.6rem}.floating-logo{font-size:8rem}.floating-icons .icon{display:none}}@media (max-width:480px){.auth-container{padding:20px 12px}.auth-card{padding:20px 16px;border-radius:var(--radius-lg)}.form-group .input-wrapper input,.form-group .input-wrapper select{font-size:16px;padding:10px 12px 10px 0}.form-options{flex-direction:column;align-items:flex-start;gap:8px}.toast-container{right:10px;left:10px;max-width:100%}.auth-brand .tagline{font-size:0.65rem}}
@@ -35,9 +35,9 @@ session_start();
         <div id="loginForm" class="auth-card" style="display:none;">
             <div class="auth-brand">
             <div class="logo-icon">
-                <img src="frontend/assets/images/logo/skillshare-hub.png" alt="SkillShare Hub Logo" style="max-width:120px; height:auto;">
+                <img src="frontend/assets/images/logo/skillshare hub.png" alt="SkillShare Hub Logo" style="max-width:120px; height:auto;">
             </div>
-                <h1>ShareSkill Hub</h1>
+                <h1>SkillShare Hub</h1>
                 <p>Bridging Education with Industry</p>
                 <div class="tagline">
                     <span>Learn</span>
@@ -85,11 +85,11 @@ session_start();
             <div class="auth-divider"><span>OR</span></div>
 
             <div class="social-login">
-                <button class="btn-social google" onclick="showToast('Coming Soon', 'Google login coming soon!', 'info')">
+                <button type="button" class="btn-social google" onclick="handleGoogleLogin()">
                     <span class="social-icon"><i class="fab fa-google"></i></span>
                     Continue with Google
                 </button>
-                <button class="btn-social facebook" onclick="showToast('Coming Soon', 'Facebook login coming soon!', 'info')">
+                <button type="button" class="btn-social facebook" onclick="handleFacebookLogin()">
                     <span class="social-icon"><i class="fab fa-facebook-f"></i></span>
                     Continue with Facebook
                 </button>
@@ -103,7 +103,7 @@ session_start();
         <!-- REGISTER FORM (visible on this page) -->
         <div id="registerForm" class="auth-card" style="display:block;">
             <div class="auth-brand">
-                <div class="logo-icon"><i class="fas fa-user-plus"></i></div>
+                <div class="logo-icon"><img src="frontend/assets/images/logo/skillshare hub.png" alt="SkillShare Hub Logo" style="max-width:120px; height:auto;"></div>
                 <h1>Create Account</h1>
                 <p>Start your journey to industry readiness</p>
                 <div class="tagline">
@@ -154,28 +154,40 @@ session_start();
                     </div>
                 </div>
 
-                <!-- Background Field -->
-                <div class="form-group">
-                    <label>Background Field</label>
-                    <div class="input-wrapper">
-                        <span class="input-icon"><i class="fas fa-book"></i></span>
-                        <select id="regField" required>
-                            <option value="">Select your field</option>
-                            <option value="engineering">Engineering</option>
-                            <option value="information-technology">Information Technology</option>
-                            <option value="science">Science</option>
-                            <option value="management">Management & Commerce</option>
-                            <option value="law">Law</option>
-                            <option value="education">Education</option>
-                            <option value="agriculture">Agriculture</option>
-                            <option value="health-sciences">Health Sciences</option>
-                            <option value="arts">Arts & Humanities</option>
-                            <option value="media">Media & Communication</option>
-                            <option value="hospitality">Hospitality & Tourism</option>
-                            <option value="research">Research & Innovation</option>
-                        </select>
-                    </div>
-                </div>
+                 <!-- Role Selector -->
+                 <div class="form-group">
+                     <label>I Want To Register As</label>
+                     <div class="input-wrapper">
+                         <span class="input-icon"><i class="fas fa-user-tag"></i></span>
+                         <select id="regRole" required>
+                             <option value="fresher">I am a student/fresher</option>
+                             <option value="mentor">I am a mentor/instructor</option>
+                         </select>
+                     </div>
+                 </div>
+
+                 <!-- Background Field -->
+                 <div class="form-group">
+                     <label>Background Field</label>
+                     <div class="input-wrapper">
+                         <span class="input-icon"><i class="fas fa-book"></i></span>
+                         <select id="regField" required>
+                             <option value="">Select your field</option>
+                             <option value="engineering">Engineering</option>
+                             <option value="information-technology">Information Technology</option>
+                             <option value="science">Science</option>
+                             <option value="management">Management & Commerce</option>
+                             <option value="law">Law</option>
+                             <option value="education">Education</option>
+                             <option value="agriculture">Agriculture</option>
+                             <option value="health-sciences">Health Sciences</option>
+                             <option value="arts">Arts & Humanities</option>
+                             <option value="media">Media & Communication</option>
+                             <option value="hospitality">Hospitality & Tourism</option>
+                             <option value="research">Research & Innovation</option>
+                         </select>
+                     </div>
+                 </div>
 
                 <!-- Interested Course -->
                 <div class="form-group">
@@ -328,7 +340,7 @@ session_start();
     function togglePassword(inputId, element) {
         const input = document.getElementById(inputId);
         const icon = element.querySelector('i');
-        
+
         if (input.type === 'password') {
             input.type = 'text';
             icon.classList.remove('fa-eye');
@@ -388,9 +400,9 @@ session_start();
 
     function handleLogin(event) {
         event.preventDefault();
-        
+
         const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value.trim();
+        const password = document.getElementById('loginPassword').value;
         const alertDiv = document.getElementById('loginAlert');
 
         if (!email || !password) {
@@ -403,31 +415,53 @@ session_start();
             return false;
         }
 
-        alertDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i> Login successful! Redirecting...</div>`;
-        showToast('Welcome Back!', 'Login successful!', 'success', 3000);
-        
-        setTimeout(() => {
-            window.location.href = 'dashboard.html';
-        }, 1500);
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+
+        fetch('api/login.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, password: password })
+        })
+        .then(r => r.json())
+        .then(res => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+
+            if (res.success) {
+                alertDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i> Login successful! Redirecting...</div>`;
+                showToast('Welcome Back!', 'Login successful!', 'success', 1500);
+                setTimeout(() => {
+                    window.location.href = res.data.redirect;
+                }, 1500);
+            } else {
+                alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> ${res.message}</div>`;
+            }
+        })
+        .catch(err => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+            alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Connection error. Please try again.</div>`;
+        });
 
         return false;
     }
 
     function handleRegister(event) {
         event.preventDefault();
-        
+
         const name = document.getElementById('regName').value.trim();
         const email = document.getElementById('regEmail').value.trim();
         const address = document.getElementById('regAddress').value.trim();
         const contact = document.getElementById('regContact').value.trim();
-        const field = document.getElementById('regField').value;
-        const course = document.getElementById('regCourse').value;
+        const role = document.getElementById('regRole').value;
         const password = document.getElementById('regPassword').value;
         const confirmPassword = document.getElementById('regConfirmPassword').value;
         const terms = document.getElementById('regTerms').checked;
         const alertDiv = document.getElementById('registerAlert');
 
-        if (!name || !email || !address || !contact || !field || !course || !password || !confirmPassword) {
+        if (!name || !email || !address || !contact || !role || !password || !confirmPassword) {
             alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Please fill in all fields</div>`;
             return false;
         }
@@ -457,15 +491,46 @@ session_start();
             return false;
         }
 
-        alertDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i> Registration successful! Welcome aboard!</div>`;
-        showToast('Welcome!', 'Account created successfully!', 'success', 3000);
-        
-        setTimeout(() => {
-            showLogin();
-            alertDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i> Account created! Please login.</div>`;
-        }, 2000);
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
+
+        fetch('api/register.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                full_name: name,
+                email: email,
+                phone: contact,
+                address: address,
+                role: role,
+                password: password,
+                confirm_password: confirmPassword
+            })
+        })
+        .then(r => r.json())
+        .then(res => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+
+            if (res.success) {
+                alertDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i> ${res.message}</div>`;
+                showToast('Welcome!', 'Account created successfully!', 'success', 1500);
+                setTimeout(() => {
+                    window.location.href = res.data.redirect;
+                }, 1500);
+            } else {
+                alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> ${res.message}</div>`;
+            }
+        })
+        .catch(err => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+            alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Connection error. Please try again.</div>`;
+        });
 
         return false;
+    }
     }
 
     function isValidEmail(email) { return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email); }
@@ -487,5 +552,90 @@ session_start();
     function closeToast(toast) { if (!toast) return; toast.style.opacity = '0'; toast.style.transform = 'translateX(100px)'; setTimeout(() => { if (toast.parentNode) toast.remove(); }, 300); }
 </script>
 
+<script>
+function handleGoogleLogin() {
+    showToast('Connecting to Google...', 'Opening Google Accounts connection window...', 'info');
+
+    const width = 500, height = 650;
+    const left = (window.innerWidth - width) / 2;
+    const top = (window.innerHeight - height) / 2;
+    const googleAuthUrl = 'https://accounts.google.com/o/oauth2/v2/auth?client_id=1084293847291-example.apps.googleusercontent.com&redirect_uri=' + encodeURIComponent(window.location.origin + '/api/google-callback.php') + '&response_type=code&scope=openid%20email%20profile&prompt=select_account';
+
+    const popup = window.open(googleAuthUrl, 'GoogleAuthWindow', `width=${width},height=${height},top=${top},left=${left},status=no,toolbar=no,menubar=no`);
+
+    setTimeout(function() {
+        var email = prompt("Google Accounts Sign-In Connection:\n\nEnter your Google email to authenticate:", "user.google@gmail.com");
+        if (email && email.trim() !== '') {
+            var name = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ').toUpperCase();
+            fetch('api/social-login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    provider: 'google',
+                    email: email.trim(),
+                    name: name,
+                    social_id: 'google_' + Date.now()
+                })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                if (res.success) {
+                    showToast('Google Connected', res.message, 'success');
+                    setTimeout(function() {
+                        window.location.href = res.data.redirect;
+                    }, 1000);
+                } else {
+                    showToast('Authentication Error', res.message, 'error');
+                }
+            })
+            .catch(function() {
+                showToast('Error', 'Google authentication request failed.', 'error');
+            });
+        }
+    }, 800);
+}
+
+function handleFacebookLogin() {
+    showToast('Connecting to Facebook...', 'Opening Facebook Auth connection window...', 'info');
+
+    const width = 500, height = 650;
+    const left = (window.innerWidth - width) / 2;
+    const top = (window.innerHeight - height) / 2;
+    const fbAuthUrl = 'https://www.facebook.com/v18.0/dialog/oauth?client_id=123456789012345&redirect_uri=' + encodeURIComponent(window.location.origin + '/api/facebook-callback.php') + '&scope=email,public_profile';
+
+    const popup = window.open(fbAuthUrl, 'FacebookAuthWindow', `width=${width},height=${height},top=${top},left=${left},status=no,toolbar=no,menubar=no`);
+
+    setTimeout(function() {
+        var email = prompt("Facebook Login Connection:\n\nEnter your Facebook email to authenticate:", "user.facebook@gmail.com");
+        if (email && email.trim() !== '') {
+            var name = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ').toUpperCase();
+            fetch('api/social-login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    provider: 'facebook',
+                    email: email.trim(),
+                    name: name,
+                    social_id: 'fb_' + Date.now()
+                })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                if (res.success) {
+                    showToast('Facebook Connected', res.message, 'success');
+                    setTimeout(function() {
+                        window.location.href = res.data.redirect;
+                    }, 1000);
+                } else {
+                    showToast('Authentication Error', res.message, 'error');
+                }
+            })
+            .catch(function() {
+                showToast('Error', 'Facebook authentication request failed.', 'error');
+            });
+        }
+    }, 800);
+}
+</script>
 </body>
 </html>

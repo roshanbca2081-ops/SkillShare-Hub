@@ -431,7 +431,7 @@ include 'frontend/components/platform-header.php';
         }
     });
 
-    console.log('🔬 ShareSkill Hub - Research Hub Page Loaded');
+    console.log('🔬 SkillShare Hub - Research Hub Page Loaded');
     console.log('📊 ' + researchData.length + ' Research Papers Available');
 </script>
 

@@ -51,7 +51,7 @@ class AdminController
         }
 
         $users = $this->db->fetchAll(
-            "SELECT u.*, af.name as field_name FROM users u LEFT JOIN academic_fields af ON u.academic_field = af.id ORDER BY u.created_at DESC"
+            "SELECT u.*, af.name as field_name FROM users u LEFT JOIN academic_fields af ON u.academic_field_id = af.id ORDER BY u.created_at DESC"
         );
 
         $data = [

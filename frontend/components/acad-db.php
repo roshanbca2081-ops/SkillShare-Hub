@@ -7,10 +7,17 @@ if (!function_exists('acad_pdo')) {
     function acad_pdo() {
         static $pdo = null;
         if ($pdo === null) {
-            $db_host = 'localhost';
-            $db_name = 'skillsharehub';
-            $db_user = 'root';
-            $db_pass = '';
+            if (defined('DB_HOST')) {
+                $db_host = DB_HOST;
+                $db_name = DB_NAME;
+                $db_user = DB_USER;
+                $db_pass = DB_PASS;
+            } else {
+                $db_host = 'localhost';
+                $db_name = 'skillshare_hub';
+                $db_user = 'root';
+                $db_pass = '';
+            }
             try {
                 $pdo = new PDO("mysql:host={$db_host};dbname={$db_name};charset=utf8mb4", $db_user, $db_pass, [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,

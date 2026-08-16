@@ -1,86 +1,107 @@
 <?php
-session_start();
+require_once __DIR__ . '/../../config.php';
+
+if (!isLoggedIn() || getUserRole() !== 'fresher') {
+    header('Location: ' . BASE_URL . 'login.php');
+    exit();
+}
+
+$pageTitle = 'Payments';
 $sidebar_role = 'fresher';
 $sidebar_active = 'Payments';
-require_once __DIR__ . '/_shared.php';
+
+startDashboardPage();
 ?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payments | Fresher - SkillShare Hub</title>
-    <link rel="stylesheet" href="../../assets/css/varables.css">
-    <link rel="stylesheet" href="../../assets/css/main.css">
-    <link rel="stylesheet" href="../../assets/css/navbar.css">
-    <link rel="stylesheet" href="../../assets/css/dashboard.css">
-    <link rel="stylesheet" href="../../assets/css/payment.css">
-    <link rel="stylesheet" href="../../assets/css/responsive.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
+<style>
+.payment-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.payment-stat {
+    background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg); padding: 16px 20px;
+}
+.payment-stat-value { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); }
+.payment-stat-label { font-size: 0.75rem; color: var(--text-muted); }
+.toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+.table-responsive-wrap { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th, .data-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--glass-border); font-size: 0.85rem; }
+.data-table th { color: var(--text-muted); font-weight: 500; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; }
+.data-table tr:hover td { background: rgba(255,255,255,0.02); }
+.status-badge {
+    padding: 4px 12px; border-radius: var(--radius-full); font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+}
+.status-completed { background: rgba(34,197,94,0.15); color: var(--success); }
+.status-pending { background: rgba(245,158,11,0.15); color: var(--warning); }
+.status-failed { background: rgba(239,68,68,0.15); color: var(--danger); }
+.table-actions { display: flex; gap: 6px; }
+.icon-btn {
+    width: 32px; height: 32px; border-radius: var(--radius-md); border: 1px solid var(--glass-border);
+    background: transparent; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s ease; font-size: 0.8rem;
+}
+.icon-btn:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); }
+.empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+</style>
 
-<body>
-    <?php include '../../components/loader.php'; ?>
-    <?php include '../../components/sidebar.php'; ?>
+<div class="payment-stats" id="paymentStats">
+    <div class="payment-stat"><div class="payment-stat-value" id="statTotal">$0</div><div class="payment-stat-label">Total Spent</div></div>
+    <div class="payment-stat"><div class="payment-stat-value" id="statPending">$0</div><div class="payment-stat-label">Pending</div></div>
+    <div class="payment-stat"><div class="payment-stat-value" id="statCompleted">$0</div><div class="payment-stat-label">Completed</div></div>
+</div>
 
-    <div class="dashboard-main">
-        <?php include __DIR__ . '/_topbar.php'; ?>
+<div class="toolbar">
+    <h3 style="margin:0;"><i class="fas fa-credit-card" style="color:var(--primary-400);margin-right:8px;"></i> Payment History</h3>
+    <select class="filter-select" id="paymentFilter"><option value="">All</option><option value="completed">Completed</option><option value="pending">Pending</option><option value="failed">Failed</option></select>
+</div>
 
-        <div class="dash-grid-2" style="margin-bottom:var(--spacing-5);align-items:stretch;">
-            <div class="stat-card reveal">
-                <div class="stat-icon primary"><i class="fa-solid fa-wallet"></i></div>
-                <div class="stat-info"><h4>$480.00</h4><p>Total Spent</p></div>
-            </div>
-            <div class="stat-card reveal reveal-delay-1">
-                <div class="stat-icon secondary"><i class="fa-solid fa-credit-card"></i></div>
-                <div class="stat-info"><h4>$125.00</h4><p>Pending Invoices</p></div>
-            </div>
-        </div>
-
-        <div class="panel reveal">
-            <div class="panel-header"><h5><i class="fa-solid fa-receipt" style="color:var(--primary);"></i> Payment History</h5>
-                <button class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Add Payment Method</button>
-            </div>
-            <div class="table-responsive-wrap">
-                <table class="data-table dash-table">
-                    <thead><tr><th><input type="checkbox" id="checkAll"></th><th>Invoice #</th><th>Description</th><th>Mentor</th><th>Amount</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
-                    <tbody>
-                        <?php
-                        $fresher_payments = [
-                            ['INV-2025-045', 'Data Science Mentorship', 'Dr. Aisha Khan', '$50.00', 'Jan 10', 'Paid'],
-                            ['INV-2025-044', 'Machine Learning Course', 'Prof. James Carter', '$79.99', 'Jan 08', 'Paid'],
-                            ['INV-2025-043', 'Python Basics Course', 'Prof. James Carter', '$29.99', 'Jan 05', 'Paid'],
-                            ['INV-2025-042', 'Mock Interview Session', 'Prof. James Carter', '$45.00', 'Jan 03', 'Pending'],
-                            ['INV-2025-041', 'Career Guidance', 'Dr. Emily Chen', '$35.00', 'Dec 28', 'Paid'],
-                        ];
-                        foreach ($fresher_payments as $p): ?>
-                            <tr>
-                                <td><input type="checkbox" class="row-check"></td>
-                                <td><strong><?php echo $p[0]; ?></strong></td>
-                                <td><?php echo $p[1]; ?></td>
-                                <td><div class="user-cell"><img src="../../assets/images/profile/avatar-2.svg" alt=""><strong><?php echo $p[2]; ?></strong></div></td>
-                                <td style="color:var(--primary);font-weight:600;"><?php echo $p[3]; ?></td>
-                                <td><?php echo $p[4]; ?></td>
-                                <td><span class="status-pill <?php echo strtolower($p[5]) === 'paid' ? 'approved' : 'pending'; ?>"><?php echo $p[5]; ?></span></td>
-                                <td><div class="table-actions"><button class="view-btn" aria-label="Receipt"><i class="fa-solid fa-file-invoice"></i></button><button class="edit-btn" aria-label="Download"><i class="fa-solid fa-download"></i></button></div></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<div class="card" style="padding:0;overflow:hidden;">
+    <div class="table-responsive-wrap">
+        <table class="data-table">
+            <thead><tr><th>Invoice</th><th>Description</th><th>Amount</th><th>Method</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="paymentsTable"><tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:40px;">Loading...</td></tr></tbody>
+        </table>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../../assets/js/main.js"></script>
-    <script src="../../assets/js/navbar.js"></script>
-    <script src="../../assets/js/dashboard.js"></script>
-    <script src="../../assets/js/animation.js"></script>
-</body>
+<script>
+var BASE = '<?php echo BASE_URL; ?>';
 
-</html>
-</content>
+function renderPayments(payments) {
+    var tbody = document.getElementById('paymentsTable');
+    if (!payments.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:40px;"><i class="fas fa-receipt" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:8px;"></i>No payments found</td></tr>'; return; }
+    var html = '';
+    var total = 0, pending = 0, completed = 0;
+    payments.forEach(function(p) {
+        var amt = parseFloat(p.total_amount || p.amount || 0);
+        total += amt;
+        if (p.status === 'completed') completed += amt;
+        if (p.status === 'pending') pending += amt;
+        html += '<tr>' +
+            '<td><strong>' + SkillShare.escapeHtml(p.invoice_number || '#' + p.id) + '</strong></td>' +
+            '<td>' + SkillShare.escapeHtml(p.session_title || 'Payment') + '</td>' +
+            '<td style="color:var(--primary-400);font-weight:600;">' + SkillShare.formatCurrency(amt) + '</td>' +
+            '<td>' + SkillShare.escapeHtml(p.payment_method || '-') + '</td>' +
+            '<td>' + SkillShare.formatDate(p.payment_date || p.created_at) + '</td>' +
+            '<td><span class="status-badge status-' + p.status + '">' + p.status + '</span></td>' +
+            '<td><div class="table-actions"><button class="icon-btn" title="Download" onclick="SkillShare.showToast(\'Receipt\', \'Invoice ' + SkillShare.escapeHtml(p.invoice_number || '') + ' downloaded\', \'success\')"><i class="fas fa-file-invoice"></i></button></div></td></tr>';
+    });
+    tbody.innerHTML = html;
+    document.getElementById('statTotal').textContent = SkillShare.formatCurrency(total);
+    document.getElementById('statPending').textContent = SkillShare.formatCurrency(pending);
+    document.getElementById('statCompleted').textContent = SkillShare.formatCurrency(completed);
+}
 
+document.getElementById('paymentFilter').addEventListener('change', function() {
+    var params = '?action=list' + (this.value ? '&status=' + this.value : '');
+    SkillShare.apiFetch(BASE + 'api/payments.php' + params).then(function(res) {
+        if (res.success) renderPayments(res.data);
+    });
+});
+
+SkillShare.apiFetch(BASE + 'api/payments.php?action=list').then(function(res) {
+    if (res.success) renderPayments(res.data);
+});
+</script>
+
+<?php
+endDashboardPage();

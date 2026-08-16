@@ -7,7 +7,7 @@ $navbar_active = 'Home';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShareSkill Hub - Learn • Connect • Grow</title>
+    <title>SkillShare Hub - Learn • Connect • Grow</title>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -971,7 +971,7 @@ $navbar_active = 'Home';
     <section class="section" id="features">
         <div class="container">
             <div class="section-header">
-                <h2>Why Choose ShareSkill Hub?</h2>
+                <h2>Why Choose SkillShare Hub?</h2>
                 <p>Everything you need to bridge the gap between education and industry</p>
                 <div class="divider"></div>
             </div>
@@ -1152,7 +1152,7 @@ $navbar_active = 'Home';
             <div class="testimonials-grid">
                 <div class="testimonial-card">
                     <div class="t-rating">★★★★★</div>
-                    <div class="t-content">"ShareSkill Hub helped me transition from theory to practical skills. I landed my dream job at a top tech company!"</div>
+                    <div class="t-content">"SkillShare Hub helped me transition from theory to practical skills. I landed my dream job at a top tech company!"</div>
                     <div class="t-author">
                         <div class="t-avatar">RS</div>
                         <div class="t-info">
@@ -1214,9 +1214,9 @@ $navbar_active = 'Home';
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <a href="index.php" class="brand">
-                        <i class="fas fa-graduation-cap"></i>
-                        ShareSkill <span>Hub</span>
+                    <a href="index.php" class="brand" style="display:flex;align-items:center;gap:10px;">
+                        <img src="frontend/assets/images/logo/skillshare hub.png" alt="SkillShare Hub Logo" style="height:36px; width:auto; object-fit:contain;">
+                        SkillShare <span>Hub</span>
                     </a>
                     <p>Bridging Education with Industry Through Practical Learning and Mentorship.</p>
                     <div class="footer-social">
@@ -1256,7 +1256,7 @@ $navbar_active = 'Home';
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 ShareSkill Hub. All rights reserved.</p>
+                <p>&copy; 2026 SkillShare Hub. All rights reserved.</p>
                 <div class="footer-bottom-links">
                     <a href="#" onclick="showToast('Info', 'Privacy Policy coming soon!', 'info')">Privacy Policy</a>
                     <a href="#" onclick="showToast('Info', 'Terms of Service coming soon!', 'info')">Terms of Service</a>
@@ -1382,14 +1382,14 @@ $navbar_active = 'Home';
         // WELCOME TOAST
         // ============================================
         setTimeout(() => {
-            showToast('👋 Welcome!', 'Welcome to ShareSkill Hub. Start your learning journey today!', 'info', 5000);
+            showToast('👋 Welcome!', 'Welcome to SkillShare Hub. Start your learning journey today!', 'info', 5000);
         }, 1000);
     });
 
     // ============================================
     // CONSOLE
     // ============================================
-    console.log('🏠 ShareSkill Hub - Homepage Loaded');
+    console.log('🏠 SkillShare Hub - Homepage Loaded');
     console.log('📚 8 Academic Fields | 4 Features | 3 Mentors');
     console.log('🎓 Start your learning journey today!');
 </script>

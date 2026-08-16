@@ -32,7 +32,7 @@ try {
     $pdo = getDB();
 
     // Query user by email
-    $stmt = $pdo->prepare('SELECT id, full_name, email, password_hash, role, status FROM users WHERE email = :email LIMIT 1');
+    $stmt = $pdo->prepare('SELECT id, firstname, lastname, email, password, password_hash, role, status FROM users WHERE email = :email LIMIT 1');
     $stmt->execute([':email' => $email]);
     $user = $stmt->fetch();
 
@@ -45,14 +45,24 @@ try {
         respond(false, 'Your account is not active. Please contact support.', null, 403);
     }
 
-    // Verify password
-    if (!password_verify($password, $user['password_hash'])) {
+    // Verify password: prefer password_hash if present, fall back to plain password column
+    $authenticated = false;
+    if (!empty($user['password_hash'])) {
+        $authenticated = password_verify($password, $user['password_hash']);
+    } else {
+        $authenticated = ($password === $user['password']);
+    }
+
+    if (!$authenticated) {
         respond(false, 'Invalid email or password.', null, 401);
     }
 
+    // Session regeneration for security
+    session_regenerate_id(true);
+
     // Set session variables
     $_SESSION['user_id']   = $user['id'];
-    $_SESSION['user_name'] = $user['full_name'];
+    $_SESSION['user_name'] = $user['firstname'] . ' ' . $user['lastname'];
     $_SESSION['user_email'] = $user['email'];
     $_SESSION['user_role'] = $user['role'];
 
@@ -67,7 +77,7 @@ try {
     $dashboard = '';
     switch ($user['role']) {
         case 'admin':
-            $dashboard = 'dashboard/admin/index.php';
+            $dashboard = 'admin/index.php';
             break;
         case 'mentor':
             $dashboard = 'dashboard/mentor/index.php';
@@ -80,7 +90,7 @@ try {
 
     respond(true, 'Login successful! Welcome back.', [
         'user_id'   => $user['id'],
-        'name'      => trim($user['firstname'] . ' ' . $user['lastname']),
+        'name'      => $user['firstname'] . ' ' . $user['lastname'],
         'email'     => $user['email'],
         'role'      => $user['role'],
         'redirect'  => $dashboard,

@@ -64,7 +64,7 @@ class CourseController
         );
 
         $mentors = $this->db->fetchAll(
-            "SELECT u.*, m.rating, m.reviews_count, m.total_sessions FROM users u JOIN mentors m ON u.id = m.user_id WHERE u.role = 'mentor' AND u.status = 'active' AND u.course = ? ORDER BY m.rating DESC LIMIT 6",
+            "SELECT u.*, m.rating, m.reviews_count, m.total_sessions FROM users u JOIN mentors m ON u.id = m.user_id WHERE u.role = 'mentor' AND u.status = 'active' AND u.course_id = ? ORDER BY m.rating DESC LIMIT 6",
             [$course['id']]
         );
 

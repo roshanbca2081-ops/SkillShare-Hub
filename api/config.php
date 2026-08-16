@@ -20,7 +20,7 @@ header('Content-Type: application/json; charset=UTF-8');
 
 // Database configuration
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'shareskill_hub');
+define('DB_NAME', 'skillshare_hub');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 

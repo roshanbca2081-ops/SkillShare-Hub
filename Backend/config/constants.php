@@ -9,7 +9,7 @@ define('APP_ENV', ENVIRONMENT ?? 'development');
 define('APP_DEBUG', APP_ENV === 'development');
 
 // Application Configuration
-define('APP_NAME', 'ShareSkill Hub');
+define('APP_NAME', 'SkillShare Hub');
 define('APP_URL', SITE_URL . '/');
 define('APP_VERSION', '1.0.0');
 

@@ -55,7 +55,7 @@ session_start();
         <div id="loginForm" class="auth-card">
             <div class="auth-brand">
                 <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
-                <h1>ShareSkill Hub</h1>
+                <h1>SkillShare Hub</h1>
                 <p>Bridging Education with Industry</p>
                 <div class="tagline">
                     <span>Learn</span><span>•</span><span>Connect</span><span>•</span><span>Grow</span>

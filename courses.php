@@ -2,16 +2,26 @@
 session_start();
 $page_title = 'Courses | SkillShare Hub';
 $page_active = 'Academic Fields';
+include 'config.php';
 include 'frontend/components/platform-header.php';
 include 'frontend/components/acad-db.php';
 
 $field_id = isset($_GET['field_id']) ? (int)$_GET['field_id'] : 0;
-$field = $field_id ? acad_query("SELECT * FROM acad_fields WHERE id = ? AND status = 'active'", [$field_id], true) : null;
-$courses = $field ? acad_query("SELECT c.*,
-                        (SELECT COUNT(*) FROM acad_subjects s WHERE s.course_id = c.id AND s.status='active') AS subject_count
-                        FROM acad_courses c
-                        WHERE c.field_id = ? AND c.status='active'
-                        ORDER BY c.name ASC", [$field_id]) : [];
+$pdo = getDB();
+
+$field = null;
+if ($field_id) {
+    $field = acad_query("SELECT * FROM academic_fields WHERE id = ? AND status = 'active'", [$field_id], true);
+}
+
+$courses = [];
+if ($field) {
+    $courses = acad_query("SELECT c.*,
+                    (SELECT COUNT(*) FROM skills s WHERE s.course_id = c.id AND s.status='active') AS skill_count
+                    FROM courses c
+                    WHERE c.academic_field_id = ? AND c.status='active'
+                    ORDER BY c.name ASC", [$field_id]);
+}
 ?>
 
 <style>
@@ -35,7 +45,7 @@ $courses = $field ? acad_query("SELECT c.*,
     .acad-course-card:hover .cc-icon { background: var(--gradient-primary); color: #fff; transform: scale(1.1) rotate(-5deg); }
     .acad-course-card .cc-name { font-weight: 600; color: var(--text-primary); font-size: 0.95rem; font-family: var(--font-heading); }
     .acad-course-card .cc-desc { color: var(--text-secondary); font-size: 0.8rem; margin: 6px 0 12px; line-height: 1.4; flex: 1; }
-    .acad-course-card .cc-subjects { display: inline-flex; align-items: center; gap: 6px; padding: 5px 16px; border-radius: var(--radius-full); background: rgba(139,92,246,0.12); color: var(--secondary-400); font-size: 0.75rem; font-weight: 500; }
+    .acad-course-card .cc-skills { display: inline-flex; align-items: center; gap: 6px; padding: 5px 16px; border-radius: var(--radius-full); background: rgba(139,92,246,0.12); color: var(--secondary-400); font-size: 0.75rem; font-weight: 500; }
 </style>
 
 <div class="container">
@@ -65,7 +75,7 @@ $courses = $field ? acad_query("SELECT c.*,
     <?php else: ?>
         <div class="acad-list-header reveal">
             <h1>Courses in <?php echo htmlspecialchars($field['name']); ?></h1>
-            <p>Select a course to explore its subjects</p>
+            <p>Select a course to explore its skills</p>
         </div>
 
         <div class="acad-courses-grid">
@@ -75,11 +85,11 @@ $courses = $field ? acad_query("SELECT c.*,
                     <p>No courses available for this academic field.</p>
                 </div>
             <?php else: foreach ($courses as $c): ?>
-                <a href="subjects.php?course_id=<?php echo (int)$c['id']; ?>" class="acad-course-card reveal">
+                <a href="skills.php?course_id=<?php echo (int)$c['id']; ?>" class="acad-course-card reveal">
                     <div class="cc-icon"><i class="fa-solid <?php echo htmlspecialchars($c['icon'] ?: 'fa-graduation-cap'); ?>"></i></div>
                     <div class="cc-name"><?php echo htmlspecialchars($c['name']); ?></div>
                     <div class="cc-desc"><?php echo htmlspecialchars($c['description']); ?></div>
-                    <span class="cc-subjects"><i class="fa-solid fa-book"></i> <?php echo (int)$c['subject_count']; ?> Subjects</span>
+                    <span class="cc-skills"><i class="fa-solid fa-star"></i> <?php echo (int)$c['skill_count']; ?> Skills</span>
                 </a>
             <?php endforeach; endif; ?>
         </div>
@@ -88,4 +98,3 @@ $courses = $field ? acad_query("SELECT c.*,
 </div>
 
 <?php include 'frontend/components/platform-footer.php'; ?>
-

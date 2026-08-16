@@ -23,7 +23,7 @@ class ProfileController
         $userId = getUserId();
 
         $user = $this->db->fetch(
-            "SELECT u.*, af.name as field_name, c.name as course_name FROM users u LEFT JOIN academic_fields af ON u.academic_field = af.id LEFT JOIN courses c ON u.course = c.id WHERE u.id = ?",
+            "SELECT u.*, af.name as field_name, c.name as course_name FROM users u LEFT JOIN academic_fields af ON u.academic_field_id = af.id LEFT JOIN courses c ON u.course_id = c.id WHERE u.id = ?",
             [$userId]
         );
 

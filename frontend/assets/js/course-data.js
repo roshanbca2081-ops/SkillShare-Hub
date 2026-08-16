@@ -1,5 +1,5 @@
 // ============================================
-// ShareSkill Hub - Complete Course Data
+// SkillShare Hub - Complete Course Data
 // with semester-wise subjects for all fields
 // ============================================
 const courseData = {

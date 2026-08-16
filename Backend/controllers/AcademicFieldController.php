@@ -16,7 +16,7 @@ class AcademicFieldController
     public function index()
     {
         $fields = $this->db->fetchAll(
-            "SELECT f.*, (SELECT COUNT(*) FROM courses WHERE academic_field_id = f.id) as course_count, (SELECT COUNT(*) FROM users WHERE academic_field = f.id AND role = 'mentor' AND status = 'active') as mentor_count FROM academic_fields f WHERE f.status = 'active' ORDER BY f.sort_order"
+            "SELECT f.*, (SELECT COUNT(*) FROM courses WHERE academic_field_id = f.id) as course_count, (SELECT COUNT(*) FROM users WHERE academic_field_id = f.id AND role = 'mentor' AND status = 'active') as mentor_count FROM academic_fields f WHERE f.status = 'active' ORDER BY f.sort_order"
         );
 
         $data = [
@@ -29,7 +29,7 @@ class AcademicFieldController
     public function show($slug)
     {
         $field = $this->db->fetch(
-            "SELECT f.*, (SELECT COUNT(*) FROM courses WHERE academic_field_id = f.id) as course_count, (SELECT COUNT(*) FROM users WHERE academic_field = f.id AND role = 'mentor' AND status = 'active') as mentor_count FROM academic_fields f WHERE f.slug = ? AND f.status = 'active'",
+            "SELECT f.*, (SELECT COUNT(*) FROM courses WHERE academic_field_id = f.id) as course_count, (SELECT COUNT(*) FROM users WHERE academic_field_id = f.id AND role = 'mentor' AND status = 'active') as mentor_count FROM academic_fields f WHERE f.slug = ? AND f.status = 'active'",
             [$slug]
         );
 
@@ -44,7 +44,7 @@ class AcademicFieldController
         );
 
         $mentors = $this->db->fetchAll(
-            "SELECT u.*, m.rating, m.reviews_count FROM users u JOIN mentors m ON u.id = m.user_id WHERE u.role = 'mentor' AND u.status = 'active' AND u.academic_field = ? ORDER BY m.rating DESC LIMIT 6",
+            "SELECT u.*, m.rating, m.reviews_count FROM users u JOIN mentors m ON u.id = m.user_id WHERE u.role = 'mentor' AND u.status = 'active' AND u.academic_field_id = ? ORDER BY m.rating DESC LIMIT 6",
             [$field['id']]
         );
 

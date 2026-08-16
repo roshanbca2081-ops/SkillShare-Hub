@@ -14,16 +14,16 @@ The backend for the SkillShare Hub mentoring platform: a native PHP (no framewor
 2. Create the database and load the schema:
 
    ```sql
-   CREATE DATABASE shareskill_hub CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   CREATE DATABASE skillshare_hub CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
 
-   Then import `Backend/database/shareskill_hub.sql`.
+   Then import `database/schema.sql`.
 
 3. Configure the database connection in `Backend/config/config.php`:
 
    ```php
    define('DB_HOST', 'localhost');
-   define('DB_NAME', 'shareskill_hub');
+   define('DB_NAME', 'skillshare_hub');
    define('DB_USER', 'root');
    define('DB_PASS', '');
    ```

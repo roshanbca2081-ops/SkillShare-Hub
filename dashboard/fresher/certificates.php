@@ -1,61 +1,67 @@
 <?php
-session_start();
+require_once __DIR__ . '/../../config.php';
+
+if (!isLoggedIn() || getUserRole() !== 'fresher') {
+    header('Location: ' . BASE_URL . 'login.php');
+    exit();
+}
+
+$pageTitle = 'Certificates';
 $sidebar_role = 'fresher';
 $sidebar_active = 'Certificates';
-require_once __DIR__ . '/_shared.php';
+
+startDashboardPage();
 ?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Certificates | Fresher - SkillShare Hub</title>
-    <link rel="stylesheet" href="../../assets/css/varables.css">
-    <link rel="stylesheet" href="../../assets/css/main.css">
-    <link rel="stylesheet" href="../../assets/css/navbar.css">
-    <link rel="stylesheet" href="../../assets/css/dashboard.css">
-    <link rel="stylesheet" href="../../assets/css/responsive.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
+<style>
+.cert-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.cert-card {
+    background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg); padding: 24px; text-align: center; transition: all 0.3s ease;
+}
+.cert-card:hover { transform: translateY(-4px); background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.2); }
+.cert-icon { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 12px; background: var(--gradient-primary); color: #fff; }
+.cert-title { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.cert-meta { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; }
+.cert-number { font-size: 0.75rem; color: var(--primary-400); margin-bottom: 12px; font-family: monospace; }
+.cert-actions { display: flex; gap: 8px; justify-content: center; }
+.cert-btn {
+    padding: 8px 16px; border-radius: var(--radius-full); border: 1px solid var(--glass-border);
+    background: transparent; color: var(--text-secondary); font-size: 0.8rem; cursor: pointer; transition: all 0.3s ease;
+}
+.cert-btn:hover { background: var(--gradient-primary); border-color: var(--primary-500); color: #fff; }
+.empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+.empty-state i { font-size: 3rem; opacity: 0.3; margin-bottom: 12px; }
+</style>
 
-<body>
-    <?php include '../../components/loader.php'; ?>
-    <?php include '../../components/sidebar.php'; ?>
+<h3 style="margin:0 0 20px;"><i class="fas fa-award" style="color:var(--primary-400);margin-right:8px;"></i> My Certificates</h3>
+<div class="cert-grid" id="certGrid"><p style="color:var(--text-muted);">Loading...</p></div>
 
-    <div class="dashboard-main">
-        <?php include __DIR__ . '/_topbar.php'; ?>
+<script>
+var BASE = '<?php echo BASE_URL; ?>';
 
-        <div class="dash-card-grid">
-            <?php
-            $fresher_certs = [
-                ['Python for Beginners', 'Prof. James Carter', 'Jan 05, 2025', 'A+', 'intro-datascience.svg'],
-                ['Data Science Fundamentals', 'Dr. Aisha Khan', 'Dec 28, 2024', 'A', 'ml-mastery.svg'],
-                ['Statistics Essentials', 'Dr. Emily Chen', 'Dec 15, 2024', 'A-', 'statistics.svg'],
-            ];
-            foreach ($fresher_certs as $c): ?>
-                <div class="card-base cert-card" style="padding:var(--spacing-5);text-align:center;background:linear-gradient(135deg,var(--primary-soft),#fff);">
-                    <div style="width:70px;height:70px;border-radius:50%;background:var(--gradient-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto var(--spacing-4);"><i class="fa-solid fa-award"></i></div>
-                    <h6 style="margin-bottom:0.3rem;"><?php echo $c[0]; ?></h6>
-                    <p style="font-size:.8rem;color:var(--gray-500);margin-bottom:0.3rem;"><?php echo $c[1]; ?></p>
-                    <p style="font-size:.8rem;color:var(--gray-400);margin-bottom:var(--spacing-4);">Issued: <?php echo $c[2]; ?></p>
-                    <div style="display:flex;justify-content:center;gap:0.5rem;margin-bottom:var(--spacing-4);"><span class="badge badge-success">Grade <?php echo $c[3]; ?></span></div>
-                    <div style="display:flex;gap:0.5rem;">
-                        <button class="btn btn-primary btn-sm btn-block"><i class="fa-solid fa-download"></i> Download</button>
-                        <button class="btn btn-outline btn-sm btn-block"><i class="fa-solid fa-eye"></i> View</button>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    </div>
+function renderCerts(certs) {
+    var grid = document.getElementById('certGrid');
+    if (!certs.length) { grid.innerHTML = '<div class="card empty" style="grid-column:1/-1;"><i class="fas fa-certificate"></i><p>No certificates yet. Keep learning!</p></div>'; return; }
+    var html = '';
+    certs.forEach(function(c) {
+        html += '<div class="cert-card">' +
+            '<div class="cert-icon"><i class="fas fa-award"></i></div>' +
+            '<div class="cert-title">' + SkillShare.escapeHtml(c.course_name || 'Certificate') + '</div>' +
+            '<div class="cert-meta">Issued: ' + SkillShare.formatDate(c.issue_date) + '</div>' +
+            '<div class="cert-number">' + SkillShare.escapeHtml(c.certificate_number || '') + '</div>' +
+            '<div class="cert-actions">' +
+                '<button class="cert-btn" onclick="window.print()"><i class="fas fa-print"></i> Print</button>' +
+                '<button class="cert-btn" onclick="SkillShare.showToast(\'Download\', \'Certificate download starting...\', \'success\')"><i class="fas fa-download"></i> Download</button>' +
+            '</div></div>';
+    });
+    grid.innerHTML = html;
+}
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../../assets/js/main.js"></script>
-    <script src="../../assets/js/navbar.js"></script>
-    <script src="../../assets/js/dashboard.js"></script>
-    <script src="../../assets/js/animation.js"></script>
-</body>
+SkillShare.apiFetch(BASE + 'api/certificates.php?action=list').then(function(res) {
+    if (res.success) renderCerts(res.data);
+});
+</script>
 
-</html>
+<?php
+endDashboardPage();

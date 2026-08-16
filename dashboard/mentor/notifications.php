@@ -1,70 +1,97 @@
 <?php
-session_start();
+require_once __DIR__ . '/../../config.php';
+
+if (!isLoggedIn() || getUserRole() !== 'mentor') {
+    header('Location: ' . BASE_URL . 'login.php');
+    exit();
+}
+
+$pageTitle = 'Notifications';
 $sidebar_role = 'mentor';
 $sidebar_active = 'Notifications';
-require_once __DIR__ . '/_shared.php';
+
+startDashboardPage();
 ?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notifications | Mentor - SkillShare Hub</title>
-    <link rel="stylesheet" href="../../assets/css/varables.css">
-    <link rel="stylesheet" href="../../assets/css/main.css">
-    <link rel="stylesheet" href="../../assets/css/navbar.css">
-    <link rel="stylesheet" href="../../assets/css/dashboard.css">
-    <link rel="stylesheet" href="../../assets/css/notification.css">
-    <link rel="stylesheet" href="../../assets/css/responsive.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
+<style>
+.notif-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.notif-stat { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 14px 16px; text-align: center; }
+.notif-stat .num { font-family: var(--font-heading); font-weight: 700; font-size: 1.4rem; }
+.notif-stat .lbl { font-size: 0.75rem; color: var(--text-muted); }
+.notif-list { display: flex; flex-direction: column; gap: 0; }
+.notif-item { display: flex; align-items: flex-start; gap: 14px; padding: 14px 18px; border-bottom: 1px solid var(--glass-border); transition: all 0.3s ease; }
+.notif-item:hover { background: rgba(255,255,255,0.02); }
+.notif-item.unread { border-left: 3px solid var(--primary-500); }
+.notif-icon { width: 40px; height: 40px; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1rem; }
+.notif-item .content { flex: 1; min-width: 0; }
+.notif-item .content strong { display: block; font-size: 0.9rem; margin-bottom: 2px; }
+.notif-item .content p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+.notif-item .time { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; }
+.notif-item .del-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; padding: 4px; }
+.notif-item .del-btn:hover { color: var(--danger); }
+</style>
 
-<body>
-    <?php include '../../components/loader.php'; ?>
-    <?php include '../../components/sidebar.php'; ?>
+<div class="notif-stats" id="notifStats">
+    <div class="notif-stat"><div class="num" id="nTotal">0</div><div class="lbl">Total</div></div>
+    <div class="notif-stat"><div class="num" id="nRead" style="color:var(--success);">0</div><div class="lbl">Read</div></div>
+    <div class="notif-stat"><div class="num" id="nUnread" style="color:var(--warning);">0</div><div class="lbl">Unread</div></div>
+</div>
 
-    <div class="dashboard-main">
-        <?php include __DIR__ . '/_topbar.php'; ?>
-
-        <div class="dash-grid-3" style="margin-bottom:var(--spacing-5);">
-            <div class="stat-card reveal"><div class="stat-icon primary"><i class="fa-solid fa-bell"></i></div><div class="stat-info"><h4 class="dash-counter" data-target="16">0</h4><p>Total Notifications</p></div></div>
-            <div class="stat-card reveal reveal-delay-1"><div class="stat-icon secondary"><i class="fa-solid fa-envelope-open"></i></div><div class="stat-info"><h4 class="dash-counter" data-target="10">0</h4><p>Read</p></div></div>
-            <div class="stat-card reveal reveal-delay-2"><div class="stat-icon accent"><i class="fa-solid fa-envelope"></i></div><div class="stat-info"><h4 class="dash-counter" data-target="6">0</h4><p>Unread</p></div></div>
-        </div>
-
-        <div class="panel reveal">
-            <div class="panel-header"><h5><i class="fa-solid fa-bell" style="color:var(--primary);"></i> Notification Center</h5>
-                <div style="display:flex;gap:0.5rem;"><button class="btn btn-outline btn-sm"><i class="fa-solid fa-check-double"></i> Mark All Read</button><button class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i> Clear All</button></div>
-            </div>
-            <div class="notifications-list">
-                <?php
-                $mentor_notifs = [
-                    ['fas fa-calendar-check', 'New booking request', 'Sarah Johnson booked a session.', '2m ago', false, 'var(--primary-soft)', 'var(--primary)'],
-                    ['fas fa-user-plus', 'New student enrolled', 'Michael Chen joined your course.', '18m ago', true, 'var(--secondary-soft)', 'var(--secondary-dark)'],
-                    ['fas fa-file-pen', 'Assignment submitted', 'Emily Davis submitted an assignment.', '1h ago', false, 'var(--accent-soft)', 'var(--accent)'],
-                    ['fas fa-star', 'New review', 'You received a 5-star rating.', '3h ago', false, '#fff3d6', '#d1910a'],
-                    ['fas fa-circle-dollar', 'Payout processed', 'Your monthly earnings were released.', '1d ago', true, 'var(--secondary-soft)', 'var(--secondary-dark)'],
-                ];
-                foreach ($mentor_notifs as $n): ?>
-                    <div class="notif-item <?php echo $n[4] ? '' : 'unread'; ?>" style="display:flex;align-items:flex-start;gap:var(--spacing-4);padding:var(--spacing-4) var(--spacing-5);border-bottom:1px solid var(--gray-100);">
-                        <div class="notif-icon" style="width:44px;height:44px;border-radius:50%;background:<?php echo $n[5]; ?>;color:<?php echo $n[6]; ?>;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid <?php echo $n[0]; ?>"></i></div>
-                        <div style="flex:1;"><h6 style="margin:0;font-size:.9rem;"><?php echo $n[1]; ?> <?php if (!$n[4]) echo '<span class="badge badge-primary" style="margin-left:.3rem;">New</span>'; ?></h6><p style="margin:0;font-size:.8rem;color:var(--gray-500);"><?php echo $n[2]; ?></p></div>
-                        <span style="font-size:.75rem;color:var(--gray-400);white-space:nowrap;"><?php echo $n[3]; ?></span>
-                        <button class="delete-btn" aria-label="Delete" style="width:30px;height:30px;border-radius:var(--border-radius-sm);border:none;background:#ffe4dd;color:var(--danger);cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
+<div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);overflow:hidden;">
+    <div style="padding:12px 18px;border-bottom:1px solid var(--glass-border);display:flex;justify-content:space-between;align-items:center;">
+        <strong style="font-size:0.95rem;">Notifications</strong>
+        <button class="btn-sm" onclick="markAllRead()">Mark All Read</button>
     </div>
+    <div class="notif-list" id="notifList">
+        <div style="padding:40px;text-align:center;color:var(--text-muted);">Loading...</div>
+    </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../../assets/js/main.js"></script>
-    <script src="../../assets/js/navbar.js"></script>
-    <script src="../../assets/js/dashboard.js"></script>
-    <script src="../../assets/js/animation.js"></script>
-</body>
+<script>
+var BASE = '<?php echo BASE_URL; ?>';
 
-</html>
+function renderNotifications(list) {
+    var container = document.getElementById('notifList');
+    var total = list ? list.length : 0;
+    var read = list ? list.filter(function(n) { return n.is_read; }).length : 0;
+    document.getElementById('nTotal').textContent = total;
+    document.getElementById('nRead').textContent = read;
+    document.getElementById('nUnread').textContent = total - read;
+
+    if (!list || !list.length) { container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted);">No notifications</div>'; return; }
+    var html = '';
+    list.forEach(function(n) {
+        var iconBg = n.color || 'rgba(59,130,246,0.12)';
+        var iconColor = 'var(--primary-400)';
+        html += '<div class="notif-item ' + (n.is_read ? '' : 'unread') + '">' +
+            '<div class="notif-icon" style="background:' + iconBg + ';color:' + iconColor + ';"><i class="fas ' + (n.icon || 'fa-info-circle') + '"></i></div>' +
+            '<div class="content"><strong>' + SkillShare.escapeHtml(n.title) + '</strong><p>' + SkillShare.escapeHtml(n.message || '') + '</p></div>' +
+            '<span class="time">' + SkillShare.timeAgo(n.created_at) + '</span>' +
+            '<button class="del-btn" onclick="deleteNotif(' + n.id + ')">&times;</button></div>';
+    });
+    container.innerHTML = html;
+}
+
+function markAllRead() {
+    SkillShare.apiFetch(BASE + 'api/notifications.php?action=mark_all_read', { method: 'POST' }).then(function(res) {
+        if (res.success) { SkillShare.showToast('Done', 'All marked as read', 'success'); loadNotifications(); }
+    });
+}
+
+function deleteNotif(id) {
+    SkillShare.apiFetch(BASE + 'api/notifications.php?action=delete&id=' + id, { method: 'POST' }).then(function(res) {
+        if (res.success) loadNotifications();
+    });
+}
+
+function loadNotifications() {
+    SkillShare.apiFetch(BASE + 'api/notifications.php?action=list').then(function(res) {
+        if (res.success) renderNotifications(res.data);
+    });
+}
+
+loadNotifications();
+</script>
+
+<?php
+endDashboardPage();

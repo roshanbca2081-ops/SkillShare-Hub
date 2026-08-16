@@ -1,13 +1,32 @@
 <?php
 session_start();
-$page_title = 'Academic Fields | SkillShare Hub';
+$page_title = 'Skills | SkillShare Hub';
 $page_active = 'Academic Fields';
+include 'config.php';
 include 'frontend/components/platform-header.php';
 include 'frontend/components/acad-db.php';
 
+$course_id = isset($_GET['course_id']) ? (int)$_GET['course_id'] : 0;
 $subject_id = isset($_GET['subject_id']) ? (int)$_GET['subject_id'] : 0;
-$subject = $subject_id ? acad_query("SELECT s.*, c.name AS course_name, c.id AS course_id, c.field_id, f.name AS field_name FROM acad_subjects s JOIN acad_courses c ON c.id = s.course_id JOIN acad_fields f ON f.id = c.field_id WHERE s.id = ? AND s.status='active'", [$subject_id], true) : null;
-$skills = $subject ? acad_query("SELECT * FROM acad_skills WHERE subject_id = ? ORDER BY name ASC", [$subject_id]) : [];
+$pdo = getDB();
+
+$course = null;
+$subject = null;
+
+if ($course_id) {
+    $course = acad_query("SELECT c.*, f.name AS field_name, f.id AS field_id FROM courses c JOIN academic_fields f ON f.id = c.academic_field_id WHERE c.id = ? AND c.status = 'active'", [$course_id], true);
+} elseif ($subject_id) {
+    $subject = acad_query("SELECT s.*, c.name AS course_name, c.id AS course_id, c.field_id, f.name AS field_name FROM acad_subjects s JOIN acad_courses c ON c.id = s.course_id JOIN acad_fields f ON f.id = c.field_id WHERE s.id = ? AND s.status = 'active'", [$subject_id], true);
+    if ($subject) {
+        $course_id = (int)$subject['course_id'];
+        $course = acad_query("SELECT c.*, f.name AS field_name, f.id AS field_id FROM acad_courses c JOIN acad_fields f ON f.id = c.field_id WHERE c.id = ? AND c.status = 'active'", [$course_id], true);
+    }
+}
+
+$skills = [];
+if ($course_id) {
+    $skills = acad_query("SELECT * FROM skills WHERE course_id = ? AND status = 'active' ORDER BY name ASC", [$course_id]);
+}
 ?>
 
 <style>
@@ -40,7 +59,15 @@ $skills = $subject ? acad_query("SELECT * FROM acad_skills WHERE subject_id = ? 
         <a href="index.php"><i class="fa-solid fa-house"></i> Home</a>
         <span class="sep">/</span>
         <a href="academic-fields.php">Academic Fields</a>
-        <?php if ($subject): ?>
+        <?php if ($course): ?>
+            <span class="sep">/</span>
+            <a href="courses.php?field_id=<?php echo (int)$course['field_id']; ?>"><?php echo htmlspecialchars($course['field_name']); ?></a>
+            <span class="sep">/</span>
+            <a href="skills.php?course_id=<?php echo (int)$course['id']; ?>"><?php echo htmlspecialchars($course['name']); ?></a>
+            <span class="sep">/</span>
+            <span class="current">Skills</span>
+        <?php endif; ?>
+        <?php if ($subject && !$course): ?>
             <span class="sep">/</span>
             <a href="courses.php?field_id=<?php echo (int)$subject['field_id']; ?>"><?php echo htmlspecialchars($subject['field_name']); ?></a>
             <span class="sep">/</span>
@@ -50,25 +77,25 @@ $skills = $subject ? acad_query("SELECT * FROM acad_skills WHERE subject_id = ? 
         <?php endif; ?>
     </nav>
 
-    <a href="subjects.php?course_id=<?php echo $subject ? (int)$subject['course_id'] : ''; ?>" class="acad-back-btn reveal">
-        <i class="fa-solid fa-arrow-left"></i> Back to Subjects
+    <a href="<?php echo $course ? 'courses.php?field_id=' . (int)$course['field_id'] : ($subject ? 'subjects.php?course_id=' . (int)$subject['course_id'] : 'academic-fields.php'); ?>" class="acad-back-btn reveal">
+        <i class="fa-solid fa-arrow-left"></i> Back
     </a>
 
-    <?php if (!$subject): ?>
-        <div class="acad-list-header reveal"><h1>Skills</h1><p>Please select a subject to view its skills.</p></div>
+    <?php if (!$course): ?>
+        <div class="acad-list-header reveal"><h1>Skills</h1><p>Please select a course to view its skills.</p></div>
         <div class="research-no-results">
             <i class="fa-solid fa-star" style="font-size:2rem;display:block;margin-bottom:12px;"></i>
-            <p>No subject selected. <a href="academic-fields.php" style="color:var(--primary-400);">Choose a subject</a> to continue.</p>
+            <p>No course selected. <a href="academic-fields.php" style="color:var(--primary-400);">Choose a course</a> to continue.</p>
         </div>
     <?php else: ?>
         <div class="acad-list-header reveal">
-            <h1><?php echo htmlspecialchars($subject['name']); ?></h1>
+            <h1><?php echo htmlspecialchars($course['name']); ?> Skills</h1>
             <p>Select a skill to find expert mentors</p>
         </div>
 
         <div class="acad-skills-grid">
             <?php if (count($skills) === 0): ?>
-                <div class="research-no-results" style="grid-column:1/-1;"><p>No skills available for this subject yet.</p></div>
+                <div class="research-no-results" style="grid-column:1/-1;"><p>No skills available for this course yet.</p></div>
             <?php else: foreach ($skills as $k): ?>
                 <a href="mentors.php?skill_id=<?php echo (int)$k['id']; ?>" class="acad-skill-card reveal">
                     <div class="sk-icon"><i class="fa-solid fa-star"></i></div>

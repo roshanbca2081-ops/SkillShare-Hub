@@ -788,5 +788,5 @@ document.addEventListener('DOMContentLoaded', function () {
         discRenderFields();
     });
 
-    console.log('🚀 ShareSkill Hub - Academic Field, Course & Mentor Discovery');
+    console.log('🚀 SkillShare Hub - Academic Field, Course & Mentor Discovery');
 </script>

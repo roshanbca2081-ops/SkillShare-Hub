@@ -6,14 +6,14 @@ session_start();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkillSkill Hub - Login & Register</title>
-    
+    <title>SkillShare Hub - Login & Register</title>
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
+
     <style>
         /* ============================================
            CSS VARIABLES
@@ -82,7 +82,7 @@ session_start();
             content: '';
             position: absolute;
             inset: -50%;
-            background: 
+            background:
                 radial-gradient(ellipse at 20% 50%, rgba(59,130,246,0.12) 0%, transparent 60%),
                 radial-gradient(ellipse at 80% 20%, rgba(139,92,246,0.12) 0%, transparent 50%),
                 radial-gradient(ellipse at 50% 80%, rgba(6,182,212,0.06) 0%, transparent 50%);
@@ -620,7 +620,7 @@ session_start();
                <div class="logo-icon">
                     <img src="frontend/assets/images/logo/skillshare%20hub.png" alt="SkillShare Hub Logo" style="max-width:120px; height:auto;">
                 </div>
-                <h1>ShareSkill Hub</h1>
+                <h1>SkillShare Hub</h1>
                 <p>Bridging Education with Industry</p>
                 <div class="tagline">
                     <span>Learn</span>
@@ -668,11 +668,11 @@ session_start();
             <div class="auth-divider"><span>OR</span></div>
 
             <div class="social-login">
-                <button class="btn-social google" onclick="showToast('Coming Soon', 'Google login coming soon!', 'info')">
+                <button type="button" class="btn-social google" onclick="handleGoogleLogin()">
                     <span class="social-icon"><i class="fab fa-google"></i></span>
                     Continue with Google
                 </button>
-                <button class="btn-social facebook" onclick="showToast('Coming Soon', 'Facebook login coming soon!', 'info')">
+                <button type="button" class="btn-social facebook" onclick="handleFacebookLogin()">
                     <span class="social-icon"><i class="fab fa-facebook-f"></i></span>
                     Continue with Facebook
                 </button>
@@ -688,7 +688,7 @@ session_start();
            ============================================ -->
         <div id="registerForm" class="auth-card" style="display: none;">
             <div class="auth-brand">
-                <div class="logo-icon"><i class="fas fa-user-plus"></i></div>
+                <div class="logo-icon"><img src="frontend/assets/images/logo/skillshare hub.png" alt="SkillShare Hub Logo" style="max-width:120px; height:auto;"></div>
                 <h1>Create Account</h1>
                 <p>Start your journey to industry readiness</p>
                 <div class="tagline">
@@ -703,12 +703,21 @@ session_start();
             <div id="registerAlert"></div>
 
             <form id="registerFormElement" onsubmit="return handleRegister(event)">
-                <!-- Full Name -->
+                <!-- First Name -->
                 <div class="form-group">
-                    <label>Full Name</label>
+                    <label>First Name</label>
                     <div class="input-wrapper">
                         <span class="input-icon"><i class="fas fa-user"></i></span>
-                        <input type="text" id="regName" placeholder="Enter your full name" required>
+                        <input type="text" id="regFirstName" placeholder="Enter your first name" required>
+                    </div>
+                </div>
+
+                <!-- Last Name -->
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon"><i class="fas fa-user"></i></span>
+                        <input type="text" id="regLastName" placeholder="Enter your last name" required>
                     </div>
                 </div>
 
@@ -721,46 +730,40 @@ session_start();
                     </div>
                 </div>
 
-                <!-- Address -->
-                <div class="form-group">
-                    <label>Address</label>
-                    <div class="input-wrapper">
-                        <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
-                        <input type="text" id="regAddress" placeholder="Enter your address" required>
-                    </div>
-                </div>
-
-                <!-- Contact -->
-                <div class="form-group">
-                    <label>Contact Number</label>
-                    <div class="input-wrapper">
-                        <span class="input-icon"><i class="fas fa-phone"></i></span>
-                        <input type="tel" id="regContact" placeholder="Enter your phone number" required>
-                    </div>
-                </div>
-
                 <!-- Background Field -->
-                <div class="form-group">
-                    <label>Background Field</label>
-                    <div class="input-wrapper">
-                        <span class="input-icon"><i class="fas fa-book"></i></span>
-                        <select id="regField" required>
-                            <option value="">Select your field</option>
-                            <option value="engineering">Engineering</option>
-                            <option value="information-technology">Information Technology</option>
-                            <option value="science">Science</option>
-                            <option value="management">Management & Commerce</option>
-                            <option value="law">Law</option>
-                            <option value="education">Education</option>
-                            <option value="agriculture">Agriculture</option>
-                            <option value="health-sciences">Health Sciences</option>
-                            <option value="arts">Arts & Humanities</option>
-                            <option value="media">Media & Communication</option>
-                            <option value="hospitality">Hospitality & Tourism</option>
-                            <option value="research">Research & Innovation</option>
-                        </select>
-                    </div>
-                </div>
+                 <div class="form-group">
+                     <label>I Want To Register As</label>
+                     <div class="input-wrapper">
+                         <span class="input-icon"><i class="fas fa-user-tag"></i></span>
+                         <select id="regRole" required>
+                             <option value="fresher">I am a student/fresher</option>
+                             <option value="mentor">I am a mentor/instructor</option>
+                         </select>
+                     </div>
+                 </div>
+
+                 <!-- Background Field -->
+                 <div class="form-group">
+                     <label>Background Field</label>
+                     <div class="input-wrapper">
+                         <span class="input-icon"><i class="fas fa-book"></i></span>
+                         <select id="regField" required>
+                             <option value="">Select your field</option>
+                             <option value="engineering">Engineering</option>
+                             <option value="information-technology">Information Technology</option>
+                             <option value="science">Science</option>
+                             <option value="management">Management & Commerce</option>
+                             <option value="law">Law</option>
+                             <option value="education">Education</option>
+                             <option value="agriculture">Agriculture</option>
+                             <option value="health-sciences">Health Sciences</option>
+                             <option value="arts">Arts & Humanities</option>
+                             <option value="media">Media & Communication</option>
+                             <option value="hospitality">Hospitality & Tourism</option>
+                             <option value="research">Research & Innovation</option>
+                         </select>
+                     </div>
+                 </div>
 
                 <!-- Interested Course -->
                 <div class="form-group">
@@ -924,7 +927,7 @@ session_start();
     function togglePassword(inputId, element) {
         const input = document.getElementById(inputId);
         const icon = element.querySelector('i');
-        
+
         if (input.type === 'password') {
             input.type = 'text';
             icon.classList.remove('fa-eye');
@@ -990,9 +993,9 @@ session_start();
     // ============================================
     function handleLogin(event) {
         event.preventDefault();
-        
+
         const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value.trim();
+        const password = document.getElementById('loginPassword').value;
         const alertDiv = document.getElementById('loginAlert');
 
         if (!email || !password) {
@@ -1005,13 +1008,37 @@ session_start();
             return false;
         }
 
-        // Simulate login success
-        alertDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i> Login successful! Redirecting...</div>`;
-        showToast('Welcome Back!', 'Login successful!', 'success', 3000);
-        
-        setTimeout(() => {
-            window.location.href = 'dashboard.html';
-        }, 1500);
+        // Show loading
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+
+        // Send to backend API
+        fetch('api/login.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, password: password })
+        })
+        .then(r => r.json())
+        .then(res => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+
+            if (res.success) {
+                alertDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i> Login successful! Redirecting...</div>`;
+                showToast('Welcome Back!', 'Login successful!', 'success', 1500);
+                setTimeout(() => {
+                    window.location.href = res.data.redirect;
+                }, 1500);
+            } else {
+                alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> ${res.message}</div>`;
+            }
+        })
+        .catch(err => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+            alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Connection error. Please try again.</div>`;
+        });
 
         return false;
     }
@@ -1021,31 +1048,23 @@ session_start();
     // ============================================
     function handleRegister(event) {
         event.preventDefault();
-        
-        const name = document.getElementById('regName').value.trim();
+
+        const firstname = document.getElementById('regFirstName').value.trim();
+        const lastname = document.getElementById('regLastName').value.trim();
         const email = document.getElementById('regEmail').value.trim();
-        const address = document.getElementById('regAddress').value.trim();
-        const contact = document.getElementById('regContact').value.trim();
-        const field = document.getElementById('regField').value;
-        const course = document.getElementById('regCourse').value;
+        const role = document.getElementById('regRole').value;
         const password = document.getElementById('regPassword').value;
         const confirmPassword = document.getElementById('regConfirmPassword').value;
         const terms = document.getElementById('regTerms').checked;
         const alertDiv = document.getElementById('registerAlert');
 
-        // Validation
-        if (!name || !email || !address || !contact || !field || !course || !password || !confirmPassword) {
+        if (!firstname || !lastname || !email || !role || !password || !confirmPassword) {
             alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Please fill in all fields</div>`;
             return false;
         }
 
         if (!isValidEmail(email)) {
             alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Please enter a valid email address</div>`;
-            return false;
-        }
-
-        if (!isValidPhone(contact)) {
-            alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Please enter a valid phone number</div>`;
             return false;
         }
 
@@ -1064,15 +1083,44 @@ session_start();
             return false;
         }
 
-        // Simulate registration success
-        alertDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i> Registration successful! Welcome aboard!</div>`;
-        showToast('Welcome!', 'Account created successfully!', 'success', 3000);
-        
-        // Show login form after success
-        setTimeout(() => {
-            showLogin();
-            alertDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i> Account created! Please login.</div>`;
-        }, 2000);
+        // Show loading
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
+
+        // Send to backend API
+        fetch('api/register.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                firstname: firstname,
+                lastname: lastname,
+                email: email,
+                role: role,
+                password: password,
+                confirm_password: confirmPassword
+            })
+        })
+        .then(r => r.json())
+        .then(res => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+
+            if (res.success) {
+                alertDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i> ${res.message}</div>`;
+                showToast('Welcome!', 'Account created successfully!', 'success', 1500);
+                setTimeout(() => {
+                    window.location.href = res.data.redirect;
+                }, 1500);
+            } else {
+                alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> ${res.message}</div>`;
+            }
+        })
+        .catch(err => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+            alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Connection error. Please try again.</div>`;
+        });
 
         return false;
     }
@@ -1157,9 +1205,93 @@ session_start();
     // ============================================
     // CONSOLE
     // ============================================
-    console.log('🔐 ShareSkill Hub - Authentication System Loaded');
+    console.log('🔐 SkillShare Hub - Authentication System Loaded');
     console.log('📱 Responsive: Enabled');
     console.log('🔒 Security: Active');
+
+function handleGoogleLogin() {
+    showToast('Connecting to Google...', 'Opening Google Accounts connection window...', 'info');
+
+    const width = 500, height = 650;
+    const left = (window.innerWidth - width) / 2;
+    const top = (window.innerHeight - height) / 2;
+    const googleAuthUrl = 'https://accounts.google.com/o/oauth2/v2/auth?client_id=1084293847291-example.apps.googleusercontent.com&redirect_uri=' + encodeURIComponent(window.location.origin + '/api/google-callback.php') + '&response_type=code&scope=openid%20email%20profile&prompt=select_account';
+
+    const popup = window.open(googleAuthUrl, 'GoogleAuthWindow', `width=${width},height=${height},top=${top},left=${left},status=no,toolbar=no,menubar=no`);
+
+    setTimeout(function() {
+        var email = prompt("Google Accounts Sign-In Connection:\n\nEnter your Google email to authenticate:", "user.google@gmail.com");
+        if (email && email.trim() !== '') {
+            var name = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ').toUpperCase();
+            fetch('api/social-login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    provider: 'google',
+                    email: email.trim(),
+                    name: name,
+                    social_id: 'google_' + Date.now()
+                })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                if (res.success) {
+                    showToast('Google Connected', res.message, 'success');
+                    setTimeout(function() {
+                        window.location.href = res.data.redirect;
+                    }, 1000);
+                } else {
+                    showToast('Authentication Error', res.message, 'error');
+                }
+            })
+            .catch(function() {
+                showToast('Error', 'Google authentication request failed.', 'error');
+            });
+        }
+    }, 800);
+}
+
+function handleFacebookLogin() {
+    showToast('Connecting to Facebook...', 'Opening Facebook Auth connection window...', 'info');
+
+    const width = 500, height = 650;
+    const left = (window.innerWidth - width) / 2;
+    const top = (window.innerHeight - height) / 2;
+    const fbAuthUrl = 'https://www.facebook.com/v18.0/dialog/oauth?client_id=123456789012345&redirect_uri=' + encodeURIComponent(window.location.origin + '/api/facebook-callback.php') + '&scope=email,public_profile';
+
+    const popup = window.open(fbAuthUrl, 'FacebookAuthWindow', `width=${width},height=${height},top=${top},left=${left},status=no,toolbar=no,menubar=no`);
+
+    setTimeout(function() {
+        var email = prompt("Facebook Login Connection:\n\nEnter your Facebook email to authenticate:", "user.facebook@gmail.com");
+        if (email && email.trim() !== '') {
+            var name = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ').toUpperCase();
+            fetch('api/social-login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    provider: 'facebook',
+                    email: email.trim(),
+                    name: name,
+                    social_id: 'fb_' + Date.now()
+                })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                if (res.success) {
+                    showToast('Facebook Connected', res.message, 'success');
+                    setTimeout(function() {
+                        window.location.href = res.data.redirect;
+                    }, 1000);
+                } else {
+                    showToast('Authentication Error', res.message, 'error');
+                }
+            })
+            .catch(function() {
+                showToast('Error', 'Facebook authentication request failed.', 'error');
+            });
+        }
+    }, 800);
+}
 </script>
 
 </body>

@@ -1,70 +1,105 @@
 <?php
-session_start();
+require_once __DIR__ . '/../../config.php';
+
+if (!isLoggedIn() || getUserRole() !== 'mentor') {
+    header('Location: ' . BASE_URL . 'login.php');
+    exit();
+}
+
+$pageTitle = 'Research';
 $sidebar_role = 'mentor';
 $sidebar_active = 'Research';
-require_once __DIR__ . '/_shared.php';
+
+startDashboardPage();
 ?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Research | Mentor - SkillShare Hub</title>
-    <link rel="stylesheet" href="../../assets/css/varables.css">
-    <link rel="stylesheet" href="../../assets/css/main.css">
-    <link rel="stylesheet" href="../../assets/css/navbar.css">
-    <link rel="stylesheet" href="../../assets/css/dashboard.css">
-    <link rel="stylesheet" href="../../assets/css/research.css">
-    <link rel="stylesheet" href="../../assets/css/responsive.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
+<style>
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th { text-align: left; padding: 12px 10px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 1px solid var(--glass-border); }
+.data-table td { padding: 12px 10px; font-size: 0.85rem; border-bottom: 1px solid var(--glass-border); vertical-align: middle; }
+.data-table tr:hover td { background: rgba(255,255,255,0.02); }
+.status-badge { padding: 3px 10px; border-radius: var(--radius-full); font-size: 0.7rem; font-weight: 600; }
+.status-badge.status-approved { background: rgba(34,197,94,0.15); color: var(--success); }
+.status-badge.status-pending { background: rgba(245,158,11,0.15); color: var(--warning); }
+.status-badge.status-rejected { background: rgba(239,68,68,0.15); color: var(--danger); }
+.btn-sm { padding: 5px 12px; border-radius: var(--radius-full); border: 1px solid var(--glass-border); background: transparent; color: var(--text-secondary); font-size: 0.75rem; cursor: pointer; transition: all 0.3s ease; }
+.btn-sm:hover { background: var(--gradient-primary); border-color: var(--primary-500); color: #fff; }
+.btn-primary { padding: 8px 16px; border-radius: var(--radius-full); background: var(--gradient-primary); border: none; color: #fff; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 0.8rem; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.open { display: flex; }
+.modal { background: #1a1a2e; border: 1px solid var(--glass-border); border-radius: var(--radius-xl); padding: 24px; max-width: 560px; width: 100%; max-height: 90vh; overflow-y: auto; }
+.modal h3 { margin-bottom: 16px; }
+.form-group { margin-bottom: 12px; }
+.form-group label { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 4px; }
+.form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: var(--radius-md); color: var(--text-primary); outline: none; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+</style>
 
-<body>
-    <?php include '../../components/loader.php'; ?>
-    <?php include '../../components/sidebar.php'; ?>
+<div class="section-header">
+    <h3><i class="fas fa-flask" style="color:var(--primary-400);margin-right:8px;"></i>Research Projects</h3>
+    <button class="btn-primary" onclick="openCreate()"><i class="fas fa-plus"></i> New Project</button>
+</div>
 
-    <div class="dashboard-main">
-        <?php include __DIR__ . '/_topbar.php'; ?>
-
-        <div class="panel reveal">
-            <div class="panel-header"><h5><i class="fa-solid fa-flask" style="color:var(--primary);"></i> Research Projects</h5><button class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> New Project</button></div>
-            <div class="table-responsive-wrap">
-                <table class="data-table dash-table">
-                    <thead><tr><th><input type="checkbox" id="checkAll"></th><th>Project</th><th>Field</th><th>Collaborators</th><th>Progress</th><th>Status</th><th>Actions</th></tr></thead>
-                    <tbody>
-                        <?php
-                        $mentor_research = [
-                            ['AI in Healthcare', 'Medicine', 4, 75, 'In Progress'],
-                            ['Machine Learning Models', 'Engineering', 6, 50, 'In Progress'],
-                            ['Data Visualization', 'Technology', 3, 90, 'Review'],
-                            ['Predictive Analytics', 'Business', 5, 30, 'Draft'],
-                            ['Neural Networks', 'Engineering', 8, 85, 'Review'],
-                        ];
-                        foreach ($mentor_research as $r): ?>
-                            <tr>
-                                <td><input type="checkbox" class="row-check"></td>
-                                <td><strong><?php echo $r[0]; ?></strong></td>
-                                <td><span class="badge badge-primary"><?php echo $r[1]; ?></span></td>
-                                <td><?php echo $r[2]; ?> members</td>
-                                <td><div style="display:flex;align-items:center;gap:0.6rem;"><div class="progress-track" style="flex:1;min-width:80px;"><div class="progress-fill" style="width:<?php echo $r[3]; ?>%;"></div></div><span style="font-size:.8rem;font-weight:600;"><?php echo $r[3]; ?>%</span></div></td>
-                                <td><span class="status-pill <?php echo $r[4] === 'Review' ? 'approved' : ($r[4] === 'Draft' ? 'rejected' : 'pending'); ?>"><?php echo $r[4]; ?></span></td>
-                                <td><div class="table-actions"><button class="view-btn" aria-label="View"><i class="fa-solid fa-eye"></i></button><button class="edit-btn" aria-label="Edit"><i class="fa-solid fa-pen"></i></button></div></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);overflow:hidden;">
+    <div style="overflow-x:auto;">
+        <table class="data-table">
+            <thead><tr><th>Project</th><th>Type</th><th>Field</th><th>Progress</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="researchBody"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);">Loading...</td></tr></tbody>
+        </table>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../../assets/js/main.js"></script>
-    <script src="../../assets/js/navbar.js"></script>
-    <script src="../../assets/js/dashboard.js"></script>
-    <script src="../../assets/js/animation.js"></script>
-</body>
+<div class="modal-overlay" id="createModal">
+    <div class="modal">
+        <h3>Create Research Project</h3>
+        <form id="createForm">
+            <div class="form-group"><label>Title</label><input type="text" name="title" required></div>
+            <div class="form-group"><label>Description</label><textarea name="description" rows="3"></textarea></div>
+            <div class="form-group"><label>Type</label><select name="type"><option>Paper</option><option>Thesis</option><option>Case Study</option><option>Survey</option></select></div>
+            <div class="form-group"><label>Category</label><input type="text" name="category"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn-sm" onclick="document.getElementById('createModal').classList.remove('open')">Cancel</button>
+                <button type="submit" class="btn-primary">Create</button>
+            </div>
+        </form>
+    </div>
+</div>
 
-</html>
+<script>
+var BASE = '<?php echo BASE_URL; ?>';
+function openCreate() { document.getElementById('createModal').classList.add('open'); }
+
+document.getElementById('createForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var formData = new FormData(this);
+    SkillShare.apiFetch(BASE + 'api/research.php?action=create', { method: 'POST', body: formData }).then(function(res) {
+        if (res.success) { SkillShare.showToast('Success', 'Project created', 'success'); document.getElementById('createModal').classList.remove('open'); loadResearch(); }
+        else { SkillShare.showToast('Error', res.message || 'Failed', 'error'); }
+    });
+});
+
+function loadResearch() {
+    SkillShare.apiFetch(BASE + 'api/research.php?action=list').then(function(res) {
+        var tbody = document.getElementById('researchBody');
+        if (res.success && res.data && res.data.length) {
+            var html = '';
+            res.data.forEach(function(r) {
+                var progress = Math.min(100, Math.max(0, parseInt(r.views || 0) + parseInt(r.downloads || 0) + parseInt(r.likes || 0)));
+                html += '<tr><td><strong>' + SkillShare.escapeHtml(r.title) + '</strong></td>' +
+                    '<td>' + SkillShare.escapeHtml(r.type || 'N/A') + '</td>' +
+                    '<td><span class="status-badge status-pending">' + SkillShare.escapeHtml(r.field_name || 'General') + '</span></td>' +
+                    '<td><div class="progress-track" style="width:100px;"><div class="progress-fill" style="width:' + progress + '%;"></div></div><small>' + progress + '%</small></td>' +
+                    '<td><span class="status-badge status-' + (r.status === 'approved' ? 'approved' : (r.status === 'draft' ? 'rejected' : 'pending')) + '">' + r.status + '</span></td>' +
+                    '<td><div style="display:flex;gap:6px;"><button class="btn-sm" onclick="SkillShare.showToast(\'View\',\'Opening project details\',\'info\')"><i class="fas fa-eye"></i></button><button class="btn-sm" onclick="SkillShare.showToast(\'Edit\',\'Edit mode coming soon\',\'info\')"><i class="fas fa-pen"></i></button></div></td></tr>';
+            });
+            tbody.innerHTML = html;
+        } else {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">No research projects found</td></tr>';
+        }
+    });
+}
+loadResearch();
+</script>
+
+<?php
+endDashboardPage();

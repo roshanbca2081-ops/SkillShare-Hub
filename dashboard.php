@@ -703,8 +703,8 @@ session_start();
        ============================================ -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <i class="fas fa-graduation-cap"></i>
-            <h4>ShareSkill <span>Hub</span></h4>
+            <img src="frontend/assets/images/logo/skillshare hub.png" alt="SkillShare Hub Logo" style="height:36px; width:auto; object-fit:contain;">
+            <h4>SkillShare <span>Hub</span></h4>
         </div>
 
         <nav class="sidebar-nav">
@@ -752,6 +752,9 @@ session_start();
         <header class="top-header">
             <div class="greeting">
                 <div style="display:flex;align-items:center;gap:12px;">
+                    <button onclick="window.history.length > 1 ? window.history.back() : window.location.href='index.php'" class="btn-back" title="Go Back">
+                        <i class="fas fa-arrow-left"></i> <span>Back</span>
+                    </button>
                     <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
                         <i class="fas fa-bars"></i>
                     </button>
@@ -1110,7 +1113,7 @@ session_start();
     // ============================================
     // CONSOLE
     // ============================================
-    console.log('📊 ShareSkill Hub - Dashboard Loaded');
+    console.log('📊 SkillShare Hub - Dashboard Loaded');
     console.log('🎓 1,250 Users | 48 Courses | 24 Mentors | 1.2k Students');
 </script>
 

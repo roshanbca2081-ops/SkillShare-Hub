@@ -617,8 +617,8 @@ session_start();
 <nav class="navbar" id="navbar">
     <div class="container">
         <a href="index.php" class="navbar-brand">
-            <i class="fas fa-graduation-cap"></i>
-            SkillShsre <span>Hub</span>
+            <img src="frontend/assets/images/logo/skillshare hub.png" alt="SkillShare Hub Logo" style="height:32px; width:auto; object-fit:contain;">
+            SkillShare <span>Hub</span>
         </a>
         <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
             <i class="fas fa-bars"></i>
@@ -974,7 +974,7 @@ session_start();
     // ============================================
     // CONSOLE
     // ============================================
-    console.log('📚 ShareSkill Hub - Course Detail Loaded');
+    console.log('📚 SkillShare Hub - Course Detail Loaded');
     console.log(`📊 ${Object.keys(courseData).length} Courses Available`);
     console.log('🎓 Select a course to view semester-wise subjects');
 </script>

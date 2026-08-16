@@ -1,6 +1,6 @@
 <?php
 /**
- * ShareSkill Hub - Landing Page
+ * SkillShare Hub - Landing Page
  * The main entry point for the platform
  */
 
@@ -26,7 +26,7 @@ $totalSessions = getCount('mentorship_sessions', "status = 'completed'");
 
 // Get featured graduates
 $featuredGraduates = getRecords("
-    SELECT u.id, u.full_name, u.profile_picture, u.bio, u.hourly_rate, 
+    SELECT u.id, u.full_name, u.profile_picture, u.bio, u.hourly_rate,
            AVG(r.rating) as avg_rating, COUNT(r.id) as review_count
     FROM users u
     LEFT JOIN reviews r ON r.reviewee_id = u.id
@@ -89,7 +89,7 @@ include 'includes/header.php';
                     Learn from Industry<br>Experts & Build Your<br>Future Career
                 </h1>
                 <p class="hero-subtitle">
-                    Connect with experienced graduates, gain practical knowledge, 
+                    Connect with experienced graduates, gain practical knowledge,
                     and become industry-ready before you graduate.
                 </p>
                 <div class="hero-buttons">
@@ -144,7 +144,7 @@ include 'includes/header.php';
 <section id="features" class="features-section">
     <div class="container">
         <div class="section-header">
-            <h2>Why Choose ShareSkill Hub?</h2>
+            <h2>Why Choose SkillShare Hub?</h2>
             <p>Everything you need to bridge the gap between education and industry</p>
         </div>
         <div class="row g-4">
@@ -206,7 +206,7 @@ include 'includes/header.php';
                             <h6 class="graduate-name"><?php echo $graduate['full_name']; ?></h6>
                             <p class="graduate-field"><?php echo $graduate['bio'] ?? 'Industry Expert'; ?></p>
                             <div class="graduate-rating">
-                                <?php 
+                                <?php
                                 $avgRating = round($graduate['avg_rating'] ?? 0, 1);
                                 for ($i = 1; $i <= 5; $i++): ?>
                                     <i class="fas fa-star<?php echo $i <= $avgRating ? '' : '-o'; ?>"></i>
@@ -236,7 +236,7 @@ include 'includes/header.php';
             <p>Find your path across multiple disciplines</p>
         </div>
         <div class="row g-4">
-            <?php 
+            <?php
             $fieldIcons = [
                 'engineering' => 'fa-robot',
                 'information-technology' => 'fa-laptop-code',

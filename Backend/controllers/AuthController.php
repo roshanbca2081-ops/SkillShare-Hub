@@ -172,7 +172,7 @@ class AuthController
             // $this->sendVerificationEmail($data['email'], $verificationToken);
 
             setFlash('success', 'Registration successful! Please check your email.');
-            redirect(APP_URL . 'login');
+            redirect(SITE_URL . '/index.php');
         } else {
             setFlash('error', 'Registration failed. Please try again.');
             redirectBack();

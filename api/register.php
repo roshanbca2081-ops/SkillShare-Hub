@@ -16,17 +16,14 @@ $data = getRequestData();
 
 $firstname = trim($data['firstname'] ?? '');
 $lastname  = trim($data['lastname'] ?? '');
-$fullName  = trim($data['full_name'] ?? trim($firstname . ' ' . $lastname));
 $email     = trim($data['email'] ?? '');
 $role      = trim($data['role'] ?? 'fresher');
 $password  = $data['password'] ?? '';
 $confirm   = $data['confirm_password'] ?? '';
-$phone     = trim($data['phone'] ?? '');
-$address   = trim($data['address'] ?? '');
 
 // Validate required fields
-if ($fullName === '' || $email === '' || $password === '') {
-    respond(false, 'Full name, email and password are required.', null, 422);
+if ($firstname === '' || $lastname === '' || $email === '' || $password === '') {
+    respond(false, 'First name, last name, email and password are required.', null, 422);
 }
 
 // Validate email
@@ -61,27 +58,31 @@ try {
     }
 
     // Hash the password
-    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+    $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+
+    $fullName  = trim($firstname . ' ' . $lastname);
 
     // Insert new user
-    $sql = 'INSERT INTO users (full_name, email, password_hash, role, status, phone, address, created_at)
-            VALUES (:full_name, :email, :password, :role, :status, :phone, :address, NOW())';
+    $sql = 'INSERT INTO users (full_name, firstname, lastname, email, password, password_hash, role, status, created_at)
+            VALUES (:full_name, :firstname, :lastname, :email, :password, :password_hash, :role, :status, NOW())';
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
         ':full_name' => $fullName,
+        ':firstname' => $firstname,
+        ':lastname'  => $lastname,
         ':email'     => $email,
         ':password'  => $hashedPassword,
+        ':password_hash' => $hashedPassword,
         ':role'      => $role,
         ':status'    => 'active',
-        ':phone'     => $phone,
-        ':address'   => $address,
     ]);
 
     $userId = (int) $pdo->lastInsertId();
 
     // Auto-login the new user
+    session_regenerate_id(true);
     $_SESSION['user_id']    = $userId;
-    $_SESSION['user_name']  = trim($firstname . ' ' . $lastname);
+    $_SESSION['user_name']  = $firstname . ' ' . $lastname;
     $_SESSION['user_email'] = $email;
     $_SESSION['user_role']  = $role;
 
@@ -101,7 +102,7 @@ try {
 
     respond(true, 'Account created successfully! Welcome aboard.', [
         'user_id'  => $userId,
-        'name'     => trim($firstname . ' ' . $lastname),
+        'name'     => $firstname . ' ' . $lastname,
         'email'    => $email,
         'role'     => $role,
         'redirect' => $dashboard,

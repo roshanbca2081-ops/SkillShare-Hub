@@ -1,90 +1,66 @@
 <?php
-session_start();
+require_once __DIR__ . '/../../config.php';
+
+if (!isLoggedIn() || getUserRole() !== 'admin') {
+    header('Location: ' . BASE_URL . 'login.php');
+    exit();
+}
+
+$pageTitle = 'Assignments';
 $sidebar_role = 'admin';
 $sidebar_active = 'Assignments';
-require_once __DIR__ . '/_shared.php';
+
+startDashboardPage();
 ?>
-<!DOCTYPE html>
-<html lang="en">
+<style>
+.assign-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+</style>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assignments | Admin - SkillShare Hub</title>
-    <link rel="stylesheet" href="../../assets/css/varables.css">
-    <link rel="stylesheet" href="../../assets/css/main.css">
-    <link rel="stylesheet" href="../../assets/css/navbar.css">
-    <link rel="stylesheet" href="../../assets/css/dashboard.css">
-    <link rel="stylesheet" href="../../assets/css/assignment.css">
-    <link rel="stylesheet" href="../../assets/css/responsive.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
+<div class="assign-stats">
+    <div class="stat-card"><div class="stat-top"><div><div class="stat-number" id="aTotal">0</div><div class="stat-label">Total</div></div><div class="stat-icon"><i class="fas fa-file-pen"></i></div></div></div>
+    <div class="stat-card"><div class="stat-top"><div><div class="stat-number" id="aOpen">0</div><div class="stat-label">Open</div></div><div class="stat-icon"><i class="fas fa-folder-open"></i></div></div></div>
+    <div class="stat-card"><div class="stat-top"><div><div class="stat-number" id="aClosed">0</div><div class="stat-label">Closed</div></div><div class="stat-icon"><i class="fas fa-folder"></i></div></div></div>
+    <div class="stat-card"><div class="stat-top"><div><div class="stat-number" id="aGraded">0</div><div class="stat-label">Graded</div></div><div class="stat-icon"><i class="fas fa-check-double"></i></div></div></div>
+</div>
 
-<body>
-    <?php include '../../components/loader.php'; ?>
-    <?php include '../../components/sidebar.php'; ?>
-
-    <div class="dashboard-main">
-        <?php include __DIR__ . '/_topbar.php'; ?>
-
-        <div class="panel reveal">
-            <div class="panel-header">
-                <h5><i class="fa-solid fa-file-pen" style="color:var(--primary);"></i> Assignments</h5>
-                <button class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Create Assignment</button>
-            </div>
-            <div class="table-responsive-wrap">
-                <table class="data-table dash-table">
-                    <thead>
-                        <tr>
-                            <th><input type="checkbox" id="checkAll"></th>
-                            <th>Assignment</th>
-                            <th>Course</th>
-                            <th>Due Date</th>
-                            <th>Submissions</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        $assignments = [
-                            ['Data Cleaning Project', 'Data Science Fundamentals', 'Jan 20, 2025', 45, 'Open'],
-                            ['Build a Classification Model', 'Machine Learning Mastery', 'Jan 22, 2025', 38, 'Open'],
-                            ['Responsive Website', 'Full-Stack Web Development', 'Jan 18, 2025', 62, 'Closed'],
-                            ['Lab Report - Anatomy', 'Human Anatomy Basics', 'Jan 25, 2025', 28, 'Open'],
-                            ['Marketing Strategy Plan', 'Business Strategy 101', 'Jan 19, 2025', 41, 'Graded'],
-                            ['Design System Build', 'UI/UX Design Principles', 'Jan 16, 2025', 55, 'Graded'],
-                        ];
-                        foreach ($assignments as $a): ?>
-                            <tr>
-                                <td><input type="checkbox" class="row-check"></td>
-                                <td><strong><?php echo $a[0]; ?></strong></td>
-                                <td><?php echo $a[1]; ?></td>
-                                <td><?php echo $a[2]; ?></td>
-                                <td><?php echo $a[3]; ?></td>
-                                <td><span class="status-pill <?php echo strtolower($a[4]) === 'open' ? 'pending' : (strtolower($a[4]) === 'graded' ? 'approved' : 'rejected'); ?>"><?php echo $a[4]; ?></span></td>
-                                <td>
-                                    <div class="table-actions">
-                                        <button class="view-btn" aria-label="View"><i class="fa-solid fa-eye"></i></button>
-                                        <button class="edit-btn" aria-label="Edit"><i class="fa-solid fa-pen"></i></button>
-                                        <button class="delete-btn" aria-label="Delete"><i class="fa-solid fa-trash"></i></button>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<div class="panel reveal">
+    <div class="panel-header"><h5><i class="fa-solid fa-file-pen" style="color:var(--primary);"></i> All Assignments</h5></div>
+    <div class="table-responsive-wrap">
+        <table class="data-table dash-table">
+            <thead><tr><th><input type="checkbox" id="checkAll"></th><th>Assignment</th><th>Course</th><th>Due Date</th><th>Submissions</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="assignTable"><tr><td colspan="7" style="text-align:center;color:var(--text-muted);">Loading...</td></tr></tbody>
+        </table>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../../assets/js/main.js"></script>
-    <script src="../../assets/js/navbar.js"></script>
-    <script src="../../assets/js/dashboard.js"></script>
-    <script src="../../assets/js/animation.js"></script>
-</body>
+<script>
+var BASE = '<?php echo BASE_URL; ?>';
 
-</html>
+function getStatusClass(s) { return s==='open'?'pending':(s==='graded'?'approved':'rejected'); }
+
+SkillShare.apiFetch(BASE + 'api/assignments.php?action=list').then(function(res) {
+    if (res.success && res.data) {
+        var data = res.data;
+        document.getElementById('aTotal').textContent = data.length;
+        document.getElementById('aOpen').textContent = data.filter(function(a){ return a.status==='open'; }).length;
+        document.getElementById('aClosed').textContent = data.filter(function(a){ return a.status==='closed'; }).length;
+        document.getElementById('aGraded').textContent = data.filter(function(a){ return a.status==='graded'; }).length;
+
+        var html = '';
+        data.forEach(function(a) {
+            html += '<tr>' +
+                '<td><input type="checkbox" class="row-check"></td>' +
+                '<td><strong>' + SkillShare.escapeHtml(a.title) + '</strong></td>' +
+                '<td>' + SkillShare.escapeHtml(a.course_name||'General') + '</td>' +
+                '<td>' + SkillShare.formatDate(a.deadline||a.due_date) + '</td>' +
+                '<td>' + (a.submission_count||0) + '</td>' +
+                '<td><span class="status-pill ' + getStatusClass(a.status) + '">' + a.status + '</span></td>' +
+                '<td><div class="table-actions"><button class="view-btn" aria-label="View"><i class="fa-solid fa-eye"></i></button><button class="edit-btn" aria-label="Edit"><i class="fa-solid fa-pen"></i></button></div></td></tr>';
+        });
+        document.getElementById('assignTable').innerHTML = html || '<tr><td colspan="7" style="text-align:center;">No assignments found</td></tr>';
+    }
+});
+</script>
+<?php
+endDashboardPage();
+?>

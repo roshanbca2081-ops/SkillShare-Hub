@@ -27,8 +27,8 @@ session_start();
         <div class="auth-card center-card">
             <div class="auth-right" style="max-width:520px;margin:0 auto;width:100%;">
                 <div class="auth-form-wrap">
-                    <a href="index.php" class="auth-brand" style="justify-content:center;margin-bottom:var(--spacing-5);">
-                        <div class="brand-logo"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <a href="index.php" class="auth-brand" style="justify-content:center;margin-bottom:var(--spacing-5);display:flex;align-items:center;gap:10px;text-decoration:none;">
+                        <div class="brand-logo"><img src="frontend/assets/images/logo/skillshare hub.png" alt="SkillShare Hub Logo" style="height:40px;width:auto;object-fit:contain;"></div>
                         <span>SkillShare <span>Hub</span></span>
                     </a>
                     <div style="text-align:center;margin-bottom:var(--spacing-5);">
