@@ -1,4 +1,7 @@
 <?php
+require_once __DIR__ . '/home-figma.php';
+exit;
+
 session_start();
 $navbar_active = 'Home';
 include 'config.php';

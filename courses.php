@@ -453,6 +453,7 @@ $coursesJson = json_encode(array_values($fieldCourseMap));
             line-height: 1.5;
             display: -webkit-box;
             -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -906,48 +907,11 @@ $coursesJson = json_encode(array_values($fieldCourseMap));
             }
         }
     </style>
+    <link rel="stylesheet" href="frontend/assets/css/figma-modules.css?v=2">
 </head>
 <body>
 
-<div class="bg-animated"></div>
 
-<div class="dashboard">
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <i class="fas fa-graduation-cap"></i>
-            <h4>ShareSkill <span>Hub</span></h4>
-        </div>
-
-        <nav class="sidebar-nav">
-            <a href="index.php" class="nav-item">
-                <i class="fas fa-th-large"></i> Dashboard
-            </a>
-            <a href="academic-fields.php" class="nav-item">
-                <i class="fas fa-book"></i> Academic Fields
-                <span class="badge"><?php echo count($all_fields); ?></span>
-            </a>
-            <a href="courses.php" class="nav-item active">
-                <i class="fas fa-graduation-cap"></i> Courses
-                <span class="badge"><?php echo count($courses); ?></span>
-            </a>
-            <a href="mentors.php" class="nav-item">
-                <i class="fas fa-users"></i> Mentors
-                <span class="badge">24</span>
-            </a>
-            <a href="about.php" class="nav-item">
-                <i class="fas fa-info-circle"></i> About
-            </a>
-        </nav>
-
-        <div class="sidebar-footer">
-            <a href="#" class="nav-item">
-                <i class="fas fa-cog"></i> Settings
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
-        </div>
-    </aside>
 
     <main class="main-content">
         <header class="top-header">

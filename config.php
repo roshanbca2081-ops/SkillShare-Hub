@@ -57,7 +57,7 @@ function getUserRole() {
 function getCurrentUser() {
     if (!isLoggedIn()) return null;
     $pdo = getDB();
-    $stmt = $pdo->prepare("SELECT id, full_name, email, profile_picture, role, bio, academic_field_id, course_id, hourly_rate, is_verified, status, created_at, last_login FROM users WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT id, CONCAT(firstname, ' ', lastname) AS full_name, email, profile_picture, role, bio, academic_field_id, course_id, hourly_rate, email_verified AS is_verified, status, created_at, last_login FROM users WHERE id = ?");
     $stmt->execute([getUserId()]);
     return $stmt->fetch();
 }

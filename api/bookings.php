@@ -14,11 +14,11 @@ $role = getUserRole();
 $action = $_GET['action'] ?? 'list';
 
 if ($action === 'list') {
-    $sql = "SELECT b.id, b.booking_number, b.session_title, b.session_description, b.session_date, b.session_time, b.duration, b.hourly_rate, b.total_amount, b.meeting_link, b.status, b.payment_status, b.created_at, u.full_name as mentor_name, u.profile_picture as mentor_avatar, m.specialization, s.name as skill_name FROM bookings b JOIN users u ON b.mentor_id = u.id LEFT JOIN mentors m ON u.id = m.user_id LEFT JOIN skills s ON b.skill_id = s.id";
+    $sql = "SELECT b.id, b.booking_number, b.session_title, b.session_description, b.session_date, b.session_time, b.duration, b.hourly_rate, b.total_amount, b.meeting_link, b.status, b.payment_status, b.created_at, CONCAT(u.firstname, ' ', u.lastname) as mentor_name, u.profile_picture as mentor_avatar, m.specialization, s.name as skill_name FROM bookings b JOIN users u ON b.mentor_id = u.id LEFT JOIN mentors m ON u.id = m.user_id LEFT JOIN skills s ON b.skill_id = s.id";
     $params = [];
 
     if ($role === 'fresher') {
-        $sql .= " WHERE b.user_id = ?";
+        $sql .= " WHERE b.fresher_id = ?";
         $params[] = $userId;
     } elseif ($role === 'mentor') {
         $sql .= " WHERE b.mentor_id = ?";
@@ -43,7 +43,7 @@ if ($action === 'list') {
 
 if ($action === 'show' && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
-    $stmt = $pdo->prepare("SELECT b.*, u.full_name as mentor_name, u.email as mentor_email, u.profile_picture as mentor_avatar, m.specialization, m.experience_years, m.rating, s.name as skill_name FROM bookings b JOIN users u ON b.mentor_id = u.id LEFT JOIN mentors m ON u.id = m.user_id LEFT JOIN skills s ON b.skill_id = s.id WHERE b.id = ?");
+    $stmt = $pdo->prepare("SELECT b.*, CONCAT(u.firstname, ' ', u.lastname) as mentor_name, u.email as mentor_email, u.profile_picture as mentor_avatar, m.specialization, m.experience_years, m.rating, s.name as skill_name FROM bookings b JOIN users u ON b.mentor_id = u.id LEFT JOIN mentors m ON u.id = m.user_id LEFT JOIN skills s ON b.skill_id = s.id WHERE b.id = ?");
     $stmt->execute([$id]);
     $booking = $stmt->fetch();
 
@@ -52,7 +52,7 @@ if ($action === 'show' && isset($_GET['id'])) {
         exit;
     }
 
-    if ($role === 'fresher' && $booking['user_id'] != $userId) {
+    if ($role === 'fresher' && $booking['fresher_id'] != $userId) {
         echo json_encode(['success' => false, 'message' => 'Forbidden']);
         exit;
     }
@@ -61,7 +61,7 @@ if ($action === 'show' && isset($_GET['id'])) {
         exit;
     }
 
-    $stmt = $pdo->prepare("SELECT s.id, s.session_title, s.session_date, s.start_at, s.end_at, s.meeting_link, s.status, s.feedback_mentor, s.feedback_fresher FROM sessions s WHERE s.booking_id = ? ORDER BY s.created_at DESC");
+    $stmt = $pdo->prepare("SELECT s.id, s.session_title, s.session_date, s.session_time, s.duration, s.meeting_link, s.status, s.feedback_mentor, s.feedback_fresher FROM sessions s WHERE s.booking_id = ? ORDER BY s.created_at DESC");
     $stmt->execute([$id]);
     $booking['sessions'] = $stmt->fetchAll();
 
@@ -101,7 +101,7 @@ if ($action === 'create' && $_POST) {
     $totalAmount = round(($hourlyRate * $duration) / 60, 2);
     $bookingNumber = 'BK-' . date('Ymd') . '-' . strtoupper(bin2hex(random_bytes(4)));
 
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM bookings WHERE mentor_id = ? AND booking_date = ? AND status NOT IN ('cancelled','rejected') AND booking_time < DATE_ADD(?, INTERVAL ? MINUTE) AND DATE_ADD(booking_time, INTERVAL duration MINUTE) > ?");
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM bookings WHERE mentor_id = ? AND session_date = ? AND status NOT IN ('cancelled','rejected') AND session_time < ADDTIME(?, SEC_TO_TIME(? * 60)) AND ADDTIME(session_time, SEC_TO_TIME(duration * 60)) > ?");
     $stmt->execute([$mentorId, $sessionDate, $sessionTime, $duration, $sessionTime]);
     $overlap = $stmt->fetchColumn();
 
@@ -112,13 +112,13 @@ if ($action === 'create' && $_POST) {
 
     $pdo->beginTransaction();
     try {
-        $stmt = $pdo->prepare("INSERT INTO bookings (booking_number, user_id, mentor_id, course_id, skill_id, topic, notes, booking_date, booking_time, duration, hourly_rate, total_amount, status, payment_status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', NOW())");
-        $stmt->execute([$bookingNumber, $userId, $mentorId, $courseId ?: null, $skillId ?: null, $sessionTitle, $sessionDescription, $sessionDate, $sessionTime, $duration, $hourlyRate, $totalAmount]);
+        $stmt = $pdo->prepare("INSERT INTO bookings (booking_number, mentor_id, fresher_id, skill_id, session_title, session_description, session_date, session_time, duration, hourly_rate, total_amount, status, payment_status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', NOW())");
+        $stmt->execute([$bookingNumber, $mentorId, $userId, $skillId ?: null, $sessionTitle, $sessionDescription, $sessionDate, $sessionTime, $duration, $hourlyRate, $totalAmount]);
 
         $bookingId = (int)$pdo->lastInsertId();
 
-        $payload = json_encode(['booking_id' => $bookingId, 'booking_number' => $bookingNumber, 'mentor_id' => $mentorId, 'fresher_id' => $userId, 'amount' => $totalAmount]);
-        $pdo->prepare("INSERT INTO notifications (user_id, type, payload, is_read, created_at) VALUES (?, 'new_booking', ?, 0, NOW())")->execute([$mentorId, $payload]);
+        $pdo->prepare("INSERT INTO notifications (user_id, title, message, type, link, is_read, created_at) VALUES (?, ?, ?, 'new_booking', ?, 0, NOW())")
+            ->execute([$mentorId, 'New booking request', 'A fresher sent you a mentorship booking request.', 'dashboard/mentor/bookings.php']);
 
         $pdo->commit();
         echo json_encode(['success' => true, 'message' => 'Booking created successfully', 'data' => ['booking_id' => $bookingId, 'booking_number' => $bookingNumber, 'amount' => $totalAmount, 'payment_status' => 'pending']]);
@@ -136,7 +136,7 @@ if ($action === 'accept' && isset($_GET['id'])) {
         exit;
     }
 
-    $stmt = $pdo->prepare("SELECT id, user_id, session_title, session_date, session_time, duration FROM bookings WHERE id = ? AND mentor_id = ? AND status = 'pending'");
+    $stmt = $pdo->prepare("SELECT id, fresher_id, session_title, session_date, session_time, duration FROM bookings WHERE id = ? AND mentor_id = ? AND status = 'pending'");
     $stmt->execute([$id, $userId]);
     $booking = $stmt->fetch();
 
@@ -149,14 +149,11 @@ if ($action === 'accept' && isset($_GET['id'])) {
     try {
         $pdo->prepare("UPDATE bookings SET status = 'confirmed', updated_at = NOW() WHERE id = ?")->execute([$id]);
 
-        $startAt = date('Y-m-d H:i:s', strtotime($booking['session_date'] . ' ' . $booking['session_time']));
-        $endAt = date('Y-m-d H:i:s', strtotime($startAt . ' + ' . $booking['duration'] . ' minutes'));
+        $stmt = $pdo->prepare("INSERT INTO sessions (booking_id, mentor_id, fresher_id, session_title, session_date, session_time, duration, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'scheduled', NOW())");
+        $stmt->execute([$id, $userId, $booking['fresher_id'], $booking['session_title'], $booking['session_date'], $booking['session_time'], $booking['duration']]);
 
-        $stmt = $pdo->prepare("INSERT INTO sessions (booking_id, mentor_id, user_id, session_title, session_date, start_at, end_at, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'scheduled', NOW())");
-        $stmt->execute([$id, $userId, $booking['user_id'], $booking['session_title'], $booking['session_date'], $startAt, $endAt]);
-
-        $payload = json_encode(['booking_id' => $id, 'mentor_id' => $userId, 'fresher_id' => $booking['user_id']]);
-        $pdo->prepare("INSERT INTO notifications (user_id, type, payload, is_read, created_at) VALUES (?, 'booking_accepted', ?, 0, NOW())")->execute([$booking['user_id'], $payload]);
+        $pdo->prepare("INSERT INTO notifications (user_id, title, message, type, link, is_read, created_at) VALUES (?, ?, ?, 'booking_accepted', ?, 0, NOW())")
+            ->execute([$booking['fresher_id'], 'Booking accepted', 'Your mentor accepted the booking request.', 'dashboard/fresher/bookings.php']);
 
         $pdo->commit();
         echo json_encode(['success' => true, 'message' => 'Booking accepted']);
@@ -178,12 +175,12 @@ if ($action === 'reject' && isset($_GET['id'])) {
     $stmt->execute([$reason, $userId, $id, $userId]);
 
     if ($stmt->rowCount() > 0) {
-        $booking = $pdo->prepare("SELECT user_id FROM bookings WHERE id = ?");
+            $booking = $pdo->prepare("SELECT fresher_id FROM bookings WHERE id = ?");
         $booking->execute([$id]);
         $b = $booking->fetch();
         if ($b) {
-            $payload = json_encode(['booking_id' => $id]);
-            $pdo->prepare("INSERT INTO notifications (user_id, type, payload, is_read, created_at) VALUES (?, 'booking_rejected', ?, 0, NOW())")->execute([$b['user_id'], $payload]);
+            $pdo->prepare("INSERT INTO notifications (user_id, title, message, type, link, is_read, created_at) VALUES (?, ?, ?, 'booking_rejected', ?, 0, NOW())")
+                ->execute([$b['fresher_id'], 'Booking rejected', 'Your mentor rejected the booking request.', 'dashboard/fresher/bookings.php']);
         }
         echo json_encode(['success' => true, 'message' => 'Booking rejected']);
     } else {
@@ -195,7 +192,7 @@ if ($action === 'reject' && isset($_GET['id'])) {
 if ($action === 'cancel' && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
     $reason = sanitize($_POST['reason'] ?? '');
-    $booking = $pdo->prepare("SELECT id, user_id, mentor_id, status FROM bookings WHERE id = ?");
+    $booking = $pdo->prepare("SELECT id, fresher_id, mentor_id, status FROM bookings WHERE id = ?");
     $booking->execute([$id]);
     $b = $booking->fetch();
 
@@ -205,7 +202,7 @@ if ($action === 'cancel' && isset($_GET['id'])) {
     }
 
     $allowed = false;
-    if ($role === 'fresher' && $b['user_id'] == $userId && in_array($b['status'], ['pending','confirmed'])) {
+    if ($role === 'fresher' && $b['fresher_id'] == $userId && in_array($b['status'], ['pending','confirmed'])) {
         $allowed = true;
     } elseif ($role === 'mentor' && $b['mentor_id'] == $userId && in_array($b['status'], ['pending','confirmed'])) {
         $allowed = true;
@@ -223,9 +220,9 @@ if ($action === 'cancel' && isset($_GET['id'])) {
         $pdo->prepare("UPDATE bookings SET status = 'cancelled', cancellation_reason = ?, cancelled_at = NOW(), cancelled_by = ? WHERE id = ?")->execute([$reason, $userId, $id]);
         $pdo->prepare("UPDATE sessions SET status = 'cancelled' WHERE booking_id = ? AND status IN ('scheduled','ongoing')")->execute([$id]);
 
-        $notifyUserId = ($role === 'fresher') ? $b['mentor_id'] : $b['user_id'];
-        $payload = json_encode(['booking_id' => $id]);
-        $pdo->prepare("INSERT INTO notifications (user_id, type, payload, is_read, created_at) VALUES (?, 'booking_cancelled', ?, 0, NOW())")->execute([$notifyUserId, $payload]);
+        $notifyUserId = ($role === 'fresher') ? $b['mentor_id'] : $b['fresher_id'];
+        $pdo->prepare("INSERT INTO notifications (user_id, title, message, type, link, is_read, created_at) VALUES (?, ?, ?, 'booking_cancelled', ?, 0, NOW())")
+            ->execute([$notifyUserId, 'Booking cancelled', 'A booking was cancelled.', 'dashboard/' . ($role === 'fresher' ? 'mentor' : 'fresher') . '/bookings.php']);
 
         $pdo->commit();
         echo json_encode(['success' => true, 'message' => 'Booking cancelled']);

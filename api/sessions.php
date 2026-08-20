@@ -14,7 +14,7 @@ $role = getUserRole();
 $action = $_GET['action'] ?? 'list';
 
 if ($action === 'list') {
-    $sql = "SELECT s.id, s.booking_id, s.mentor_id, s.fresher_id, s.session_title, s.session_date, s.session_time, s.duration, s.meeting_link, s.status, s.feedback_mentor, s.feedback_fresher, s.rating_mentor, s.rating_fresher, u.full_name as mentor_name, u.profile_picture as mentor_avatar, f.full_name as fresher_name FROM sessions s JOIN users u ON s.mentor_id = u.id JOIN users f ON s.fresher_id = f.id";
+    $sql = "SELECT s.id, s.booking_id, s.mentor_id, s.fresher_id, s.session_title, s.session_date, s.session_time, s.duration, s.meeting_link, s.status, s.feedback_mentor, s.feedback_fresher, s.rating_mentor, s.rating_fresher, CONCAT(u.firstname, ' ', u.lastname) as mentor_name, u.profile_picture as mentor_avatar, CONCAT(f.firstname, ' ', f.lastname) as fresher_name FROM sessions s JOIN users u ON s.mentor_id = u.id JOIN users f ON s.fresher_id = f.id";
     $params = [];
 
     if ($role === 'fresher') {
@@ -34,7 +34,7 @@ if ($action === 'list') {
 
 if ($action === 'show' && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
-    $stmt = $pdo->prepare("SELECT s.*, b.session_title as booking_title, b.session_description as booking_description, b.meeting_link as booking_meeting_link, b.duration as booking_duration, u.full_name as mentor_name, u.profile_picture as mentor_avatar, u.bio as mentor_bio, m.specialization, m.hourly_rate, f.full_name as fresher_name, c.name as course_name FROM sessions s JOIN users u ON s.mentor_id = u.id JOIN users f ON s.fresher_id = f.id LEFT JOIN mentors m ON u.id = m.user_id LEFT JOIN bookings b ON s.booking_id = b.id LEFT JOIN courses c ON b.skill_id = c.id WHERE s.id = ?");
+    $stmt = $pdo->prepare("SELECT s.*, b.session_title as booking_title, b.session_description as booking_description, b.meeting_link as booking_meeting_link, b.duration as booking_duration, CONCAT(u.firstname, ' ', u.lastname) as mentor_name, u.profile_picture as mentor_avatar, u.bio as mentor_bio, m.specialization, u.hourly_rate, CONCAT(f.firstname, ' ', f.lastname) as fresher_name, c.name as course_name FROM sessions s JOIN users u ON s.mentor_id = u.id JOIN users f ON s.fresher_id = f.id LEFT JOIN mentors m ON u.id = m.user_id LEFT JOIN bookings b ON s.booking_id = b.id LEFT JOIN courses c ON b.course_id = c.id WHERE s.id = ?");
     $stmt->execute([$id]);
     $session = $stmt->fetch();
 

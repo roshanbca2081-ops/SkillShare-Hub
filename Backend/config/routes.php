@@ -58,7 +58,12 @@ class Router
     {
         $method = $_SERVER['REQUEST_METHOD'];
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-        $uri = str_replace('/skillshare-hub/', '', $uri);
+
+        // Remove the directory containing the front controller before matching routes.
+        $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
+        if ($basePath !== '/' && strpos($uri, $basePath) === 0) {
+            $uri = substr($uri, strlen($basePath));
+        }
         $uri = trim($uri, '/');
 
         // Check for route match

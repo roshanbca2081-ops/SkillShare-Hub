@@ -577,6 +577,7 @@ session_start();
             .auth-brand .tagline { font-size: 0.65rem; }
         }
     </style>
+    <link rel="stylesheet" href="frontend/assets/css/figma-modules.css">
 </head>
 <body>
 

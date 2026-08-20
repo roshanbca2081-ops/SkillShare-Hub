@@ -18,7 +18,7 @@ $course = null;
 $field = null;
 
 // Build mentor query based on filters
-$sql = "SELECT u.id, u.full_name, u.email, u.profile_picture, u.bio, u.hourly_rate,
+$sql = "SELECT u.id, CONCAT(u.firstname, ' ', u.lastname) AS full_name, u.email, u.profile_picture, u.bio, u.hourly_rate,
                u.academic_field_id, u.course_id,
                m.specialization, m.experience_years, m.current_company, m.current_position,
                m.qualification, m.is_verified, m.rating, m.reviews_count,
@@ -51,7 +51,7 @@ if ($field_id) {
 }
 
 if ($search) {
-    $sql .= " AND (u.full_name LIKE ? OR m.specialization LIKE ? OR u.bio LIKE ?)";
+    $sql .= " AND (CONCAT(u.firstname, ' ', u.lastname) LIKE ? OR m.specialization LIKE ? OR u.bio LIKE ?)";
     $params[] = "%$search%";
     $params[] = "%$search%";
     $params[] = "%$search%";
@@ -62,7 +62,7 @@ $mentors = acad_query($sql, $params);
 
 // Fallback: if no mentors found via acad_* skill, try real skills table
 if (!$skill_id && !$course_id && !$field_id && count($mentors) === 0) {
-    $mentors = $pdo->query("SELECT u.id, u.full_name, u.email, u.profile_picture, u.bio, u.hourly_rate, u.academic_field_id, u.course_id, m.specialization, m.experience_years, m.current_company, m.current_position, m.qualification, m.is_verified, m.rating, m.reviews_count, m.total_sessions, m.total_students, f.name as field_name, c.name as course_name FROM users u JOIN mentors m ON u.id = m.user_id LEFT JOIN academic_fields f ON u.academic_field_id = f.id LEFT JOIN courses c ON u.course_id = c.id WHERE u.role = 'mentor' AND u.status = 'active' AND m.is_verified = 1 ORDER BY m.rating DESC LIMIT 20")->fetchAll();
+    $mentors = $pdo->query("SELECT u.id, CONCAT(u.firstname, ' ', u.lastname) AS full_name, u.email, u.profile_picture, u.bio, u.hourly_rate, u.academic_field_id, u.course_id, m.specialization, m.experience_years, m.current_company, m.current_position, m.qualification, m.is_verified, m.rating, m.reviews_count, m.total_sessions, m.total_students, f.name as field_name, c.name as course_name FROM users u JOIN mentors m ON u.id = m.user_id LEFT JOIN academic_fields f ON u.academic_field_id = f.id LEFT JOIN courses c ON u.course_id = c.id WHERE u.role = 'mentor' AND u.status = 'active' AND m.is_verified = 1 ORDER BY m.rating DESC LIMIT 20")->fetchAll();
 }
 ?>
 

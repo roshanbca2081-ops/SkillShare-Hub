@@ -15,12 +15,12 @@ if ($action === 'list') {
     $role = $_GET['role'] ?? '';
     $status = $_GET['status'] ?? '';
     $search = $_GET['search'] ?? '';
-    $sql = "SELECT u.id, u.full_name, u.email, u.phone, u.profile_picture, u.role, u.status, u.is_verified, u.hourly_rate, u.created_at, u.last_login, af.name as field_name, c.name as course_name, m.specialization, m.rating FROM users u LEFT JOIN academic_fields af ON u.academic_field_id = af.id LEFT JOIN courses c ON u.course_id = c.id LEFT JOIN mentors m ON u.id = m.user_id WHERE 1=1";
+    $sql = "SELECT u.id, CONCAT(u.firstname, ' ', u.lastname) AS full_name, u.email, u.phone, u.profile_picture, u.role, u.status, u.email_verified AS is_verified, u.hourly_rate, u.created_at, u.last_login, af.name as field_name, c.name as course_name, m.specialization, m.rating FROM users u LEFT JOIN academic_fields af ON u.academic_field_id = af.id LEFT JOIN courses c ON u.course_id = c.id LEFT JOIN mentors m ON u.id = m.user_id WHERE 1=1";
     $params = [];
 
     if ($role) { $sql .= " AND u.role = ?"; $params[] = $role; }
     if ($status) { $sql .= " AND u.status = ?"; $params[] = $status; }
-    if ($search) { $sql .= " AND (u.full_name LIKE ? OR u.email LIKE ?)"; $params[] = "%$search%"; $params[] = "%$search%"; }
+    if ($search) { $sql .= " AND (CONCAT(u.firstname, ' ', u.lastname) LIKE ? OR u.email LIKE ?)"; $params[] = "%$search%"; $params[] = "%$search%"; }
 
     $sql .= " ORDER BY u.created_at DESC";
     $stmt = $pdo->prepare($sql);
@@ -73,8 +73,8 @@ if ($action === 'stats') {
         'pending_bookings' => (int)$pdo->query("SELECT COUNT(*) FROM bookings WHERE status = 'pending'")->fetchColumn(),
     ];
 
-    $recentUsers = $pdo->query("SELECT id, full_name, email, role, status, created_at FROM users ORDER BY created_at DESC LIMIT 10")->fetchAll();
-    $recentBookings = $pdo->query("SELECT b.id, b.booking_number, b.session_title, b.session_date, b.status, u.full_name as mentor_name, f.full_name as fresher_name FROM bookings b JOIN users u ON b.mentor_id = u.id JOIN users f ON b.fresher_id = f.id ORDER BY b.created_at DESC LIMIT 10")->fetchAll();
+    $recentUsers = $pdo->query("SELECT id, CONCAT(firstname, ' ', lastname) AS full_name, email, role, status, created_at FROM users ORDER BY created_at DESC LIMIT 10")->fetchAll();
+    $recentBookings = $pdo->query("SELECT b.id, b.booking_number, b.session_title, b.session_date, b.status, CONCAT(u.firstname, ' ', u.lastname) as mentor_name, CONCAT(f.firstname, ' ', f.lastname) as fresher_name FROM bookings b JOIN users u ON b.mentor_id = u.id JOIN users f ON b.fresher_id = f.id ORDER BY b.created_at DESC LIMIT 10")->fetchAll();
 
     echo json_encode(['success' => true, 'data' => ['stats' => $stats, 'recent_users' => $recentUsers, 'recent_bookings' => $recentBookings]]);
     exit;

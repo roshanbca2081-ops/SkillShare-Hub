@@ -25,6 +25,7 @@ $avatarUrl = (file_exists(__DIR__ . '/../assets/images/' . $adminAvatar) && $adm
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>frontend/assets/css/dashboard.css">
     <link rel="stylesheet" href="<?php echo ADMIN_ASSETS_URL; ?>css/admin.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>frontend/assets/css/figma-modules.css">
 </head>
 <body>
 <div class="bg-animated"></div>

@@ -32,7 +32,7 @@ try {
     $pdo = getDB();
 
     // Query user by email
-    $stmt = $pdo->prepare('SELECT id, firstname, lastname, email, password, password_hash, role, status FROM users WHERE email = :email LIMIT 1');
+    $stmt = $pdo->prepare('SELECT id, firstname, lastname, email, password, role, status FROM users WHERE email = :email LIMIT 1');
     $stmt->execute([':email' => $email]);
     $user = $stmt->fetch();
 
@@ -47,11 +47,7 @@ try {
 
     // Verify password: prefer password_hash if present, fall back to plain password column
     $authenticated = false;
-    if (!empty($user['password_hash'])) {
-        $authenticated = password_verify($password, $user['password_hash']);
-    } else {
-        $authenticated = ($password === $user['password']);
-    }
+    $authenticated = !empty($user['password']) && password_verify($password, $user['password']);
 
     if (!$authenticated) {
         respond(false, 'Invalid email or password.', null, 401);
@@ -96,5 +92,6 @@ try {
         'redirect'  => $dashboard,
     ]);
 } catch (Exception $e) {
+    error_log('Login API error: ' . $e->getMessage());
     respond(false, 'An unexpected error occurred. Please try again.', null, 500);
 }

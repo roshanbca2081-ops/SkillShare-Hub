@@ -20,6 +20,7 @@ $page_active = isset($page_active) ? $page_active : 'Home';
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="frontend/assets/css/varables.css">
     <link rel="stylesheet" href="frontend/assets/css/navbar.css">

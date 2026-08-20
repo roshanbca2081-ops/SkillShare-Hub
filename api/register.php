@@ -14,9 +14,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $data = getRequestData();
 
-$firstname = trim($data['firstname'] ?? '');
-$lastname  = trim($data['lastname'] ?? '');
+$fullName  = trim($data['full_name'] ?? '');
+$nameParts = $fullName !== '' ? preg_split('/\s+/', $fullName, 2) : [];
+$firstname = trim($data['firstname'] ?? ($nameParts[0] ?? ''));
+$lastname  = trim($data['lastname'] ?? ($nameParts[1] ?? ''));
 $email     = trim($data['email'] ?? '');
+$phone     = trim($data['phone'] ?? '');
+$address   = trim($data['address'] ?? '');
 $role      = trim($data['role'] ?? 'fresher');
 $password  = $data['password'] ?? '';
 $confirm   = $data['confirm_password'] ?? '';
@@ -24,9 +28,15 @@ $academicFieldId = isset($data['academic_field_id']) ? (int)$data['academic_fiel
 $courseId    = isset($data['course_id']) ? (int)$data['course_id'] : 0;
 $skillIds    = isset($data['skill_ids']) && is_array($data['skill_ids']) ? array_map('intval', $data['skill_ids']) : [];
 
+try {
+    $pdo = getDB();
+} catch (Exception $e) {
+    respond(false, 'Database connection failed. Please try again.', null, 500);
+}
+
 // Validate required fields
-if ($firstname === '' || $lastname === '' || $email === '' || $password === '') {
-    respond(false, 'First name, last name, email and password are required.', null, 422);
+if ($firstname === '' || $email === '' || $password === '') {
+    respond(false, 'Full name, email and password are required.', null, 422);
 }
 
 // Validate email
@@ -45,7 +55,7 @@ if ($password !== $confirm) {
 }
 
 // Validate role
-$validRoles = ['fresher', 'mentor', 'admin'];
+$validRoles = ['fresher', 'mentor'];
 if (!in_array($role, $validRoles)) {
     respond(false, 'Invalid role selected.', null, 422);
 }
@@ -70,8 +80,6 @@ if (!empty($skillIds) && $courseId) {
 }
 
 try {
-    $pdo = getDB();
-
     // Check if email already exists
     $check = $pdo->prepare('SELECT id FROM users WHERE email = :email LIMIT 1');
     $check->execute([':email' => $email]);
@@ -85,16 +93,16 @@ try {
     $fullName  = trim($firstname . ' ' . $lastname);
 
     // Insert new user
-    $sql = 'INSERT INTO users (full_name, firstname, lastname, email, password, password_hash, role, status, academic_field_id, course_id, created_at)
-            VALUES (:full_name, :firstname, :lastname, :email, :password, :password_hash, :role, :status, :academic_field_id, :course_id, NOW())';
+            $sql = 'INSERT INTO users (firstname, lastname, email, phone, address, password, role, status, email_verified, academic_field_id, course_id, created_at)
+                VALUES (:firstname, :lastname, :email, :phone, :address, :password, :role, :status, 1, :academic_field_id, :course_id, NOW())';
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
-        ':full_name' => $fullName,
         ':firstname' => $firstname,
         ':lastname'  => $lastname,
         ':email'     => $email,
+        ':phone'     => $phone ?: null,
+        ':address'   => $address ?: null,
         ':password'  => $hashedPassword,
-        ':password_hash' => $hashedPassword,
         ':role'      => $role,
         ':status'    => 'active',
         ':academic_field_id' => $academicFieldId ?: null,
@@ -102,6 +110,9 @@ try {
     ]);
 
     $userId = (int) $pdo->lastInsertId();
+
+    $roleTable = $role === 'mentor' ? 'mentors' : 'freshers';
+    $pdo->prepare("INSERT INTO {$roleTable} (user_id) VALUES (?)")->execute([$userId]);
 
     // Insert user skills
     if (!empty($skillIds)) {
@@ -144,5 +155,6 @@ try {
     if ($e instanceof PDOException && $e->getCode() == 23000) {
         respond(false, 'An account with this email already exists.', null, 409);
     }
-    respond(false, 'An unexpected error occurred. Please try again.', null, 500);
+    error_log('Registration API error: ' . $e->getMessage());
+    respond(false, 'Registration failed: ' . $e->getMessage(), null, 500);
 }

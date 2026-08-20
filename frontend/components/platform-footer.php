@@ -4,6 +4,7 @@
  * adds footer, toast container and shared JS.
  */
 ?>
+<style><?php readfile(__DIR__ . '/../assets/css/figma-modules.css'); ?></style>
         </main>
     </div><!-- /.with-v-nav -->
 

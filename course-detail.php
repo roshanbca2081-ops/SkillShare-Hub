@@ -602,6 +602,7 @@ session_start();
             .toast-container { right: 10px; left: 10px; max-width: 100%; }
         }
     </style>
+    <link rel="stylesheet" href="frontend/assets/css/figma-modules.css">
 </head>
 <body>
 
