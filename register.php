@@ -1,687 +1,885 @@
 <?php
-session_start();
+$page_title = 'Register';
+require_once 'config/database.php';
+require_once 'config/session.php';
+require_once 'config/functions.php';
+require_once 'config/validation.php';
+
+if (isLoggedIn()) {
+    redirect('index.php');
+}
+
+// Fetch academic fields for dropdown
+$stmt = $pdo->query("SELECT * FROM academic_fields WHERE is_active = 1 ORDER BY name");
+$academic_fields = $stmt->fetchAll();
+
+// Fetch all courses with field association
+$stmt = $pdo->query("SELECT c.*, f.name as field_name 
+                     FROM courses c 
+                     LEFT JOIN academic_fields f ON c.field_id = f.id 
+                     WHERE c.status = 'active' 
+                     ORDER BY f.name, c.title");
+$all_courses = $stmt->fetchAll();
+
+// Group courses by field
+$courses_by_field = [];
+foreach ($all_courses as $course) {
+    $field_id = $course['field_id'] ?? 0;
+    if (!isset($courses_by_field[$field_id])) {
+        $courses_by_field[$field_id] = [];
+    }
+    $courses_by_field[$field_id][] = $course;
+}
+
+// Fetch skills grouped by field
+$skills_by_field = [];
+foreach ($academic_fields as $field) {
+        // Skills are associated with a field through the mentor's courses.
+        $stmt = $pdo->prepare("SELECT DISTINCT u.skills
+                                                     FROM users u
+                                                     INNER JOIN courses c ON c.mentor_id = u.id
+                                                     WHERE c.field_id = ?
+                                                         AND u.skills IS NOT NULL
+                                                         AND u.skills != ''");
+    $stmt->execute([$field['id']]);
+    $field_skills = $stmt->fetchAll();
+    
+    $skills = [];
+    foreach ($field_skills as $fs) {
+        $user_skills = array_map('trim', explode(',', $fs['skills']));
+        foreach ($user_skills as $skill) {
+            if (!empty($skill) && !in_array($skill, $skills)) {
+                $skills[] = $skill;
+            }
+        }
+    }
+    
+    // If no skills found, add default skills based on field
+    if (empty($skills)) {
+        $default_skills = [
+            'Computer Science' => ['PHP', 'JavaScript', 'Python', 'Java', 'C++', 'React', 'Node.js', 'MySQL', 'Data Structures'],
+            'Data Science' => ['Python', 'R', 'SQL', 'Machine Learning', 'Statistics', 'TensorFlow', 'Pandas', 'NumPy'],
+            'Artificial Intelligence' => ['Python', 'TensorFlow', 'PyTorch', 'Deep Learning', 'NLP', 'Computer Vision', 'Reinforcement Learning'],
+            'Web Development' => ['HTML', 'CSS', 'JavaScript', 'React', 'Vue.js', 'Angular', 'Node.js', 'PHP', 'Laravel'],
+            'Mobile Development' => ['Java', 'Kotlin', 'Swift', 'React Native', 'Flutter', 'Android', 'iOS'],
+            'Cloud Computing' => ['AWS', 'Azure', 'GCP', 'Docker', 'Kubernetes', 'Jenkins', 'Terraform', 'Linux'],
+            'Cybersecurity' => ['Network Security', 'Penetration Testing', 'OWASP', 'Firewall', 'Encryption', 'Security Auditing'],
+            'Blockchain' => ['Solidity', 'Ethereum', 'Web3', 'Smart Contracts', 'DeFi', 'Cryptography'],
+            'UI/UX Design' => ['Figma', 'Adobe XD', 'Photoshop', 'User Research', 'Prototyping', 'Design Thinking'],
+            'Digital Marketing' => ['SEO', 'SEM', 'Content Marketing', 'Social Media', 'Google Analytics', 'Email Marketing']
+        ];
+        $skills = $default_skills[$field['name']] ?? ['Programming', 'Communication', 'Problem Solving', 'Team Work'];
+    }
+    
+    $skills_by_field[$field['id']] = $skills;
+}
+
+// Get all skills for fallback
+$all_skills = [];
+foreach ($skills_by_field as $skills) {
+    foreach ($skills as $skill) {
+        if (!in_array($skill, $all_skills)) {
+            $all_skills[] = $skill;
+        }
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Create validator instance
+    $validator = new Validator($_POST);
+    
+    // Validate all fields
+    $validator
+        ->required('full_name', 'Full name is required.')
+        ->minLength('full_name', 2, 'Full name must be at least 2 characters.')
+        ->maxLength('full_name', 100, 'Full name must not exceed 100 characters.')
+        
+        ->required('email', 'Email address is required.')
+        ->email('email', 'Please enter a valid email address.')
+        ->unique('email', 'users', 'email', 'This email is already registered.')
+        
+        ->required('password', 'Password is required.')
+        ->password('password', 'Password must be at least 8 characters and contain uppercase, lowercase, number, and special character.')
+        ->confirmed('password', 'confirm_password', 'Passwords do not match.')
+        
+        ->required('role', 'Please select a role.')
+        ->inArray('role', ['fresher', 'mentor'], 'Invalid role selected.')
+        
+        ->required('terms', 'You must agree to the terms and conditions.');
+    
+    if ($validator->passes()) {
+        $full_name = sanitize($_POST['full_name']);
+        $email = sanitize($_POST['email']);
+        $password = $_POST['password'];
+        $role = sanitize($_POST['role']);
+        $bio = sanitize($_POST['bio'] ?? '');
+        $phone = sanitize($_POST['phone'] ?? '');
+        $location = sanitize($_POST['location'] ?? '');
+        $academic_field_id = !empty($_POST['academic_field']) ? (int)$_POST['academic_field'] : null;
+        $interests = !empty($_POST['interests']) ? sanitize($_POST['interests']) : '';
+        
+        // Get selected skills
+        $selected_skills = isset($_POST['skills']) ? array_map('sanitize', $_POST['skills']) : [];
+        $skills_string = !empty($selected_skills) ? implode(', ', $selected_skills) : '';
+        
+        // Get selected courses based on role
+        if ($role === 'fresher') {
+            $selected_courses = isset($_POST['learn_courses']) ? array_map('intval', $_POST['learn_courses']) : [];
+        } else {
+            $selected_courses = isset($_POST['teach_courses']) ? array_map('intval', $_POST['teach_courses']) : [];
+        }
+        
+        $hashed = password_hash($password, PASSWORD_DEFAULT);
+        
+        // Insert user
+        $stmt = $pdo->prepare("INSERT INTO users (full_name, email, password, role, bio, phone, location, skills, interests) 
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$full_name, $email, $hashed, $role, $bio, $phone, $location, $skills_string, $interests]);
+        $user_id = $pdo->lastInsertId();
+        
+        // Handle course enrollments based on role
+        if (!empty($selected_courses)) {
+            if ($role === 'fresher') {
+                foreach ($selected_courses as $course_id) {
+                    $stmt = $pdo->prepare("INSERT INTO enrollments (fresher_id, course_id, status) VALUES (?, ?, 'active')");
+                    $stmt->execute([$user_id, $course_id]);
+                }
+            } else {
+                foreach ($selected_courses as $course_id) {
+                    $stmt = $pdo->prepare("UPDATE courses SET mentor_id = ? WHERE id = ? AND mentor_id IS NULL");
+                    $stmt->execute([$user_id, $course_id]);
+                }
+            }
+        }
+        
+        $_SESSION['alert'] = [
+            'type' => 'success',
+            'icon' => 'check-circle',
+            'message' => 'Registration successful! Please login.'
+        ];
+        redirect('login.php');
+    } else {
+        $_SESSION['alert'] = [
+            'type' => 'danger',
+            'icon' => 'exclamation-circle',
+            'message' => $validator->errorsString()
+        ];
+        $_SESSION['old'] = $_POST;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkillShare Hub - Login & Register</title>
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-    <style>
-        /* (Same inline CSS as in login.php) */
-        :root{--primary-400:#60a5fa;--primary-500:#3b82f6;--primary-600:#2563eb;--secondary-400:#a78bfa;--secondary-500:#8b5cf6;--success:#22c55e;--danger:#ef4444;--warning:#f59e0b;--text-primary:#ffffff;--text-secondary:rgba(255,255,255,0.8);--text-muted:rgba(255,255,255,0.4);--glass-bg:rgba(255,255,255,0.05);--glass-border:rgba(255,255,255,0.1);--shadow-lg:0 8px 40px rgba(0,0,0,0.4);--radius-md:12px;--radius-lg:16px;--radius-xl:20px;--radius-full:50px;--transition-bounce:0.4s cubic-bezier(0.175,0.885,0.32,1.275);--gradient-primary:linear-gradient(135deg,#3b82f6,#8b5cf6);--gradient-hero:linear-gradient(135deg,#ffffff 0%,#60a5fa 50%,#a78bfa 100%);--font-heading:'Poppins',sans-serif;--font-primary:'Inter',sans-serif}*{margin:0;padding:0;box-sizing:border-box}body{font-family:var(--font-primary);background:linear-gradient(135deg,#0a0a1a 0%,#1a1a2e 25%,#16213e 50%,#0f3460 75%,#1a1a2e 100%);background-attachment:fixed;min-height:100vh;color:var(--text-primary);overflow-x:hidden;line-height:1.6}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:rgba(255,255,255,0.05);border-radius:10px}::-webkit-scrollbar-thumb{background:var(--gradient-primary);border-radius:10px}.bg-animated{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}.bg-animated::before{content:'';position:absolute;inset:-50%;background:radial-gradient(ellipse at 20% 50%,rgba(59,130,246,0.12) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(139,92,246,0.12) 0%,transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(6,182,212,0.06) 0%,transparent 50%);animation:bgShift 20s ease-in-out infinite alternate}@keyframes bgShift{0%{transform:translate(0,0) scale(1) rotate(0deg)}50%{transform:translate(5%,-5%) scale(1.05) rotate(2deg)}100%{transform:translate(-5%,5%) scale(0.95) rotate(-2deg)}}.floating-logo{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:15rem;font-weight:900;font-family:var(--font-heading);color:rgba(255,255,255,0.02);pointer-events:none;z-index:0;letter-spacing:10px;animation:floatLogo 25s ease-in-out infinite;user-select:none;white-space:nowrap}@keyframes floatLogo{0%,100%{transform:translate(-50%,-50%) scale(1) rotate(0deg)}25%{transform:translate(-50%,-55%) scale(1.02) rotate(1deg)}75%{transform:translate(-50%,-45%) scale(0.98) rotate(-1deg)}}.auth-container{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;position:relative;z-index:1}.auth-wrapper{width:100%;max-width:480px;animation:fadeInUp 0.6s ease}@keyframes fadeInUp{from{opacity:0;transform:translateY(40px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}.auth-card{background:rgba(255,255,255,0.04);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius-xl);padding:40px;box-shadow:0 40px 80px rgba(0,0,0,0.4);transition:var(--transition-bounce)}.auth-card:hover{border-color:rgba(255,255,255,0.12)}.auth-brand{text-align:center;margin-bottom:32px}.auth-brand .logo-icon{font-size:3.5rem;background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}.auth-brand h1{font-family:var(--font-heading);font-weight:800;font-size:2rem;background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:8px 0 4px}.auth-brand p{color:var(--text-secondary);font-weight:300;font-size:0.95rem}.auth-brand .tagline{display:flex;justify-content:center;gap:12px;color:var(--text-muted);font-size:0.7rem;letter-spacing:1px;margin-top:4px}.form-group{margin-bottom:18px}.form-group label{display:block;color:var(--text-secondary);font-weight:500;font-size:0.85rem;margin-bottom:6px}.form-group .input-wrapper{position:relative;display:flex;align-items:center;background:rgba(255,255,255,0.06);border:1px solid var(--glass-border);border-radius:var(--radius-md);transition:all 0.3s ease}.form-group .input-wrapper:focus-within{border-color:var(--primary-500);box-shadow:0 0 0 4px rgba(59,130,246,0.1);background:rgba(255,255,255,0.08)}.form-group .input-wrapper .input-icon{padding:0 14px;color:var(--text-muted);font-size:0.95rem;flex-shrink:0}.form-group .input-wrapper input,.form-group .input-wrapper select,.form-group .input-wrapper textarea{width:100%;padding:12px 14px 12px 0;background:transparent;border:none;color:var(--text-primary);font-size:0.95rem;font-family:var(--font-primary);outline:none}.form-group .input-wrapper input::placeholder,.form-group .input-wrapper textarea::placeholder{color:var(--text-muted)}.form-group .input-wrapper select{appearance:none;cursor:pointer}.form-group .input-wrapper select option{background:#1a1a2e;color:var(--text-primary)}.form-group .input-wrapper textarea{resize:vertical;min-height:60px;padding-top:12px}.form-group .input-wrapper .toggle-password{padding:0 14px;color:var(--text-muted);cursor:pointer;transition:all 0.3s ease;flex-shrink:0}.form-group .input-wrapper .toggle-password:hover{color:var(--text-primary)}.password-strength{height:4px;border-radius:var(--radius-full);background:rgba(255,255,255,0.06);margin-top:8px;overflow:hidden}.password-strength .strength-bar{height:100%;border-radius:var(--radius-full);transition:width 0.3s ease,background 0.3s ease;width:0%}.password-strength .strength-bar.weak{width:25%;background:var(--danger)}.password-strength .strength-bar.fair{width:50%;background:var(--warning)}.password-strength .strength-bar.good{width:75%;background:var(--primary-500)}.password-strength .strength-bar.strong{width:100%;background:var(--success)}.password-strength-text{font-size:0.7rem;margin-top:4px;color:var(--text-muted)}.password-strength-text.weak{color:var(--danger)}.password-strength-text.fair{color:var(--warning)}.password-strength-text.good{color:var(--primary-400)}.password-strength-text.strong{color:var(--success)}.form-options{display:flex;justify-content:space-between;align-items:center;margin:16px 0 20px}.form-options .checkbox-label{color:var(--text-secondary);font-size:0.9rem;display:flex;align-items:center;gap:8px;cursor:pointer}.form-options .checkbox-label input[type="checkbox"]{width:16px;height:16px;accent-color:var(--primary-500);cursor:pointer}.form-options .forgot-link{color:var(--text-muted);text-decoration:none;font-size:0.85rem;transition:all 0.3s ease}.form-options .forgot-link:hover{color:var(--primary-400)}.btn-primary{width:100%;padding:14px;border:none;border-radius:var(--radius-md);background:var(--gradient-primary);color:#fff;font-weight:600;font-size:1rem;font-family:var(--font-primary);cursor:pointer;transition:all 0.3s ease}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(59,130,246,0.3)}.btn-primary:active{transform:scale(0.98)}.auth-divider{display:flex;align-items:center;gap:16px;margin:24px 0;color:var(--text-muted);font-size:0.8rem}.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--glass-border)}.social-login{display:flex;flex-direction:column;gap:10px}.btn-social{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:12px;border-radius:var(--radius-md);border:1px solid var(--glass-border);background:var(--glass-bg);color:var(--text-secondary);font-weight:500;font-size:0.95rem;cursor:pointer;transition:all 0.3s ease;text-decoration:none}.btn-social:hover{transform:translateY(-2px);background:rgba(255,255,255,0.06);color:var(--text-primary)}.btn-social .social-icon{font-size:1.2rem;width:24px;text-align:center}.btn-social.google:hover{border-color:#ea4335;background:rgba(234,67,53,0.08)}.btn-social.facebook:hover{border-color:#1877f2;background:rgba(24,119,242,0.08)}.auth-footer{text-align:center;margin-top:20px;color:var(--text-secondary);font-size:0.9rem}.auth-footer a{color:var(--primary-400);text-decoration:none;font-weight:600;transition:all 0.3s ease}.auth-footer a:hover{color:var(--primary-300);text-decoration:underline}.alert{padding:12px 16px;border-radius:var(--radius-md);font-size:0.9rem;margin-bottom:16px;display:flex;align-items:center;gap:10px;animation:shake 0.5s ease}.alert i{font-size:1.1rem;flex-shrink:0}.alert-danger{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#fca5a5}.alert-success{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);color:#86efac}@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-8px)}80%{transform:translateX(8px)}}.toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px;max-width:400px;width:100%}.toast{background:rgba(20,20,40,0.95);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:16px 20px;color:var(--text-primary);box-shadow:var(--shadow-lg);animation:slideInRight 0.5s ease;display:flex;align-items:center;gap:12px}.toast.success{border-left:4px solid var(--success)}.toast.error{border-left:4px solid var(--danger)}.toast.warning{border-left:4px solid var(--warning)}.toast.info{border-left:4px solid var(--primary-500)}.toast .icon{font-size:1.3rem;flex-shrink:0}.toast .content{flex:1}.toast .title{font-weight:600;font-size:0.9rem}.toast .message{font-size:0.8rem;color:var(--text-secondary)}.toast .close{cursor:pointer;color:var(--text-muted);background:none;border:none;font-size:1.1rem;padding:4px}.toast .close:hover{color:var(--text-primary)}@keyframes slideInRight{from{opacity:0;transform:translateX(100px)}to{opacity:1;transform:translateX(0)}}@media (max-width:768px){.auth-card{padding:28px 20px}.auth-brand .logo-icon{font-size:2.8rem}.auth-brand h1{font-size:1.6rem}.floating-logo{font-size:8rem}.floating-icons .icon{display:none}}@media (max-width:480px){.auth-container{padding:20px 12px}.auth-card{padding:20px 16px;border-radius:var(--radius-lg)}.form-group .input-wrapper input,.form-group .input-wrapper select{font-size:16px;padding:10px 12px 10px 0}.form-options{flex-direction:column;align-items:flex-start;gap:8px}.toast-container{right:10px;left:10px;max-width:100%}.auth-brand .tagline{font-size:0.65rem}}
-    </style>
-    <link rel="stylesheet" href="frontend/assets/css/figma-modules.css">
+    <title>Register - SkillShare Hub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/landing.css">
 </head>
 <body>
 
-<div class="bg-animated"></div>
-<div class="floating-logo">SkillShare Hub</div>
-
-
-
-<div class="toast-container" id="toastContainer"></div>
-
-<div class="auth-container">
-    <div class="auth-wrapper">
-
-        <!-- LOGIN FORM (hidden on register.php) -->
-        <div id="loginForm" class="auth-card" style="display:none;">
-            <div class="auth-brand">
-            <div class="logo-icon">
-                <img src="frontend/assets/images/logo/skillshare hub.png" alt="SkillShare Hub Logo" style="max-width:120px; height:auto;">
-            </div>
-                <h1>SkillShare Hub</h1>
-                <p>Bridging Education with Industry</p>
-                <div class="tagline">
-                    <span>Learn</span>
-                    <span>•</span>
-                    <span>Connect</span>
-                    <span>•</span>
-                    <span>Grow</span>
-                </div>
-            </div>
-
-            <div id="loginAlert"></div>
-
-            <form id="loginFormElement" onsubmit="return handleLogin(event)">
-                <div class="form-group">
-                    <label>Email Address</label>
-                    <div class="input-wrapper">
-                        <span class="input-icon"><i class="fas fa-envelope"></i></span>
-                        <input type="email" id="loginEmail" placeholder="Enter your email" required>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Password</label>
-                    <div class="input-wrapper">
-                        <span class="input-icon"><i class="fas fa-lock"></i></span>
-                        <input type="password" id="loginPassword" placeholder="Enter your password" required>
-                        <span class="toggle-password" onclick="togglePassword('loginPassword', this)">
-                            <i class="fas fa-eye"></i>
-                        </span>
-                    </div>
-                </div>
-
-                <div class="form-options">
-                    <label class="checkbox-label">
-                        <input type="checkbox"> Remember Me
-                    </label>
-                    <a href="#" class="forgot-link" onclick="showToast('Info', 'Password reset link sent to your email!', 'info')">Forgot Password?</a>
-                </div>
-
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-sign-in-alt"></i> Sign In
-                </button>
-            </form>
-
-            <div class="auth-divider"><span>OR</span></div>
-
-            <div class="social-login">
-                <button type="button" class="btn-social google" onclick="handleGoogleLogin()">
-                    <span class="social-icon"><i class="fab fa-google"></i></span>
-                    Continue with Google
-                </button>
-                <button type="button" class="btn-social facebook" onclick="handleFacebookLogin()">
-                    <span class="social-icon"><i class="fab fa-facebook-f"></i></span>
-                    Continue with Facebook
-                </button>
-            </div>
-
-            <div class="auth-footer">
-                Don't have an account? <a href="#" onclick="showRegister()">Create Account</a>
+<!-- Modern Navbar -->
+<nav class="navbar-modern" style="position: relative;">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <a class="navbar-brand-modern" href="index.php">
+                <i class="fas fa-graduation-cap"></i>
+                <span>SkillShare Hub</span>
+            </a>
+            <div>
+                <a href="index.php" class="text-muted me-3">Home</a>
+                <a href="login.php" class="btn-modern btn-modern-outline">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
             </div>
         </div>
-
-        <!-- REGISTER FORM (visible on this page) -->
-        <div id="registerForm" class="auth-card" style="display:block;">
-            <div class="auth-brand">
-                <div class="logo-icon"><img src="frontend/assets/images/logo/skillshare hub.png" alt="SkillShare Hub Logo" style="max-width:120px; height:auto;"></div>
-                <h1>Create Account</h1>
-                <p>Start your journey to industry readiness</p>
-                <div class="tagline">
-                    <span>Learn</span>
-                    <span>•</span>
-                    <span>Connect</span>
-                    <span>•</span>
-                    <span>Grow</span>
-                </div>
-            </div>
-
-            <div id="registerAlert"></div>
-
-            <form id="registerFormElement" onsubmit="return handleRegister(event)">
-                <!-- Full Name -->
-                <div class="form-group">
-                    <label>Full Name</label>
-                    <div class="input-wrapper">
-                        <span class="input-icon"><i class="fas fa-user"></i></span>
-                        <input type="text" id="regName" placeholder="Enter your full name" required>
-                    </div>
-                </div>
-
-                <!-- Email -->
-                <div class="form-group">
-                    <label>Email Address</label>
-                    <div class="input-wrapper">
-                        <span class="input-icon"><i class="fas fa-envelope"></i></span>
-                        <input type="email" id="regEmail" placeholder="Enter your email" required>
-                    </div>
-                </div>
-
-                <!-- Address -->
-                <div class="form-group">
-                    <label>Address</label>
-                    <div class="input-wrapper">
-                        <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
-                        <input type="text" id="regAddress" placeholder="Enter your address" required>
-                    </div>
-                </div>
-
-                <!-- Contact -->
-                <div class="form-group">
-                    <label>Contact Number</label>
-                    <div class="input-wrapper">
-                        <span class="input-icon"><i class="fas fa-phone"></i></span>
-                        <input type="tel" id="regContact" placeholder="Enter your phone number" required>
-                    </div>
-                </div>
-
-                 <!-- Role Selector -->
-                 <div class="form-group">
-                     <label>I Want To Register As</label>
-                     <div class="input-wrapper">
-                         <span class="input-icon"><i class="fas fa-user-tag"></i></span>
-                         <select id="regRole" required>
-                             <option value="fresher">I am a student/fresher</option>
-                             <option value="mentor">I am a mentor/instructor</option>
-                         </select>
-                     </div>
-                 </div>
-
-                 <!-- Background Field -->
-                 <div class="form-group">
-                      <label>Background Field</label>
-                      <div class="input-wrapper">
-                          <span class="input-icon"><i class="fas fa-book"></i></span>
-                          <select id="regField" required>
-                              <option value="">Select your field</option>
-                          </select>
-                      </div>
-                  </div>
-
-                 <!-- Interested Course -->
-                 <div class="form-group">
-                     <label>Interested Course</label>
-                     <div class="input-wrapper">
-                         <span class="input-icon"><i class="fas fa-graduation-cap"></i></span>
-                         <select id="regCourse" required>
-                             <option value="">Select your course</option>
-                         </select>
-                     </div>
-                 </div>
-
-                 <!-- Course Detail -->
-                 <div id="courseDetail" style="display:none; padding: 12px 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: var(--radius-md); margin-bottom: 18px;">
-                     <div id="courseDetailContent"></div>
-                 </div>
-
-                  <!-- Skills / Area of Interest -->
-                  <div class="form-group" id="skillsGroup" style="display:none;">
-                      <label id="skillsLabel">Skills / Area of Interest</label>
-                      <div class="input-wrapper">
-                          <span class="input-icon"><i class="fas fa-star"></i></span>
-                          <select id="regSkills" required>
-                              <option value="">Select your skill</option>
-                          </select>
-                      </div>
-                  </div>
-
-                <!-- Password -->
-                <div class="form-group">
-                    <label>Password</label>
-                    <div class="input-wrapper">
-                        <span class="input-icon"><i class="fas fa-lock"></i></span>
-                        <input type="password" id="regPassword" placeholder="Create a password" required>
-                        <span class="toggle-password" onclick="togglePassword('regPassword', this)">
-                            <i class="fas fa-eye"></i>
-                        </span>
-                    </div>
-                    <div class="password-strength">
-                        <div class="strength-bar" id="strengthBar"></div>
-                    </div>
-                    <div class="password-strength-text" id="strengthText">Enter a strong password</div>
-                </div>
-
-                <!-- Confirm Password -->
-                <div class="form-group">
-                    <label>Confirm Password</label>
-                    <div class="input-wrapper">
-                        <span class="input-icon"><i class="fas fa-check-circle"></i></span>
-                        <input type="password" id="regConfirmPassword" placeholder="Confirm your password" required>
-                        <span class="toggle-password" onclick="togglePassword('regConfirmPassword', this)">
-                            <i class="fas fa-eye"></i>
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Terms -->
-                <div class="form-group">
-                    <label class="checkbox-label" style="font-weight:400;font-size:0.85rem;">
-                        <input type="checkbox" id="regTerms" required>
-                        I agree to the <a href="#" style="color:var(--primary-400);text-decoration:none;">Terms of Service</a> &amp; <a href="#" style="color:var(--primary-400);text-decoration:none;">Privacy Policy</a>
-                    </label>
-                </div>
-
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-user-plus"></i> Create Account
-                </button>
-            </form>
-
-            <div class="auth-footer">
-                Already have an account? <a href="#" onclick="showLogin()">Sign In</a>
-            </div>
-        </div>
-
     </div>
-</div>
+</nav>
+
+<!-- Registration Form -->
+<section class="section-modern register-page">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="form-modern">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-user-plus" style="font-size: 2.5rem; background: var(--primary-gradient); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                        <h3 style="font-family: var(--font-secondary); font-weight: 700; margin-top: 12px;">Create Account</h3>
+                        <p class="text-muted">Start your learning journey today</p>
+                    </div>
+                    
+                    <?php if (isset($_SESSION['alert'])): ?>
+                        <div class="alert alert-<?php echo $_SESSION['alert']['type']; ?> alert-dismissible fade show">
+                            <i class="fas fa-<?php echo $_SESSION['alert']['icon'] ?? 'info-circle'; ?>"></i>
+                            <?php echo $_SESSION['alert']['message']; ?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <?php unset($_SESSION['alert']); ?>
+                    <?php endif; ?>
+                    
+                    <form method="POST" id="registerForm" novalidate>
+                        <div class="row">
+                            <!-- Left Column -->
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label class="form-label-modern">Full Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="full_name" class="form-control-modern" 
+                                           placeholder="Enter your full name" 
+                                           value="<?php echo $_SESSION['old']['full_name'] ?? ''; ?>" required>
+                                    <div class="invalid-feedback" id="fullNameError"></div>
+                                </div>
+                                
+                                <div class="form-group-modern">
+                                    <label class="form-label-modern">Email Address <span class="text-danger">*</span></label>
+                                    <input type="email" name="email" class="form-control-modern" 
+                                           placeholder="Enter your email" 
+                                           value="<?php echo $_SESSION['old']['email'] ?? ''; ?>" required>
+                                    <div class="invalid-feedback" id="emailError"></div>
+                                </div>
+                                
+                                <div class="form-group-modern">
+                                    <label class="form-label-modern">Phone Number</label>
+                                    <input type="tel" name="phone" class="form-control-modern" 
+                                           placeholder="Enter your phone number" 
+                                           value="<?php echo $_SESSION['old']['phone'] ?? ''; ?>">
+                                </div>
+                                
+                                <div class="form-group-modern">
+                                    <label class="form-label-modern">Location</label>
+                                    <input type="text" name="location" class="form-control-modern" 
+                                           placeholder="City, Country" 
+                                           value="<?php echo $_SESSION['old']['location'] ?? ''; ?>">
+                                </div>
+                                
+                                <div class="form-group-modern">
+                                    <label class="form-label-modern">Bio / About You</label>
+                                    <textarea name="bio" class="form-control-modern" rows="2" 
+                                              placeholder="Tell us a bit about yourself"><?php echo $_SESSION['old']['bio'] ?? ''; ?></textarea>
+                                </div>
+                                
+                                <div class="form-group-modern">
+                                    <label class="form-label-modern">Interests / Hobbies</label>
+                                    <input type="text" name="interests" class="form-control-modern" 
+                                           placeholder="e.g., Web Development, Data Science, AI" 
+                                           value="<?php echo $_SESSION['old']['interests'] ?? ''; ?>"
+                                           id="interestsInput">
+                                    <small class="text-muted">Separate interests with commas</small>
+                                </div>
+                            </div>
+                            
+                            <!-- Right Column -->
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label class="form-label-modern">Password <span class="text-danger">*</span></label>
+                                    <div class="position-relative">
+                                        <input type="password" name="password" class="form-control-modern" id="password" 
+                                               placeholder="At least 8 characters" required>
+                                        <button type="button" class="btn btn-link position-absolute end-0 top-0 mt-2 me-2" onclick="togglePassword()">
+                                            <i class="fas fa-eye" id="eyeIcon"></i>
+                                        </button>
+                                    </div>
+                                    <div class="password-strength mt-2">
+                                        <div class="progress" style="height: 4px;">
+                                            <div class="progress-bar" id="passwordStrength" style="width: 0%;"></div>
+                                        </div>
+                                        <small class="text-muted" id="passwordStrengthText">Weak</small>
+                                    </div>
+                                    <div class="invalid-feedback" id="passwordError"></div>
+                                    <ul class="password-requirements small text-muted mt-1">
+                                        <li id="req-length"><i class="fas fa-circle"></i> At least 8 characters</li>
+                                        <li id="req-upper"><i class="fas fa-circle"></i> One uppercase letter</li>
+                                        <li id="req-lower"><i class="fas fa-circle"></i> One lowercase letter</li>
+                                        <li id="req-number"><i class="fas fa-circle"></i> One number</li>
+                                        <li id="req-special"><i class="fas fa-circle"></i> One special character</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="form-group-modern">
+                                    <label class="form-label-modern">Confirm Password <span class="text-danger">*</span></label>
+                                    <input type="password" name="confirm_password" class="form-control-modern" 
+                                           placeholder="Confirm your password" required>
+                                    <div class="invalid-feedback" id="confirmPasswordError"></div>
+                                </div>
+                                
+                                <div class="form-group-modern">
+                                    <label class="form-label-modern">I am a <span class="text-danger">*</span></label>
+                                    <select name="role" class="form-control-modern" id="roleSelect" required>
+                                        <option value="">Select...</option>
+                                        <option value="fresher" <?php echo (($_SESSION['old']['role'] ?? '') === 'fresher') ? 'selected' : ''; ?>>Fresher / Student</option>
+                                        <option value="mentor" <?php echo (($_SESSION['old']['role'] ?? '') === 'mentor') ? 'selected' : ''; ?>>Mentor / Professional</option>
+                                    </select>
+                                    <div class="invalid-feedback" id="roleError"></div>
+                                </div>
+                                
+                                <div class="form-group-modern" id="academicFieldGroup">
+                                    <label class="form-label-modern">Academic Field <span class="text-danger">*</span></label>
+                                    <select name="academic_field" class="form-control-modern" id="academicFieldSelect" required>
+                                        <option value="">Select your field</option>
+                                        <?php foreach ($academic_fields as $field): ?>
+                                        <option value="<?php echo $field['id']; ?>" <?php echo (($_SESSION['old']['academic_field'] ?? '') == $field['id']) ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($field['name']); ?>
+                                        </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <div class="invalid-feedback" id="academicFieldError">Please select your academic field.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Skills Selection (Checkboxes) - Dynamic based on field -->
+                        <div class="form-group-modern" id="skillsGroup">
+                            <label class="form-label-modern">Select Your Skills <span class="text-danger">*</span></label>
+                            <small class="text-muted d-block mb-2">Select all skills you have or want to learn</small>
+                            <div class="skills-search mb-2">
+                                <input type="text" class="form-control-modern" id="skillSearch" placeholder="Search skills...">
+                            </div>
+                            <div class="row g-2 skills-grid" id="skillsGrid">
+                                <!-- Skills will be populated dynamically -->
+                                <div class="col-12 text-center text-muted py-3" id="skillsLoading">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading skills...
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAllSkills()">
+                                    <i class="fas fa-check-double"></i> Select All
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deselectAllSkills()">
+                                    <i class="fas fa-times"></i> Deselect All
+                                </button>
+                                <span class="badge bg-primary ms-2" id="selectedSkillCount">0 selected</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Course Selection for Fresher (Learn Courses) -->
+                        <div class="form-group-modern" id="learnCourseGroup" style="display: none;">
+                            <label class="form-label-modern">Select Courses You Want to Learn</label>
+                            <small class="text-muted d-block mb-2">Select all courses you're interested in learning</small>
+                            <div class="row g-2" id="learnCoursesGrid">
+                                <!-- Courses will be populated dynamically -->
+                                <div class="col-12 text-center text-muted py-3" id="learnCoursesLoading">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading courses...
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAllLearnCourses()">
+                                    <i class="fas fa-check-double"></i> Select All
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deselectAllLearnCourses()">
+                                    <i class="fas fa-times"></i> Deselect All
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Course Selection for Mentor (Teach Courses) -->
+                        <div class="form-group-modern" id="teachCourseGroup" style="display: none;">
+                            <label class="form-label-modern">Select Courses You Can Teach</label>
+                            <small class="text-muted d-block mb-2">Select all courses you have expertise in</small>
+                            <div class="row g-2" id="teachCoursesGrid">
+                                <!-- Courses will be populated dynamically -->
+                                <div class="col-12 text-center text-muted py-3" id="teachCoursesLoading">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading courses...
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAllTeachCourses()">
+                                    <i class="fas fa-check-double"></i> Select All
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deselectAllTeachCourses()">
+                                    <i class="fas fa-times"></i> Deselect All
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Terms -->
+                        <div class="form-group-modern">
+                            <div class="form-check">
+                                <input type="checkbox" name="terms" class="form-check-input" id="terms" required
+                                       <?php echo isset($_SESSION['old']['terms']) ? 'checked' : ''; ?>>
+                                <label class="form-check-label" for="terms">
+                                    I agree to the <a href="terms.php" target="_blank">Terms of Service</a> and 
+                                    <a href="privacy-policy.php" target="_blank">Privacy Policy</a>
+                                </label>
+                                <div class="invalid-feedback" id="termsError">You must agree to the terms.</div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-modern btn-modern-primary w-100" style="justify-content: center; padding: 14px; margin-top: 12px;">
+                            <i class="fas fa-user-plus"></i> Create Account
+                        </button>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <p class="text-muted">Already have an account? <a href="login.php" style="color: var(--primary); font-weight: 600;">Login</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 <script>
-    // Same JS as in login.php
-    document.addEventListener('DOMContentLoaded', function() {
-        initPasswordStrength();
-        initToastSystem();
-        loadFields();
-        updateSkillsLabel();
-    });
+// JavaScript data for dynamic filtering
+const coursesData = <?php echo json_encode($courses_by_field); ?>;
+const skillsData = <?php echo json_encode($skills_by_field); ?>;
+const allSkills = <?php echo json_encode($all_skills); ?>;
 
-    function loadFields() {
-        fetch('api/registration.php?action=fields')
-            .then(r => r.json())
-            .then(res => {
-                if (res.success) {
-                    const sel = document.getElementById('regField');
-                    sel.innerHTML = '<option value="">Select your field</option>';
-                    res.data.forEach(f => {
-                        const opt = document.createElement('option');
-                        opt.value = f.id;
-                        opt.textContent = f.name;
-                        sel.appendChild(opt);
-                    });
-                }
-            });
-    }
-
-    function updateSkillsLabel() {
-        const role = document.getElementById('regRole').value;
-        const label = document.getElementById('skillsLabel');
-        if (label) {
-            label.textContent = role === 'mentor' ? 'Skills I Can Teach' : 'Skills / Area of Interest';
-        }
-    }
-
-    document.getElementById('regField').addEventListener('change', function() {
-        const fieldId = this.value;
-        const courseSel = document.getElementById('regCourse');
-        const skillsGroup = document.getElementById('skillsGroup');
-        const skillsSel = document.getElementById('regSkills');
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registerForm');
+    const passwordInput = document.getElementById('password');
+    const roleSelect = document.getElementById('roleSelect');
+    const learnGroup = document.getElementById('learnCourseGroup');
+    const teachGroup = document.getElementById('teachCourseGroup');
+    const academicFieldSelect = document.getElementById('academicFieldSelect');
+    const skillsGrid = document.getElementById('skillsGrid');
+    const learnCoursesGrid = document.getElementById('learnCoursesGrid');
+    const teachCoursesGrid = document.getElementById('teachCoursesGrid');
+    const skillsLoading = document.getElementById('skillsLoading');
+    const learnCoursesLoading = document.getElementById('learnCoursesLoading');
+    const teachCoursesLoading = document.getElementById('teachCoursesLoading');
+    const selectedSkillCount = document.getElementById('selectedSkillCount');
+    
+    // Populate skills based on selected academic field
+    function populateSkills(fieldId) {
+        const skills = skillsData[fieldId] || allSkills;
+        skillsGrid.innerHTML = '';
         
-        courseSel.innerHTML = '<option value="">Select your course</option>';
-        skillsGroup.style.display = 'none';
-        skillsSel.innerHTML = '';
-        
-        if (!fieldId) return;
-        
-        fetch('api/registration.php?action=courses&field_id=' + fieldId)
-            .then(r => r.json())
-            .then(res => {
-                if (res.success) {
-                    res.data.forEach(c => {
-                        const opt = document.createElement('option');
-                        opt.value = c.id;
-                        opt.textContent = c.name;
-                        courseSel.appendChild(opt);
-                    });
-                }
-            });
-    });
-
-    document.getElementById('regCourse').addEventListener('change', function() {
-        const courseId = this.value;
-        const skillsGroup = document.getElementById('skillsGroup');
-        const skillsSel = document.getElementById('regSkills');
-        const courseDetail = document.getElementById('courseDetail');
-        const courseDetailContent = document.getElementById('courseDetailContent');
-        
-        skillsSel.innerHTML = '<option value="">Select your skill</option>';
-        courseDetail.style.display = 'none';
-        
-        if (!courseId) {
-            skillsGroup.style.display = 'none';
+        if (skills.length === 0) {
+            skillsGrid.innerHTML = '<div class="col-12 text-center text-muted">No skills available for this field.</div>';
             return;
         }
         
-        fetch('api/registration.php?action=course-detail&course_id=' + courseId)
-            .then(r => r.json())
-            .then(res => {
-                if (res.success && res.data) {
-                    const c = res.data;
-                    courseDetailContent.innerHTML = `
-                        <div style="font-weight:600;font-size:1rem;color:var(--text-primary);margin-bottom:6px;">${c.name}</div>
-                        <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">${c.field_name || ''}</div>
-                        ${c.description ? `<div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:8px;line-height:1.5;">${c.description}</div>` : ''}
-                        <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:0.8rem;color:var(--text-muted);">
-                            ${c.duration ? `<span><i class="fas fa-clock" style="margin-right:4px;"></i>${c.duration}</span>` : ''}
-                            ${c.level ? `<span><i class="fas fa-signal" style="margin-right:4px;"></i>${c.level}</span>` : ''}
-                            ${typeof c.skill_count !== 'undefined' ? `<span><i class="fas fa-star" style="margin-right:4px;"></i>${c.skill_count} skills</span>` : ''}
-                            ${typeof c.mentor_count !== 'undefined' ? `<span><i class="fas fa-chalkboard-teacher" style="margin-right:4px;"></i>${c.mentor_count} mentors</span>` : ''}
-                        </div>
-                    `;
-                    courseDetail.style.display = 'block';
-                }
-            });
+        skills.forEach(function(skill) {
+            const col = document.createElement('div');
+            col.className = 'col-md-3 col-4 skill-item';
+            col.innerHTML = `
+                <div class="form-check">
+                    <input type="checkbox" name="skills[]" class="form-check-input skill-checkbox" 
+                           id="skill_${skill.replace(/[^a-zA-Z0-9]/g, '_')}" 
+                           value="${skill}">
+                    <label class="form-check-label" for="skill_${skill.replace(/[^a-zA-Z0-9]/g, '_')}">
+                        ${skill}
+                    </label>
+                </div>
+            `;
+            skillsGrid.appendChild(col);
+        });
         
-        fetch('api/registration.php?action=skills&course_id=' + courseId)
-            .then(r => r.json())
-            .then(res => {
-                if (res.success) {
-                    res.data.forEach(s => {
-                        const opt = document.createElement('option');
-                        opt.value = s.id;
-                        opt.textContent = s.name;
-                        skillsSel.appendChild(opt);
-                    });
-                    skillsGroup.style.display = 'block';
-                }
-            });
-    });
-
-    document.getElementById('regRole').addEventListener('change', updateSkillsLabel);
-
-    function showRegister() {
-        document.getElementById('loginForm').style.display = 'none';
-        document.getElementById('registerForm').style.display = 'block';
-        document.getElementById('registerAlert').innerHTML = '';
-        document.getElementById('loginAlert').innerHTML = '';
+        // Re-attach event listeners
+        document.querySelectorAll('.skill-checkbox').forEach(function(cb) {
+            cb.addEventListener('change', updateSkillCount);
+        });
+        updateSkillCount();
     }
-
-    function showLogin() {
-        document.getElementById('registerForm').style.display = 'none';
-        document.getElementById('loginForm').style.display = 'block';
-        document.getElementById('registerAlert').innerHTML = '';
-        document.getElementById('loginAlert').innerHTML = '';
-    }
-
-    function togglePassword(inputId, element) {
-        const input = document.getElementById(inputId);
-        const icon = element.querySelector('i');
-
-        if (input.type === 'password') {
-            input.type = 'text';
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
+    
+    // Populate courses based on selected academic field
+    function populateCourses(fieldId) {
+        const courses = coursesData[fieldId] || [];
+        
+        // Populate learn courses
+        learnCoursesGrid.innerHTML = '';
+        if (courses.length === 0) {
+            learnCoursesGrid.innerHTML = '<div class="col-12 text-center text-muted">No courses available for this field.</div>';
         } else {
-            input.type = 'password';
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
+            courses.forEach(function(course) {
+                const col = document.createElement('div');
+                col.className = 'col-md-4';
+                col.innerHTML = `
+                    <div class="form-check course-check">
+                        <input type="checkbox" name="learn_courses[]" class="form-check-input learn-course-checkbox" 
+                               id="learn_course_${course.id}" 
+                               value="${course.id}">
+                        <label class="form-check-label" for="learn_course_${course.id}">
+                            ${course.title}
+                            <br><small class="text-muted">${course.level.charAt(0).toUpperCase() + course.level.slice(1)}</small>
+                        </label>
+                    </div>
+                `;
+                learnCoursesGrid.appendChild(col);
+            });
         }
-    }
-
-    function initPasswordStrength() {
-        const passwordInput = document.getElementById('regPassword');
-        if (!passwordInput) return;
-
-        passwordInput.addEventListener('input', function() {
-            const password = this.value;
-            const strengthBar = document.getElementById('strengthBar');
-            const strengthText = document.getElementById('strengthText');
-
-            let strength = 0;
-            if (password.length >= 8) strength++;
-            if (password.length >= 12) strength++;
-            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
-            if (/\d/.test(password)) strength++;
-            if (/[^a-zA-Z0-9]/.test(password)) strength++;
-
-            let level, label, percentage;
-            if (password.length === 0) {
-                level = 'none';
-                label = 'Enter a strong password';
-                percentage = 0;
-            } else if (strength <= 1) {
-                level = 'weak';
-                label = 'Weak password - Add more characters and variety';
-                percentage = 25;
-            } else if (strength <= 3) {
-                level = 'fair';
-                label = 'Fair password - Add more variety';
-                percentage = 50;
-            } else if (strength <= 4) {
-                level = 'good';
-                label = 'Good password - Almost there!';
-                percentage = 75;
-            } else {
-                level = 'strong';
-                label = 'Strong password - Excellent!';
-                percentage = 100;
-            }
-
-            strengthBar.className = 'strength-bar ' + (level !== 'none' ? level : '');
-            strengthBar.style.width = percentage + '%';
-            strengthText.textContent = label;
-            strengthText.className = 'password-strength-text ' + (level !== 'none' ? level : '');
-        });
-    }
-
-    function handleLogin(event) {
-        event.preventDefault();
-
-        const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value;
-        const alertDiv = document.getElementById('loginAlert');
-
-        if (!email || !password) {
-            alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Please fill in all fields</div>`;
-            return false;
-        }
-
-        if (!isValidEmail(email)) {
-            alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Please enter a valid email address</div>`;
-            return false;
-        }
-
-        const submitBtn = event.target.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
-
-        fetch('api/login.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: email, password: password })
-        })
-        .then(r => r.json())
-        .then(res => {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
-
-            if (res.success) {
-                alertDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i> Login successful! Redirecting...</div>`;
-                showToast('Welcome Back!', 'Login successful!', 'success', 1500);
-                setTimeout(() => {
-                    window.location.href = res.data.redirect;
-                }, 1500);
-            } else {
-                alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> ${res.message}</div>`;
-            }
-        })
-        .catch(err => {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
-            alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Connection error. Please try again.</div>`;
-        });
-
-        return false;
-    }
-
-    function handleRegister(event) {
-        event.preventDefault();
-
-        const name = document.getElementById('regName').value.trim();
-        const email = document.getElementById('regEmail').value.trim();
-        const address = document.getElementById('regAddress').value.trim();
-        const contact = document.getElementById('regContact').value.trim();
-        const role = document.getElementById('regRole').value;
-        const password = document.getElementById('regPassword').value;
-        const confirmPassword = document.getElementById('regConfirmPassword').value;
-        const terms = document.getElementById('regTerms').checked;
-        const alertDiv = document.getElementById('registerAlert');
-        const skillIds = document.getElementById('regSkills').value ? [document.getElementById('regSkills').value] : [];
         
-        if (!name || !email || !address || !contact || !role || !password || !confirmPassword) {
-            alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Please fill in all fields</div>`;
-            return false;
+        // Populate teach courses
+        teachCoursesGrid.innerHTML = '';
+        if (courses.length === 0) {
+            teachCoursesGrid.innerHTML = '<div class="col-12 text-center text-muted">No courses available for this field.</div>';
+        } else {
+            courses.forEach(function(course) {
+                const col = document.createElement('div');
+                col.className = 'col-md-4';
+                col.innerHTML = `
+                    <div class="form-check course-check">
+                        <input type="checkbox" name="teach_courses[]" class="form-check-input teach-course-checkbox" 
+                               id="teach_course_${course.id}" 
+                               value="${course.id}">
+                        <label class="form-check-label" for="teach_course_${course.id}">
+                            ${course.title}
+                            <br><small class="text-muted">${course.level.charAt(0).toUpperCase() + course.level.slice(1)}</small>
+                        </label>
+                    </div>
+                `;
+                teachCoursesGrid.appendChild(col);
+            });
         }
-
-        if (!isValidEmail(email)) {
-            alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Please enter a valid email address</div>`;
-            return false;
+    }
+    
+    // Update skill count
+    function updateSkillCount() {
+        const selected = document.querySelectorAll('.skill-checkbox:checked').length;
+        if (selectedSkillCount) {
+            selectedSkillCount.textContent = selected + ' selected';
         }
-
-        if (!isValidPhone(contact)) {
-            alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Please enter a valid phone number</div>`;
-            return false;
+    }
+    
+    // Handle academic field change
+    academicFieldSelect.addEventListener('change', function() {
+        const fieldId = this.value;
+        if (fieldId) {
+            populateSkills(fieldId);
+            populateCourses(fieldId);
+        } else {
+            skillsGrid.innerHTML = '<div class="col-12 text-center text-muted">Please select an academic field first.</div>';
+            learnCoursesGrid.innerHTML = '<div class="col-12 text-center text-muted">Please select an academic field first.</div>';
+            teachCoursesGrid.innerHTML = '<div class="col-12 text-center text-muted">Please select an academic field first.</div>';
         }
-
-        if (password.length < 6) {
-            alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Password must be at least 6 characters</div>`;
-            return false;
+    });
+    
+    // Show/hide fields based on role
+    roleSelect.addEventListener('change', function() {
+        if (this.value === 'fresher') {
+            learnGroup.style.display = 'block';
+            teachGroup.style.display = 'none';
+            document.getElementById('academicFieldGroup').style.display = 'block';
+            document.getElementById('skillsGroup').style.display = 'block';
+        } else if (this.value === 'mentor') {
+            learnGroup.style.display = 'none';
+            teachGroup.style.display = 'block';
+            document.getElementById('academicFieldGroup').style.display = 'block';
+            document.getElementById('skillsGroup').style.display = 'block';
+        } else {
+            learnGroup.style.display = 'none';
+            teachGroup.style.display = 'none';
+            document.getElementById('academicFieldGroup').style.display = 'none';
+            document.getElementById('skillsGroup').style.display = 'none';
         }
-
-        if (password !== confirmPassword) {
-            alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Passwords do not match</div>`;
-            return false;
-        }
-
-        if (!terms) {
-            alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Please agree to the Terms & Privacy Policy</div>`;
-            return false;
-        }
-
-        const submitBtn = event.target.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
-
-        fetch('api/register.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                full_name: name,
-                email: email,
-                phone: contact,
-                address: address,
-                role: role,
-                academic_field_id: document.getElementById('regField').value || null,
-                course_id: document.getElementById('regCourse').value || null,
-                skill_ids: skillIds,
-                password: password,
-                confirm_password: confirmPassword
-            })
-        })
-        .then(r => r.json())
-        .then(res => {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
-
-            if (res.success) {
-                alertDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i> ${res.message}</div>`;
-                showToast('Welcome!', 'Account created successfully!', 'success', 1500);
-                setTimeout(() => {
-                    window.location.href = res.data.redirect;
-                }, 1500);
-            } else {
-                alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> ${res.message}</div>`;
+    });
+    
+    // Trigger on load
+    if (roleSelect.value === 'fresher') {
+        learnGroup.style.display = 'block';
+        teachGroup.style.display = 'none';
+        document.getElementById('academicFieldGroup').style.display = 'block';
+        document.getElementById('skillsGroup').style.display = 'block';
+    } else if (roleSelect.value === 'mentor') {
+        learnGroup.style.display = 'none';
+        teachGroup.style.display = 'block';
+        document.getElementById('academicFieldGroup').style.display = 'block';
+        document.getElementById('skillsGroup').style.display = 'block';
+    }
+    
+    // If academic field is pre-selected, load data
+    if (academicFieldSelect.value) {
+        populateSkills(academicFieldSelect.value);
+        populateCourses(academicFieldSelect.value);
+    }
+    
+    // Skill search filter
+    document.getElementById('skillSearch').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        document.querySelectorAll('.skill-item').forEach(function(item) {
+            const label = item.querySelector('.form-check-label');
+            if (label) {
+                const text = label.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
             }
-        })
-        .catch(err => {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
-            alertDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Connection error. Please try again.</div>`;
         });
-
-        return false;
-    }
-
-    function isValidEmail(email) { return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email); }
-    function isValidPhone(phone) { return /^[0-9+\-\s\(\)]{7,20}$/.test(phone); }
-
-    function initToastSystem() { if (!document.getElementById('toastContainer')) { const container = document.createElement('div'); container.className = 'toast-container'; container.id = 'toastContainer'; document.body.appendChild(container); } }
-
-    function showToast(title, message, type = 'info', duration = 5000) {
-        const container = document.getElementById('toastContainer'); if (!container) return;
-        const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
-        const colors = { success: '#22c55e', error: '#ef4444', warning: '#f59e0b', info: '#3b82f6' };
-        const toast = document.createElement('div'); toast.className = `toast ${type}`;
-        toast.innerHTML = `<span class="icon" style="color:${colors[type]}"><i class="fas ${icons[type] || icons.info}"></i></span><div class="content"><div class="title">${title}</div><div class="message">${message}</div></div><button class="close"><i class="fas fa-times"></i></button>`;
-        toast.querySelector('.close').addEventListener('click', function() { closeToast(toast); });
-        container.appendChild(toast);
-        if (duration > 0) setTimeout(() => closeToast(toast), duration);
-        toast.addEventListener('click', function(e) { if (e.target.closest('.close')) return; closeToast(toast); });
-    }
-    function closeToast(toast) { if (!toast) return; toast.style.opacity = '0'; toast.style.transform = 'translateX(100px)'; setTimeout(() => { if (toast.parentNode) toast.remove(); }, 300); }
-</script>
-
-<script>
-function handleGoogleLogin() {
-    showToast('Connecting to Google...', 'Opening Google Accounts connection window...', 'info');
-
-    const width = 500, height = 650;
-    const left = (window.innerWidth - width) / 2;
-    const top = (window.innerHeight - height) / 2;
-    const googleAuthUrl = 'https://accounts.google.com/o/oauth2/v2/auth?client_id=1084293847291-example.apps.googleusercontent.com&redirect_uri=' + encodeURIComponent(window.location.origin + '/api/google-callback.php') + '&response_type=code&scope=openid%20email%20profile&prompt=select_account';
-
-    const popup = window.open(googleAuthUrl, 'GoogleAuthWindow', `width=${width},height=${height},top=${top},left=${left},status=no,toolbar=no,menubar=no`);
-
-    setTimeout(function() {
-        var email = prompt("Google Accounts Sign-In Connection:\n\nEnter your Google email to authenticate:", "user.google@gmail.com");
-        if (email && email.trim() !== '') {
-            var name = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ').toUpperCase();
-            fetch('api/social-login.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    provider: 'google',
-                    email: email.trim(),
-                    name: name,
-                    social_id: 'google_' + Date.now()
-                })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(res) {
-                if (res.success) {
-                    showToast('Google Connected', res.message, 'success');
-                    setTimeout(function() {
-                        window.location.href = res.data.redirect;
-                    }, 1000);
-                } else {
-                    showToast('Authentication Error', res.message, 'error');
-                }
-            })
-            .catch(function() {
-                showToast('Error', 'Google authentication request failed.', 'error');
-            });
+    });
+    
+    // Password toggle
+    window.togglePassword = function() {
+        const password = document.getElementById('password');
+        const eyeIcon = document.getElementById('eyeIcon');
+        if (password.type === 'password') {
+            password.type = 'text';
+            eyeIcon.classList.remove('fa-eye');
+            eyeIcon.classList.add('fa-eye-slash');
+        } else {
+            password.type = 'password';
+            eyeIcon.classList.remove('fa-eye-slash');
+            eyeIcon.classList.add('fa-eye');
         }
-    }, 800);
+    };
+    
+    // Password strength validation
+    passwordInput.addEventListener('input', function() {
+        validatePasswordStrength(this.value);
+    });
+    
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Validate full name
+        const fullName = document.querySelector('input[name="full_name"]');
+        if (!fullName.value.trim() || fullName.value.trim().length < 2) {
+            fullName.classList.add('is-invalid');
+            document.getElementById('fullNameError').textContent = 'Full name must be at least 2 characters.';
+            isValid = false;
+        } else {
+            fullName.classList.remove('is-invalid');
+        }
+        
+        // Validate email
+        const email = document.querySelector('input[name="email"]');
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email.value)) {
+            email.classList.add('is-invalid');
+            document.getElementById('emailError').textContent = 'Please enter a valid email address.';
+            isValid = false;
+        } else {
+            email.classList.remove('is-invalid');
+        }
+        
+        // Validate password
+        const password = passwordInput.value;
+        if (!validatePasswordStrength(password)) {
+            passwordInput.classList.add('is-invalid');
+            document.getElementById('passwordError').textContent = 'Password does not meet requirements.';
+            isValid = false;
+        } else {
+            passwordInput.classList.remove('is-invalid');
+        }
+        
+        // Validate confirm password
+        const confirmPassword = document.querySelector('input[name="confirm_password"]');
+        if (confirmPassword.value !== password) {
+            confirmPassword.classList.add('is-invalid');
+            document.getElementById('confirmPasswordError').textContent = 'Passwords do not match.';
+            isValid = false;
+        } else {
+            confirmPassword.classList.remove('is-invalid');
+        }
+        
+        // Validate role
+        const role = document.querySelector('select[name="role"]');
+        if (!role.value) {
+            role.classList.add('is-invalid');
+            document.getElementById('roleError').textContent = 'Please select a role.';
+            isValid = false;
+        } else {
+            role.classList.remove('is-invalid');
+        }
+        
+        // Validate academic field
+        const academicField = document.querySelector('select[name="academic_field"]');
+        if (!academicField.value) {
+            academicField.classList.add('is-invalid');
+            document.getElementById('academicFieldError').textContent = 'Please select an academic field.';
+            isValid = false;
+        } else {
+            academicField.classList.remove('is-invalid');
+        }
+        
+        // Validate skills
+        const selectedSkills = document.querySelectorAll('.skill-checkbox:checked');
+        if (selectedSkills.length === 0) {
+            document.getElementById('skillsGroup').classList.add('is-invalid');
+            isValid = false;
+        } else {
+            document.getElementById('skillsGroup').classList.remove('is-invalid');
+        }
+        
+        // Validate terms
+        const terms = document.getElementById('terms');
+        if (!terms.checked) {
+            terms.classList.add('is-invalid');
+            document.getElementById('termsError').textContent = 'You must agree to the terms.';
+            isValid = false;
+        } else {
+            terms.classList.remove('is-invalid');
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+});
+
+function validatePasswordStrength(password) {
+    const requirements = {
+        length: password.length >= 8,
+        upper: /[A-Z]/.test(password),
+        lower: /[a-z]/.test(password),
+        number: /[0-9]/.test(password),
+        special: /[^A-Za-z0-9]/.test(password)
+    };
+    
+    document.getElementById('req-length').innerHTML = 
+        `<i class="fas fa-${requirements.length ? 'check-circle text-success' : 'circle'}"></i> At least 8 characters`;
+    document.getElementById('req-upper').innerHTML = 
+        `<i class="fas fa-${requirements.upper ? 'check-circle text-success' : 'circle'}"></i> One uppercase letter`;
+    document.getElementById('req-lower').innerHTML = 
+        `<i class="fas fa-${requirements.lower ? 'check-circle text-success' : 'circle'}"></i> One lowercase letter`;
+    document.getElementById('req-number').innerHTML = 
+        `<i class="fas fa-${requirements.number ? 'check-circle text-success' : 'circle'}"></i> One number`;
+    document.getElementById('req-special').innerHTML = 
+        `<i class="fas fa-${requirements.special ? 'check-circle text-success' : 'circle'}"></i> One special character`;
+    
+    const score = Object.values(requirements).filter(Boolean).length;
+    const strengthBar = document.getElementById('passwordStrength');
+    const strengthText = document.getElementById('passwordStrengthText');
+    
+    if (score === 0) {
+        strengthBar.style.width = '0%';
+        strengthBar.className = 'progress-bar bg-danger';
+        strengthText.textContent = 'Very Weak';
+    } else if (score <= 2) {
+        strengthBar.style.width = '25%';
+        strengthBar.className = 'progress-bar bg-danger';
+        strengthText.textContent = 'Weak';
+    } else if (score <= 3) {
+        strengthBar.style.width = '50%';
+        strengthBar.className = 'progress-bar bg-warning';
+        strengthText.textContent = 'Fair';
+    } else if (score <= 4) {
+        strengthBar.style.width = '75%';
+        strengthBar.className = 'progress-bar bg-info';
+        strengthText.textContent = 'Good';
+    } else {
+        strengthBar.style.width = '100%';
+        strengthBar.className = 'progress-bar bg-success';
+        strengthText.textContent = 'Strong';
+    }
+    
+    return score === 5;
 }
 
-function handleFacebookLogin() {
-    showToast('Connecting to Facebook...', 'Opening Facebook Auth connection window...', 'info');
+// Select/Deselect functions
+function selectAllSkills() {
+    document.querySelectorAll('.skill-checkbox').forEach(cb => cb.checked = true);
+    document.querySelectorAll('.skill-item').forEach(item => item.style.display = 'block');
+    updateSkillCount();
+}
 
-    const width = 500, height = 650;
-    const left = (window.innerWidth - width) / 2;
-    const top = (window.innerHeight - height) / 2;
-    const fbAuthUrl = 'https://www.facebook.com/v18.0/dialog/oauth?client_id=123456789012345&redirect_uri=' + encodeURIComponent(window.location.origin + '/api/facebook-callback.php') + '&scope=email,public_profile';
+function deselectAllSkills() {
+    document.querySelectorAll('.skill-checkbox').forEach(cb => cb.checked = false);
+    updateSkillCount();
+}
 
-    const popup = window.open(fbAuthUrl, 'FacebookAuthWindow', `width=${width},height=${height},top=${top},left=${left},status=no,toolbar=no,menubar=no`);
+function selectAllLearnCourses() {
+    document.querySelectorAll('.learn-course-checkbox').forEach(cb => cb.checked = true);
+}
 
-    setTimeout(function() {
-        var email = prompt("Facebook Login Connection:\n\nEnter your Facebook email to authenticate:", "user.facebook@gmail.com");
-        if (email && email.trim() !== '') {
-            var name = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ').toUpperCase();
-            fetch('api/social-login.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    provider: 'facebook',
-                    email: email.trim(),
-                    name: name,
-                    social_id: 'fb_' + Date.now()
-                })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(res) {
-                if (res.success) {
-                    showToast('Facebook Connected', res.message, 'success');
-                    setTimeout(function() {
-                        window.location.href = res.data.redirect;
-                    }, 1000);
-                } else {
-                    showToast('Authentication Error', res.message, 'error');
-                }
-            })
-            .catch(function() {
-                showToast('Error', 'Facebook authentication request failed.', 'error');
-            });
-        }
-    }, 800);
+function deselectAllLearnCourses() {
+    document.querySelectorAll('.learn-course-checkbox').forEach(cb => cb.checked = false);
+}
+
+function selectAllTeachCourses() {
+    document.querySelectorAll('.teach-course-checkbox').forEach(cb => cb.checked = true);
+}
+
+function deselectAllTeachCourses() {
+    document.querySelectorAll('.teach-course-checkbox').forEach(cb => cb.checked = false);
+}
+
+function updateSkillCount() {
+    const selected = document.querySelectorAll('.skill-checkbox:checked').length;
+    const countEl = document.getElementById('selectedSkillCount');
+    if (countEl) {
+        countEl.textContent = selected + ' selected';
+    }
 }
 </script>
-</body>
-</html>
+
+<style>
+.form-check-label small {
+    font-size: 0.7rem;
+}
+
+.invalid-feedback {
+    display: block;
+}
+
+.form-control-modern.is-invalid {
+    border-color: #dc3545;
+}
+
+.form-check-input.is-invalid {
+    border-color: #dc3545;
+}
+
+#skillsGroup {
+    background: rgba(108, 99, 255, 0.05);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(108, 99, 255, 0.1);
+}
+
+#skillsGroup.is-invalid {
+    border-color: #dc3545;
+    background: rgba(220, 53, 69, 0.05);
+}
+
+#learnCourseGroup, #teachCourseGroup {
+    background: rgba(81, 207, 102, 0.05);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(81, 207, 102, 0.1);
+}
+
+.skill-item {
+    transition: all 0.3s ease;
+}
+
+.skill-item:hover {
+    transform: scale(1.02);
+}
+
+.skill-search {
+    position: relative;
+}
+
+.skill-search input {
+    padding-left: 36px;
+}
+
+.skill-search::before {
+    content: '\f002';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #adb5bd;
+}
+
+.course-check {
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.course-check:hover {
+    background: rgba(108, 99, 255, 0.05);
+    transform: translateX(4px);
+}
+
+#academicFieldGroup {
+    transition: all 0.3s ease;
+}
+
+#academicFieldGroup.is-invalid select {
+    border-color: #dc3545;
+}
+</style>
+
+<?php include 'includes/footer.php'; ?>

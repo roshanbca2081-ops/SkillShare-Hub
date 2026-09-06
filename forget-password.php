@@ -1,69 +1,94 @@
 <?php
-session_start();
+$page_title = 'Forgot Password';
+require_once 'config/database.php';
+require_once 'config/session.php';
+require_once 'config/functions.php';
+require_once 'config/validation.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $validator = new Validator($_POST);
+    $validator
+        ->required('email', 'Email is required.')
+        ->email('email', 'Please enter a valid email address.')
+        ->exists('email', 'users', 'email', 'Email not found.');
+    
+    if ($validator->passes()) {
+        $email = sanitize($_POST['email']);
+        $token = generateToken();
+        
+        $stmt = $pdo->prepare("UPDATE users SET reset_token = ?, reset_token_expiry = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE email = ?");
+        $stmt->execute([$token, $email]);
+        
+        // Send email with reset link
+        $reset_link = "http://$_SERVER[HTTP_HOST]/reset-password.php?token=$token";
+        
+        // In production, send actual email
+        $_SESSION['alert'] = [
+            'type' => 'success',
+            'icon' => 'check-circle',
+            'message' => 'Password reset link has been sent to your email.'
+        ];
+        redirect('login.php');
+    } else {
+        $_SESSION['alert'] = [
+            'type' => 'danger',
+            'icon' => 'exclamation-circle',
+            'message' => $validator->errorsString()
+        ];
+    }
+}
 ?>
-<!DOCTYPE html>
-<html lang="en">
+<?php include 'includes/header.php'; ?>
+<?php include 'includes/navbar.php'; ?>
+<?php include 'includes/alerts.php'; ?>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forgot Password | SkillShare Hub</title>
-
-    <link rel="stylesheet" href="frontend/assets/css/varables.css">
-    <link rel="stylesheet" href="frontend/assets/css/main.css">
-    <link rel="stylesheet" href="frontend/assets/css/login.css">
-    <link rel="stylesheet" href="frontend/assets/css/responsive.css">
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-
-<body class="auth-body">
-
-    <?php include 'frontend/components/loader.php'; ?>
-
-    <div class="auth-wrap">
-        <div class="auth-card center-card">
-            <div class="auth-right" style="max-width:520px;margin:0 auto;width:100%;">
-                <div class="auth-form-wrap">
-                    <a href="index.php" class="auth-brand" style="justify-content:center;margin-bottom:var(--spacing-5);display:flex;align-items:center;gap:10px;text-decoration:none;">
-                        <div class="brand-logo"><img src="frontend/assets/images/logo/skillshare hub.png" alt="SkillShare Hub Logo" style="height:40px;width:auto;object-fit:contain;"></div>
-                        <span>SkillShare <span>Hub</span></span>
-                    </a>
-                    <div style="text-align:center;margin-bottom:var(--spacing-5);">
-                        <div class="forgot-icon" style="width:70px;height:70px;margin:0 auto var(--spacing-4);border-radius:50%;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:var(--primary);">
-                            <i class="fa-solid fa-key"></i>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h3 class="text-center fw-bold mb-4">Forgot Password</h3>
+                    <p class="text-muted text-center mb-4">Enter your email address and we'll send you a password reset link.</p>
+                    
+                    <form method="POST" id="forgotForm" novalidate>
+                        <div class="mb-3">
+                            <label class="form-label">Email Address <span class="text-danger">*</span></label>
+                            <input type="email" name="email" class="form-control" placeholder="Enter your email" 
+                                   value="<?php echo $_POST['email'] ?? ''; ?>" required>
+                            <div class="invalid-feedback" id="forgotEmailError"></div>
                         </div>
-                        <h3>Forgot Password?</h3>
-                        <p class="auth-sub">No worries! Enter your email and we'll send you a reset link.</p>
-                    </div>
-
-                    <form action="#" method="post" data-validate>
-                        <div class="form-group">
-                            <label class="form-label" for="fpEmail">Email Address</label>
-                            <div class="input-group">
-                                <i class="fa-solid fa-envelope input-icon"></i>
-                                <input type="email" class="form-control" id="fpEmail" name="email" placeholder="you@example.com" data-validate="required|email" required>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-lg btn-block">
-                            <i class="fa-solid fa-paper-plane"></i> Send Reset Link
-                        </button>
+                        
+                        <button type="submit" class="btn btn-primary w-100">Send Reset Link</button>
                     </form>
-
-                    <p class="auth-switch" style="text-align:center;margin-top:var(--spacing-5);">
-                        <a href="login.php"><i class="fa-solid fa-arrow-left"></i> Back to Login</a>
-                    </p>
+                    <hr>
+                    <p class="text-center mb-0"><a href="login.php" class="text-decoration-none">Back to Login</a></p>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="frontend/assets/js/main.js"></script>
-    <script src="frontend/assets/js/validation.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('forgotForm');
+    
+    form.addEventListener('submit', function(e) {
+        const email = document.querySelector('input[name="email"]');
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (!email.value.trim()) {
+            email.classList.add('is-invalid');
+            document.getElementById('forgotEmailError').textContent = 'Email is required.';
+            e.preventDefault();
+        } else if (!emailRegex.test(email.value)) {
+            email.classList.add('is-invalid');
+            document.getElementById('forgotEmailError').textContent = 'Please enter a valid email address.';
+            e.preventDefault();
+        } else {
+            email.classList.remove('is-invalid');
+        }
+    });
+});
+</script>
 
-</body>
-
-</html>
+<?php include 'includes/footer.php'; ?>
