@@ -12,12 +12,19 @@ $course_id = isset($_GET['course_id']) ? (int)$_GET['course_id'] : 0;
 ?>
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/navbar.php'; ?>
+<?php include '../../includes/alerts.php'; ?>
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-6 text-center">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-5">
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3 col-lg-2 d-md-block sidebar p-0">
+            <?php include '../../includes/sidebar.php'; ?>
+        </div>
+        
+        <div class="col-md-9 col-lg-10 ms-sm-auto px-md-4 py-4">
+            <div class="row justify-content-center">
+                <div class="col-lg-6 text-center">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-5">
                     <div class="mb-4">
                         <i class="fas fa-check-circle fa-5x text-success"></i>
                     </div>
@@ -49,6 +56,8 @@ $course_id = isset($_GET['course_id']) ? (int)$_GET['course_id'] : 0;
             </div>
         </div>
     </div>
+</div>
+</div>
 </div>
 
 <?php include '../../includes/footer.php'; ?>

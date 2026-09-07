@@ -59,10 +59,13 @@ $ratings = $stmt->fetchAll();
                     </div>
                     
                     <?php if (isLoggedIn() && isFresher() && getUserId() != $mentor_id): ?>
-                        <a href="../fresher/messages/chat.php?user_id=<?php echo $mentor_id; ?>" class="btn btn-primary w-100">
-                            <i class="fas fa-envelope"></i> Send Message
-                        </a>
-                    <?php endif; ?>
+                         <a href="../fresher/message/chat.php?user_id=<?php echo $mentor_id; ?>" class="btn btn-primary w-100 mb-2">
+                             <i class="fas fa-envelope"></i> Send Message
+                         </a>
+                         <a href="../fresher/booking/create.php?mentor=<?php echo $mentor_id; ?>" class="btn btn-success w-100">
+                             <i class="fas fa-calendar-check"></i> Book Session
+                         </a>
+                     <?php endif; ?>
                 </div>
             </div>
         </div>

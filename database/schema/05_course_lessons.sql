@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS `course_lessons` (
     `content` TEXT DEFAULT NULL,
     `video_url` VARCHAR(500) DEFAULT NULL,
     `resource_url` VARCHAR(500) DEFAULT NULL,
-    `duration` INT UNSIGNED DEFAULT NULL COMMENT 'Duration in minutes',
+    `video_duration` INT UNSIGNED DEFAULT NULL COMMENT 'Duration in minutes',
     `is_free` TINYINT(1) NOT NULL DEFAULT 0,
     `is_published` TINYINT(1) NOT NULL DEFAULT 0,
     `order_number` INT UNSIGNED NOT NULL DEFAULT 0,

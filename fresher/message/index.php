@@ -283,7 +283,7 @@ if (isset($_GET['delete']) && isset($_GET['user_id'])) {
                                         <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                                         <h6>No conversations</h6>
                                         <p class="text-muted small">Start messaging with mentors or other students.</p>
-                                         <a href="../mentor.php" class="btn btn-sm btn-primary">
+                                         <a href="<?php echo appUrl('public/mentor.php'); ?>" class="btn btn-sm btn-primary">
                                             <i class="fas fa-user-plus"></i> Find Mentors
                                         </a>
                                     </div>
@@ -453,7 +453,7 @@ if (isset($_GET['delete']) && isset($_GET['user_id'])) {
                                 <h5>Select a conversation</h5>
                                 <p class="text-muted">Choose a conversation from the list to start messaging.</p>
                                 <?php if (empty($conversations)): ?>
-                                     <a href="../mentor.php" class="btn btn-primary mt-3">
+                                      <a href="<?php echo appUrl('public/mentor.php'); ?>" class="btn btn-primary mt-3">
                                         <i class="fas fa-user-plus"></i> Find People to Chat With
                                     </a>
                                 <?php endif; ?>

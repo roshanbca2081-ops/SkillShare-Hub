@@ -43,68 +43,110 @@ $mentors = $pdo->query("SELECT id, full_name FROM users WHERE role = 'mentor' AN
 // Handle booking submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_session'])) {
     $session_id = (int)$_POST['session_id'];
+    $name = sanitize($_POST['name'] ?? '');
+    $email = sanitize($_POST['email'] ?? '');
+    $address = sanitize($_POST['address'] ?? '');
+    $contact = sanitize($_POST['contact'] ?? '');
+    $interested_course = sanitize($_POST['interested_course'] ?? '');
+    $interested_skill = sanitize($_POST['interested_skill'] ?? '');
+    $why_choose_skill = sanitize($_POST['why_choose_skill'] ?? '');
+    $preferred_time = sanitize($_POST['preferred_time'] ?? '');
+    $payment_method = sanitize($_POST['payment_method'] ?? '');
+    $payment_before_session = isset($_POST['payment_before_session']) ? 1 : 0;
     $notes = sanitize($_POST['notes'] ?? '');
     
-    // Check if already booked
-    $stmt = $pdo->prepare("SELECT id FROM bookings WHERE fresher_id = ? AND session_id = ?");
-    $stmt->execute([$user_id, $session_id]);
-    if ($stmt->fetch()) {
+    $errors = [];
+    
+    if (empty($name)) $errors[] = 'Name is required.';
+    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Valid email is required.';
+    if (empty($contact)) $errors[] = 'Contact number is required.';
+    if (empty($interested_course)) $errors[] = 'Please select a course.';
+    if (empty($interested_skill)) $errors[] = 'Please select a skill.';
+    if (empty($why_choose_skill)) $errors[] = 'Please explain why you chose this skill.';
+    if (empty($preferred_time)) $errors[] = 'Please select a preferred time.';
+    if (empty($payment_method)) $errors[] = 'Please select a payment method.';
+    
+    if (empty($errors)) {
+        $user_id = getUserId();
+        $payment_status = $payment_before_session ? 'pending' : 'after_session';
+        $booking_details = [
+            'name' => $name,
+            'email' => $email,
+            'address' => $address,
+            'contact' => $contact,
+            'interested_course' => $interested_course,
+            'interested_skill' => $interested_skill,
+            'why_choose_skill' => $why_choose_skill,
+            'preferred_time' => $preferred_time,
+            'payment_method' => $payment_method,
+            'payment_status' => $payment_status
+        ];
+        $enhanced_notes = $notes . "\n\n[Booking Details]\n" . print_r($booking_details, true);
+        
+        $check_stmt = $pdo->prepare("SELECT id, status FROM bookings WHERE fresher_id = ? AND session_id = ?");
+        $check_stmt->execute([$user_id, $session_id]);
+        $existing = $check_stmt->fetch();
+        
+        if ($existing) {
+            $_SESSION['alert'] = [
+                'type' => 'warning',
+                'icon' => 'exclamation-circle',
+                'message' => 'You have already booked this session. Your booking status: ' . ucfirst($existing['status']) . '.'
+            ];
+            redirect('create.php?session=' . $session_id);
+        }
+        
+        try {
+            $stmt = $pdo->prepare("INSERT INTO bookings (fresher_id, session_id, name, email, address, contact, interested_course, interested_skill, why_choose_skill, preferred_time, payment_method, payment_status, notes, status) 
+                                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')");
+            $stmt->execute([$user_id, $session_id, $name, $email, $address, $contact, $interested_course, $interested_skill, $why_choose_skill, $preferred_time, $payment_method, $payment_status, $notes]);
+        } catch (PDOException $e) {
+            $stmt = $pdo->prepare("INSERT INTO bookings (fresher_id, session_id, notes, status) 
+                                   VALUES (?, ?, ?, 'pending')");
+            $stmt->execute([$user_id, $session_id, $enhanced_notes]);
+        }
+        $booking_id = $pdo->lastInsertId();
+        
+        // Get session and mentor details for notification
+        $stmt = $pdo->prepare("SELECT s.title, s.mentor_id, u.full_name as mentor_name 
+                               FROM sessions s 
+                               JOIN users u ON s.mentor_id = u.id 
+                               WHERE s.id = ?");
+        $stmt->execute([$session_id]);
+        $session_info = $stmt->fetch();
+        
+        // Notify mentor
+        if ($session_info) {
+            $stmt = $pdo->prepare("INSERT INTO notifications (user_id, type, title, message, link) 
+                                   VALUES (?, 'new_booking', 'New Booking Request', 
+                                           CONCAT(?, ' has requested to book your session: ', ?),
+                                           'mentor/booking/view.php?id=' || ?)");
+            $stmt->execute([
+                $session_info['mentor_id'],
+                getUserName(),
+                $session_info['title'],
+                $booking_id
+            ]);
+        }
+        
+        $_SESSION['alert'] = [
+            'type' => 'success',
+            'icon' => 'check-circle',
+            'message' => 'Booking request sent successfully! Waiting for mentor approval.'
+        ];
+        
+        if ($payment_before_session && !in_array($payment_method, ['after_session'])) {
+            redirect('payment/checkout.php?booking=' . $booking_id);
+        } else {
+            redirect('index.php');
+        }
+    } else {
         $_SESSION['alert'] = [
             'type' => 'danger',
             'icon' => 'exclamation-circle',
-            'message' => 'You have already booked this session.'
+            'message' => implode('<br>', $errors)
         ];
-        redirect('create.php');
     }
-    
-    // Check session capacity
-    $stmt = $pdo->prepare("SELECT max_participants, (SELECT COUNT(*) FROM bookings WHERE session_id = ? AND status = 'approved') as booked_count 
-                           FROM sessions WHERE id = ?");
-    $stmt->execute([$session_id, $session_id]);
-    $session_data = $stmt->fetch();
-    
-    if ($session_data && $session_data['booked_count'] >= $session_data['max_participants']) {
-        $_SESSION['alert'] = [
-            'type' => 'danger',
-            'icon' => 'exclamation-circle',
-            'message' => 'This session is fully booked.'
-        ];
-        redirect('create.php');
-    }
-    
-    // Create booking
-    $stmt = $pdo->prepare("INSERT INTO bookings (fresher_id, session_id, notes, status) VALUES (?, ?, ?, 'pending')");
-    $stmt->execute([$user_id, $session_id, $notes]);
-    $booking_id = $pdo->lastInsertId();
-    
-    // Get session and mentor details for notification
-    $stmt = $pdo->prepare("SELECT s.title, s.mentor_id, u.full_name as mentor_name 
-                           FROM sessions s 
-                           JOIN users u ON s.mentor_id = u.id 
-                           WHERE s.id = ?");
-    $stmt->execute([$session_id]);
-    $session_info = $stmt->fetch();
-    
-    // Notify mentor
-    if ($session_info) {
-        $stmt = $pdo->prepare("INSERT INTO notifications (user_id, type, title, message, link) 
-                               VALUES (?, 'new_booking', 'New Booking Request', 
-                                       CONCAT(?, ' has requested to book your session: ', ?),
-                                       'mentor/bookings/view.php?id=' || ?)");
-        $stmt->execute([
-            $session_info['mentor_id'],
-            getUserName(),
-            $session_info['title'],
-            $booking_id
-        ]);
-    }
-    
-    $_SESSION['alert'] = [
-        'type' => 'success',
-        'icon' => 'check-circle',
-        'message' => 'Booking request sent successfully! Waiting for mentor approval.'
-    ];
-    redirect('index.php');
 }
 ?>
 <?php include '../../includes/header.php'; ?>
@@ -183,8 +225,129 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_session'])) {
                                 <form method="POST">
                                     <input type="hidden" name="session_id" value="<?php echo $session['id']; ?>">
                                     
+                                    <!-- Personal Information -->
+                                    <h6 class="mb-3">Personal Information</h6>
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                                                <input type="text" name="name" class="form-control" value="<?php echo htmlspecialchars($_SESSION['user']['full_name'] ?? ''); ?>" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Email <span class="text-danger">*</span></label>
+                                                <input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars($_SESSION['user']['email'] ?? ''); ?>" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Contact Number <span class="text-danger">*</span></label>
+                                                <input type="tel" name="contact" class="form-control" placeholder="+977-XXXXXXXXX" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Address</label>
+                                                <input type="text" name="address" class="form-control" placeholder="Your address">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Course & Skill Information -->
+                                    <h6 class="mb-3">Course & Skill Information</h6>
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Interested Course <span class="text-danger">*</span></label>
+                                                <select name="interested_course" class="form-select" required>
+                                                    <option value="">Select a course</option>
+                                                    <?php if ($session['course_title']): ?>
+                                                        <option value="<?php echo htmlspecialchars($session['course_title']); ?>" selected>
+                                                            <?php echo htmlspecialchars($session['course_title']); ?>
+                                                        </option>
+                                                    <?php endif; ?>
+                                                    <?php
+                                                    $stmt = $pdo->query("SELECT title FROM courses WHERE status = 'active' ORDER BY title");
+                                                    while ($course = $stmt->fetch()) {
+                                                        if (!$session['course_title'] || $course['title'] != $session['course_title']) {
+                                                            echo '<option value="' . htmlspecialchars($course['title']) . '">' . htmlspecialchars($course['title']) . '</option>';
+                                                        }
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Interested Skill <span class="text-danger">*</span></label>
+                                                <select name="interested_skill" class="form-select" required>
+                                                    <option value="">Select a skill</option>
+                                                    <option value="Web Development">Web Development</option>
+                                                    <option value="Mobile Development">Mobile Development</option>
+                                                    <option value="Data Science">Data Science</option>
+                                                    <option value="UI/UX Design">UI/UX Design</option>
+                                                    <option value="Digital Marketing">Digital Marketing</option>
+                                                    <option value="Cloud Computing">Cloud Computing</option>
+                                                    <option value="Cybersecurity">Cybersecurity</option>
+                                                    <option value="AI/ML">AI/ML</option>
+                                                    <option value="Blockchain">Blockchain</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="mb-3">
+                                                <label class="form-label">Why do you want to learn this skill? <span class="text-danger">*</span></label>
+                                                <textarea name="why_choose_skill" class="form-control" rows="3" required placeholder="Tell us about your goals and why you want to learn this skill..."></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Schedule & Payment -->
+                                    <h6 class="mb-3">Schedule & Payment</h6>
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Preferred Time <span class="text-danger">*</span></label>
+                                                <input type="text" name="preferred_time" class="form-control" placeholder="e.g., Weekdays 6-8 PM, Weekends" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Payment Method <span class="text-danger">*</span></label>
+                                                <select name="payment_method" class="form-select" required>
+                                                    <option value="">Select payment method</option>
+                                                    <option value="esewa">eSewa</option>
+                                                    <option value="khalti">Khalti</option>
+                                                    <option value="fonepay">Fonepay</option>
+                                                    <option value="bank">Bank Transfer</option>
+                                                    <option value="card">Credit/Debit Card</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="mb-3">
+                                                <label class="form-label">Payment Timing</label>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="payment_before_session" value="1" id="payBefore" checked>
+                                                    <label class="form-check-label" for="payBefore">
+                                                        Pay before session starts
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="payment_before_session" value="0" id="payAfter">
+                                                    <label class="form-check-label" for="payAfter">
+                                                        Pay after session completes
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Notes -->
                                     <div class="mb-3">
-                                        <label class="form-label">Notes (Optional)</label>
+                                        <label class="form-label">Additional Notes (Optional)</label>
                                         <textarea name="notes" class="form-control" rows="3" 
                                                   placeholder="Any specific topics you'd like to cover or questions for the mentor?"></textarea>
                                     </div>

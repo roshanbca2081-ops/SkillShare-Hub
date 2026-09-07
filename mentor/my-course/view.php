@@ -173,7 +173,7 @@ $enrollments = $stmt->fetchAll();
                                             <?php endif; ?>
                                         </span>
                                         <span class="text-muted">
-                                            <i class="fas fa-clock"></i> <?php echo $lesson['duration']; ?> min
+                                            <i class="fas fa-clock"></i> <?php echo $lesson['video_duration']; ?> min
                                             <?php if ($lesson['video_url']): ?>
                                                 <i class="fas fa-video ms-2"></i>
                                             <?php endif; ?>

@@ -146,7 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['enroll'])) {
                                         <span class="badge bg-success ms-2">Free</span>
                                     <?php endif; ?>
                                 </div>
-                                <small class="text-muted"><?php echo $lesson['duration'] ?? 'N/A'; ?> min</small>
+                                <small class="text-muted"><?php echo $lesson['video_duration'] ?? 'N/A'; ?> min</small>
                             </li>
                             <?php endforeach; ?>
                         </ul>

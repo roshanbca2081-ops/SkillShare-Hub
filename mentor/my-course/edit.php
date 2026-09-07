@@ -98,7 +98,7 @@ if (isset($_POST['add_lesson'])) {
     $duration = (int)$_POST['lesson_duration'];
     $is_free = isset($_POST['is_free']) ? 1 : 0;
     
-    $stmt = $pdo->prepare("INSERT INTO course_lessons (module_id, title, video_url, content, duration, order_number, is_free) 
+    $stmt = $pdo->prepare("INSERT INTO course_lessons (module_id, title, video_url, content, video_duration, order_number, is_free) 
                            VALUES (?, ?, ?, ?, ?, ?, ?)");
     $stmt->execute([$module_id, $lesson_title, $video_url, $content, $duration, $order_number, $is_free]);
     
@@ -319,7 +319,7 @@ if (isset($_GET['delete_lesson']) && isset($_GET['lesson_id'])) {
                                                 <?php if ($lesson['is_free']): ?>
                                                     <span class="badge bg-success">Free</span>
                                                 <?php endif; ?>
-                                                <small class="text-muted ms-2"><?php echo $lesson['duration']; ?> min</small>
+                                                <small class="text-muted ms-2"><?php echo $lesson['video_duration']; ?> min</small>
                                             </div>
                                             <div>
                                                 <a href="?delete_lesson=1&lesson_id=<?php echo $lesson['id']; ?>&id=<?php echo $course_id; ?>" 
