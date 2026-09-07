@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
             $stmt = $pdo->prepare("INSERT INTO notifications (user_id, type, title, message, link) 
                                    VALUES (?, 'message', 'New Message', 
                                            CONCAT(?, ' sent you a message'), 
-                                           'fresher/messages/index.php?user_id=' || ?)");
+                                            'fresher/message/index.php?user_id=' || ?)");
             $stmt->execute([$receiver_id, getUserName(), $user_id]);
             
             // Redirect to refresh chat
@@ -155,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_file'])) {
                 $stmt = $pdo->prepare("INSERT INTO notifications (user_id, type, title, message, link) 
                                        VALUES (?, 'message', 'New File', 
                                                CONCAT(?, ' sent you a file'), 
-                                               'fresher/messages/index.php?user_id=' || ?)");
+                                               'fresher/message/index.php?user_id=' || ?)");
                 $stmt->execute([$receiver_id, getUserName(), $user_id]);
                 
                 $_SESSION['alert'] = [
@@ -283,7 +283,7 @@ if (isset($_GET['delete']) && isset($_GET['user_id'])) {
                                         <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                                         <h6>No conversations</h6>
                                         <p class="text-muted small">Start messaging with mentors or other students.</p>
-                                        <a href="../mentors/index.php" class="btn btn-sm btn-primary">
+                                         <a href="../mentor.php" class="btn btn-sm btn-primary">
                                             <i class="fas fa-user-plus"></i> Find Mentors
                                         </a>
                                     </div>
@@ -327,7 +327,7 @@ if (isset($_GET['delete']) && isset($_GET['user_id'])) {
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end">
                                             <li>
-                                                <a class="dropdown-item" href="../mentors/details.php?id=<?php echo $chat_user_id; ?>">
+                                                  <a class="dropdown-item" href="../mentor/details.php?id=<?php echo $chat_user_id; ?>">
                                                     <i class="fas fa-user"></i> View Profile
                                                 </a>
                                             </li>
@@ -453,7 +453,7 @@ if (isset($_GET['delete']) && isset($_GET['user_id'])) {
                                 <h5>Select a conversation</h5>
                                 <p class="text-muted">Choose a conversation from the list to start messaging.</p>
                                 <?php if (empty($conversations)): ?>
-                                    <a href="../mentors/index.php" class="btn btn-primary mt-3">
+                                     <a href="../mentor.php" class="btn btn-primary mt-3">
                                         <i class="fas fa-user-plus"></i> Find People to Chat With
                                     </a>
                                 <?php endif; ?>

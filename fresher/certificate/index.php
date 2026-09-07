@@ -53,7 +53,7 @@ $certificates = $stmt->fetchAll();
                                     <a href="view.php?id=<?php echo $cert['id']; ?>" class="btn btn-primary">
                                         <i class="fas fa-eye"></i> View Certificate
                                     </a>
-                                    <a href="download.php?id=<?php echo $cert['id']; ?>" class="btn btn-outline-primary">
+                                    <a href="#" class="btn btn-outline-primary">
                                         <i class="fas fa-download"></i> Download PDF
                                     </a>
                                 </div>

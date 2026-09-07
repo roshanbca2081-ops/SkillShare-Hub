@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
             'message' => implode('<br>', $errors)
         ];
     }
-    redirect('settings.php');
+    redirect('setting.php');
 }
 
 // Handle notification preferences
@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_preferences'])
         'icon' => 'check-circle',
         'message' => 'Preferences updated successfully!'
     ];
-    redirect('settings.php');
+    redirect('setting.php');
 }
 
 // Get current preferences

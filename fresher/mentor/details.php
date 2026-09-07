@@ -78,7 +78,7 @@ $reviews = $stmt->fetchAll();
                             </div>
                             
                             <?php if (getUserId() != $mentor_id): ?>
-                                <a href="../messages/index.php?user_id=<?php echo $mentor_id; ?>" class="btn btn-primary w-100 mb-2">
+                                <a href="../message/index.php?user_id=<?php echo $mentor_id; ?>" class="btn btn-primary w-100 mb-2">
                                     <i class="fas fa-envelope"></i> Send Message
                                 </a>
                                 <a href="../sessions/booking.php?mentor=<?php echo $mentor_id; ?>" class="btn btn-outline-primary w-100">

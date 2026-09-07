@@ -84,7 +84,7 @@ if (!$certificate) {
                     
                     <div class="p-4 text-center">
                         <div class="d-flex justify-content-center gap-3">
-                            <a href="download.php?id=<?php echo $certificate['id']; ?>" class="btn btn-primary">
+                             <a href="#" class="btn btn-primary">
                                 <i class="fas fa-download"></i> Download PDF
                             </a>
                             <a href="index.php" class="btn btn-outline-secondary">
@@ -97,7 +97,7 @@ if (!$certificate) {
                         <div class="mt-3">
                             <small class="text-muted">
                                 Verify this certificate at: 
-                                <a href="verify.php?code=<?php echo $certificate['certificate_code']; ?>" target="_blank">
+                                 <a href="#" target="_blank">
                                     <?php echo $_SERVER['HTTP_HOST']; ?>/verify.php?code=<?php echo $certificate['certificate_code']; ?>
                                 </a>
                             </small>

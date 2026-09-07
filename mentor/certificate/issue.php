@@ -39,10 +39,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['issue_certificate']))
     $stmt->execute([$student_id, $course_id, $code]);
     
     // Notify student
-    $stmt = $pdo->prepare("INSERT INTO notifications (user_id, type, title, message, link) 
-                           VALUES (?, 'certificate', 'Certificate Issued', 
-                                   CONCAT('You have been issued a certificate for completing the course.'),
-                                   'fresher/certificates/view.php?id=' || ?)");
+     $stmt = $pdo->prepare("INSERT INTO notifications (user_id, type, title, message, link) 
+                            VALUES (?, 'certificate', 'Certificate Issued', 
+                                    CONCAT('You have been issued a certificate for completing the course.'),
+                                    'fresher/certificate/view.php?id=' || ?)");
     $stmt->execute([$student_id, $course_id]);
     
     $_SESSION['alert'] = [

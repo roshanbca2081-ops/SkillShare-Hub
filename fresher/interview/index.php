@@ -112,7 +112,7 @@ if (isset($_GET['save']) && isset($_GET['id'])) {
                     <a href="practice.php" class="btn btn-primary me-2">
                         <i class="fas fa-play"></i> Practice Mode
                     </a>
-                    <a href="questions.php" class="btn btn-outline-primary">
+                     <a href="question.php" class="btn btn-outline-primary">
                         <i class="fas fa-list"></i> All Questions
                     </a>
                 </div>

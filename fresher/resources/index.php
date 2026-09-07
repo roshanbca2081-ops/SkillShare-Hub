@@ -307,7 +307,7 @@ if (isset($_GET['download']) && isset($_GET['id'])) {
                             <br><a href="index.php" class="btn btn-sm btn-primary mt-2">Clear Filters</a>
                         <?php else: ?>
                             Resources from your enrolled courses will appear here.
-                            <br><a href="../learning/my-courses.php" class="btn btn-sm btn-primary mt-2">Browse Courses</a>
+                            <br><a href="../learning/my-course.php" class="btn btn-sm btn-primary mt-2">Browse Courses</a>
                         <?php endif; ?>
                     </p>
                 </div>
@@ -355,7 +355,7 @@ function previewResource(resourceId) {
     `;
     
     // Fetch resource details
-    fetch('ajax/resource-details.php?id=' + resourceId)
+    fetch('#')
         .then(response => response.json())
         .then(data => {
             if (data.success) {

@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_account'])) {
             'icon' => 'exclamation-circle',
             'message' => 'Please type "DELETE" to confirm account deletion.'
         ];
-        redirect('settings.php#danger');
+        redirect('setting.php#danger');
     }
     
     $user_id = getUserId();
@@ -71,9 +71,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_account'])) {
             'icon' => 'exclamation-circle',
             'message' => 'An error occurred while deleting your account. Please try again.'
         ];
-        redirect('settings.php#danger');
+        redirect('setting.php#danger');
     }
 } else {
-    redirect('settings.php');
+    redirect('setting.php');
 }
 ?>

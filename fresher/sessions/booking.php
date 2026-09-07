@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_session'])) {
         'icon' => 'check-circle',
         'message' => 'Session booked successfully!'
     ];
-    redirect('my-sessions.php');
+    redirect('my-session.php');
 }
 ?>
 <?php include '../../includes/header.php'; ?>

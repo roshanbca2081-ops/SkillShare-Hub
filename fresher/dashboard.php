@@ -167,7 +167,7 @@ $pending_assignments = $stmt->fetchAll();
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5 class="mb-0"><i class="fas fa-clock text-primary"></i> Continue Learning</h5>
-                                <a href="learning/my-courses.php" class="btn btn-sm btn-outline-primary">View All</a>
+                                <a href="learning/my-course.php" class="btn btn-sm btn-outline-primary">View All</a>
                             </div>
                             
                             <?php if (!empty($recent_courses)): ?>
@@ -222,7 +222,7 @@ $pending_assignments = $stmt->fetchAll();
                                 </div>
                                 <div class="text-end">
                                     <small class="text-danger">Due: <?php echo formatDate($assignment['due_date']); ?></small>
-                                    <a href="assignments/details.php?id=<?php echo $assignment['id']; ?>" class="btn btn-sm btn-primary ms-2">
+                                    <a href="assignment/details.php?id=<?php echo $assignment['id']; ?>" class="btn btn-sm btn-primary ms-2">
                                         View
                                     </a>
                                 </div>
@@ -240,7 +240,7 @@ $pending_assignments = $stmt->fetchAll();
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5 class="mb-0"><i class="fas fa-video text-primary"></i> Upcoming Sessions</h5>
-                                <a href="sessions/my-sessions.php" class="btn btn-sm btn-outline-primary">View All</a>
+                                <a href="sessions/my-session.php" class="btn btn-sm btn-outline-primary">View All</a>
                             </div>
                             
                             <?php if (!empty($upcoming)): ?>
@@ -279,7 +279,7 @@ $pending_assignments = $stmt->fetchAll();
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5 class="mb-0"><i class="fas fa-bell text-warning"></i> Recent Notifications</h5>
-                                <a href="notifications/index.php" class="btn btn-sm btn-outline-primary">View All</a>
+                                <a href="notification/index.php" class="btn btn-sm btn-outline-primary">View All</a>
                             </div>
                             
                             <?php if (!empty($recent_notifications)): ?>

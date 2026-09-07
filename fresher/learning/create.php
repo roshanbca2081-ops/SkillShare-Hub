@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_course'])) {
             'icon' => 'check-circle',
             'message' => 'Your course request has been submitted! An administrator will review it.'
         ];
-        redirect('my-courses.php');
+        redirect('my-course.php');
     }
 }
 
@@ -89,7 +89,7 @@ $interests = $user['interests'] ?? '';
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">Request a Course</h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
-                    <a href="my-courses.php" class="btn btn-outline-secondary">
+                    <a href="my-course.php" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left"></i> My Courses
                     </a>
                 </div>

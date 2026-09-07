@@ -288,7 +288,7 @@ $enrollments = $stmt->fetchAll();
                                 <a href="../resources/upload.php?course=<?php echo $course_id; ?>" class="btn btn-outline-info">
                                     <i class="fas fa-upload"></i> Upload Resource
                                 </a>
-                                <a href="../assignments/create.php?course=<?php echo $course_id; ?>" class="btn btn-outline-warning">
+                                 <a href="../assignment/create.php?course=<?php echo $course_id; ?>" class="btn btn-outline-warning">
                                     <i class="fas fa-tasks"></i> Create Assignment
                                 </a>
                             </div>

@@ -37,9 +37,9 @@ $course_id = isset($_GET['course_id']) ? (int)$_GET['course_id'] : 0;
                     
                     <div class="d-grid gap-2">
                         <?php if ($session_id): ?>
-                            <a href="../sessions/my-sessions.php" class="btn btn-primary">View My Sessions</a>
+                            <a href="../sessions/my-session.php" class="btn btn-primary">View My Sessions</a>
                         <?php elseif ($course_id): ?>
-                            <a href="../learning/my-courses.php" class="btn btn-primary">Go to My Courses</a>
+                            <a href="../learning/my-course.php" class="btn btn-primary">Go to My Courses</a>
                         <?php else: ?>
                             <a href="../dashboard.php" class="btn btn-primary">Go to Dashboard</a>
                         <?php endif; ?>

@@ -220,10 +220,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rating'])) {
                                     <h6 class="mb-0"><?php echo htmlspecialchars($session['mentor_name']); ?></h6>
                                     <p class="text-muted small"><?php echo htmlspecialchars($session['mentor_bio'] ?? ''); ?></p>
                                     <div>
-                                        <a href="../mentors/details.php?id=<?php echo $session['mentor_id']; ?>" class="btn btn-sm btn-outline-primary">
+                                         <a href="../mentor/details.php?id=<?php echo $session['mentor_id']; ?>" class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-user"></i> View Profile
                                         </a>
-                                        <a href="../messages/index.php?user_id=<?php echo $session['mentor_id']; ?>" class="btn btn-sm btn-outline-info">
+                                         <a href="../message/index.php?user_id=<?php echo $session['mentor_id']; ?>" class="btn btn-sm btn-outline-info">
                                             <i class="fas fa-envelope"></i> Send Message
                                         </a>
                                     </div>
@@ -374,7 +374,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rating'])) {
                                         <i class="fas fa-credit-card"></i> 
                                         This session costs $<?php echo number_format($session['price'], 2); ?>
                                     </div>
-                                    <a href="../payments/checkout.php?session=<?php echo $session_id; ?>" class="btn btn-success w-100">
+                                     <a href="../payment/index.php?session=<?php echo $session_id; ?>" class="btn btn-success w-100">
                                         <i class="fas fa-credit-card"></i> Pay & Book
                                     </a>
                                 <?php endif; ?>

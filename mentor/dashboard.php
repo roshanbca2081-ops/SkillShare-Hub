@@ -105,7 +105,7 @@ $unread_notifications = getUnreadNotifications($pdo, $user_id);
                     <span class="badge bg-primary me-2">
                         <i class="fas fa-star"></i> <?php echo number_format($avg_rating, 1); ?> ★ (<?php echo $total_reviews; ?>)
                     </span>
-                    <a href="my-courses/create.php" class="btn btn-primary">
+                     <a href="my-course/create.php" class="btn btn-primary">
                         <i class="fas fa-plus"></i> New Course
                     </a>
                 </div>
@@ -290,16 +290,16 @@ $unread_notifications = getUnreadNotifications($pdo, $user_id);
                                 <a href="session/create.php" class="btn btn-outline-primary">
                                     <i class="fas fa-calendar-plus"></i> Schedule Session
                                 </a>
-                                <a href="my-courses/create.php" class="btn btn-outline-success">
+                                 <a href="my-course/create.php" class="btn btn-outline-success">
                                     <i class="fas fa-plus"></i> Create Course
                                 </a>
                                 <a href="resources/upload.php" class="btn btn-outline-info">
                                     <i class="fas fa-upload"></i> Upload Resource
                                 </a>
-                                <a href="assignments/create.php" class="btn btn-outline-warning">
+                                 <a href="assignment/create.php" class="btn btn-outline-warning">
                                     <i class="fas fa-tasks"></i> Create Assignment
                                 </a>
-                                <a href="certificates/issue.php" class="btn btn-outline-secondary">
+                                 <a href="certificate/issue.php" class="btn btn-outline-secondary">
                                     <i class="fas fa-certificate"></i> Issue Certificate
                                 </a>
                             </div>

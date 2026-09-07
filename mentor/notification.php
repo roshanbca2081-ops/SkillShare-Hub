@@ -18,7 +18,7 @@ $notifications = $stmt->fetchAll();
 if (isset($_GET['mark_all'])) {
     $stmt = $pdo->prepare("UPDATE notifications SET is_read = 1, read_at = NOW() WHERE user_id = ?");
     $stmt->execute([$user_id]);
-    redirect('notifications.php');
+    redirect('notification.php');
 }
 
 // Mark single as read
@@ -26,7 +26,7 @@ if (isset($_GET['read']) && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
     $stmt = $pdo->prepare("UPDATE notifications SET is_read = 1, read_at = NOW() WHERE id = ? AND user_id = ?");
     $stmt->execute([$id, $user_id]);
-    redirect('notifications.php');
+    redirect('notification.php');
 }
 
 // Delete notification
@@ -34,7 +34,7 @@ if (isset($_GET['delete']) && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
     $stmt = $pdo->prepare("DELETE FROM notifications WHERE id = ? AND user_id = ?");
     $stmt->execute([$id, $user_id]);
-    redirect('notifications.php');
+    redirect('notification.php');
 }
 ?>
 <?php include '../includes/header.php'; ?>

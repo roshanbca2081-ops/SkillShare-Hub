@@ -162,7 +162,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel'])) {
                                 <img src="<?php echo getAvatar($session); ?>" class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;">
                                 <div>
                                     <h6 class="mb-0"><?php echo htmlspecialchars($session['mentor_name']); ?></h6>
-                                    <a href="../mentors/details.php?id=<?php echo $session['mentor_id']; ?>" class="btn btn-sm btn-outline-primary mt-1">
+                                      <a href="../mentor/details.php?id=<?php echo $session['mentor_id']; ?>" class="btn btn-sm btn-outline-primary mt-1">
                                         <i class="fas fa-user"></i> View Profile
                                     </a>
                                 </div>
@@ -234,7 +234,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel'])) {
                                         <div class="alert alert-info">
                                             <i class="fas fa-info-circle"></i> This session requires payment or course enrollment.
                                         </div>
-                                        <a href="../payments/checkout.php?session=<?php echo $session['id']; ?>" class="btn btn-success w-100">
+                                         <a href="../payment/index.php?session=<?php echo $session['id']; ?>" class="btn btn-success w-100">
                                             <i class="fas fa-credit-card"></i> Pay $<?php echo number_format($session['price'], 2); ?>
                                         </a>
                                         <?php if ($session['course_id']): ?>

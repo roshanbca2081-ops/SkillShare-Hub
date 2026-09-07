@@ -182,10 +182,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rating'])) {
                                         </div>
                                     <?php endif; ?>
                                     <div class="mt-2">
-                                        <a href="../mentors/details.php?id=<?php echo $booking['mentor_id']; ?>" class="btn btn-sm btn-outline-primary">
+                                         <a href="../mentor/details.php?id=<?php echo $booking['mentor_id']; ?>" class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-user"></i> View Full Profile
                                         </a>
-                                        <a href="../messages/index.php?user_id=<?php echo $booking['mentor_id']; ?>" class="btn btn-sm btn-outline-info">
+                                         <a href="../message/index.php?user_id=<?php echo $booking['mentor_id']; ?>" class="btn btn-sm btn-outline-info">
                                             <i class="fas fa-envelope"></i> Send Message
                                         </a>
                                     </div>

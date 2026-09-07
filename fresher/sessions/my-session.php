@@ -62,7 +62,7 @@ if (isset($_GET['cancel']) && isset($_GET['id'])) {
         'icon' => 'exclamation-circle',
         'message' => 'Booking cancelled successfully.'
     ];
-    redirect('my-sessions.php');
+    redirect('my-session.php');
 }
 ?>
 <?php include '../../includes/header.php'; ?>

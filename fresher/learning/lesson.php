@@ -32,7 +32,7 @@ $stmt->execute([$user_id, $lesson['course_id']]);
 $enrollment = $stmt->fetch();
 
 if (!$enrollment) {
-    redirect('my-courses.php');
+    redirect('my-course.php');
 }
 
 // Redirect to course page with lesson parameter

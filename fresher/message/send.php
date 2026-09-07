@@ -19,7 +19,7 @@ if ($receiver_id && !empty($message)) {
     $stmt = $pdo->prepare("INSERT INTO notifications (user_id, type, title, message, link) 
                            VALUES (?, 'message', 'New Message', 
                                    CONCAT(?, ' sent you a message'), 
-                                   'fresher/messages/index.php?user_id=' || ?)");
+                                    'fresher/message/index.php?user_id=' || ?)");
     $stmt->execute([$receiver_id, getUserName(), $user_id]);
     
     echo json_encode(['success' => true]);

@@ -16,7 +16,7 @@ $stmt->execute([$user_id, $course_id]);
 $enrollment = $stmt->fetch();
 
 if (!$enrollment) {
-    redirect('my-courses.php');
+    redirect('my-course.php');
 }
 
 // Get course details
@@ -28,7 +28,7 @@ $stmt->execute([$course_id]);
 $course = $stmt->fetch();
 
 if (!$course) {
-    redirect('my-courses.php');
+    redirect('my-course.php');
 }
 
 // Get modules with lessons
@@ -99,7 +99,7 @@ if (isset($_POST['complete_lesson']) && $current_lesson) {
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2"><?php echo htmlspecialchars($course['title']); ?></h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
-                    <a href="my-courses.php" class="btn btn-outline-secondary">
+                    <a href="my-course.php" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left"></i> Back to Courses
                     </a>
                 </div>
@@ -221,7 +221,7 @@ if (isset($_POST['complete_lesson']) && $current_lesson) {
                                     Next: <?php echo htmlspecialchars($next_lesson['title']); ?> <i class="fas fa-arrow-right"></i>
                                 </a>
                             <?php else: ?>
-                                <a href="my-courses.php" class="btn btn-success">
+                                <a href="my-course.php" class="btn btn-success">
                                     <i class="fas fa-check"></i> Course Complete!
                                 </a>
                             <?php endif; ?>
@@ -232,7 +232,7 @@ if (isset($_POST['complete_lesson']) && $current_lesson) {
                                 <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
                                 <h4>No lessons available</h4>
                                 <p class="text-muted">This course doesn't have any lessons yet.</p>
-                                <a href="my-courses.php" class="btn btn-primary">Back to Courses</a>
+                                <a href="my-course.php" class="btn btn-primary">Back to Courses</a>
                             </div>
                         </div>
                     <?php endif; ?>
@@ -245,7 +245,7 @@ if (isset($_POST['complete_lesson']) && $current_lesson) {
 <script>
 function markIncomplete(lessonId) {
     if (confirm('Mark this lesson as incomplete?')) {
-        window.location.href = 'mark-incomplete.php?lesson=' + lessonId + '&course=<?php echo $course_id; ?>';
+        window.location.href = '#';
     }
 }
 </script>

@@ -45,7 +45,7 @@ $total_progress = $total_courses > 0 ? array_sum(array_column($courses, 'progres
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">Learning Progress</h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
-                    <a href="my-courses.php" class="btn btn-outline-secondary">
+                    <a href="my-course.php" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left"></i> My Courses
                     </a>
                 </div>
@@ -131,7 +131,7 @@ $total_progress = $total_courses > 0 ? array_sum(array_column($courses, 'progres
                                 <i class="fas fa-play"></i> Continue Learning
                             </a>
                             <?php else: ?>
-                            <a href="../certificates/view.php?id=<?php echo $course['course_id']; ?>" class="btn btn-sm btn-success w-100 mt-2">
+                                <a href="../certificate/view.php?id=<?php echo $course['course_id']; ?>" class="btn btn-sm btn-success w-100 mt-2">
                                 <i class="fas fa-certificate"></i> View Certificate
                             </a>
                             <?php endif; ?>

@@ -33,7 +33,7 @@ if (isset($_GET['drop']) && isset($_GET['id'])) {
         'icon' => 'exclamation-circle',
         'message' => 'Course dropped successfully.'
     ];
-    redirect('my-courses.php');
+    redirect('my-course.php');
 }
 ?>
 <?php include '../../includes/header.php'; ?>

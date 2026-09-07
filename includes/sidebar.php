@@ -11,12 +11,12 @@ $current_dir = basename(dirname($_SERVER['PHP_SELF']));
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-white <?php echo $current_dir == 'academic' ? 'active' : ''; ?>" href="../academic/fields.php">
+            <a class="nav-link text-white <?php echo $current_dir == 'academic' ? 'active' : ''; ?>" href="../academic/fiels.php">
                 <i class="fas fa-book me-2"></i> Academic Fields
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-white <?php echo $current_dir == 'mentors' ? 'active' : ''; ?>" href="../mentors/index.php">
+            <a class="nav-link text-white <?php echo $current_dir == 'mentor' ? 'active' : ''; ?>" href="../mentor.php">
                 <i class="fas fa-chalkboard-teacher me-2"></i> Mentors
             </a>
         </li>
@@ -26,12 +26,25 @@ $current_dir = basename(dirname($_SERVER['PHP_SELF']));
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-white <?php echo $current_dir == 'learning' ? 'active' : ''; ?>" href="../learning/my-courses.php">
+            <a class="nav-link text-white <?php echo $current_dir == 'learning' ? 'active' : ''; ?>" href="../learning/my-course.php">
                 <i class="fas fa-book-open me-2"></i> My Courses
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-white <?php echo $current_dir == 'assignments' ? 'active' : ''; ?>" href="../assignments/index.php">
+            <a class="nav-link text-white <?php echo $current_dir == 'booking' ? 'active' : ''; ?>" href="../booking/index.php">
+                <i class="fas fa-calendar-check me-2"></i> My Bookings
+                <?php 
+                // Count pending bookings
+                $stmt = $pdo->prepare("SELECT COUNT(*) FROM bookings WHERE fresher_id = ? AND status = 'pending'");
+                $stmt->execute([getUserId()]);
+                $pending_bookings = $stmt->fetchColumn();
+                if ($pending_bookings > 0): ?>
+                    <span class="badge bg-warning"><?php echo $pending_bookings; ?></span>
+                <?php endif; ?>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-white <?php echo $current_dir == 'assignment' ? 'active' : ''; ?>" href="../assignment/index.php">
                 <i class="fas fa-tasks me-2"></i> Assignments
                 <?php 
                 // Count pending assignments
@@ -47,6 +60,11 @@ $current_dir = basename(dirname($_SERVER['PHP_SELF']));
             </a>
         </li>
         <li class="nav-item">
+            <a class="nav-link text-white <?php echo $current_dir == 'resources' ? 'active' : ''; ?>" href="../resources/index.php">
+                <i class="fas fa-folder-open me-2"></i> Resources
+            </a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link text-white <?php echo $current_dir == 'research' ? 'active' : ''; ?>" href="../research/index.php">
                 <i class="fas fa-flask me-2"></i> Research
             </a>
@@ -57,17 +75,17 @@ $current_dir = basename(dirname($_SERVER['PHP_SELF']));
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-white <?php echo $current_dir == 'certificates' ? 'active' : ''; ?>" href="../certificates/index.php">
+            <a class="nav-link text-white <?php echo $current_dir == 'certificate' ? 'active' : ''; ?>" href="../certificate/index.php">
                 <i class="fas fa-certificate me-2"></i> Certificates
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-white <?php echo $current_dir == 'bookmarks' ? 'active' : ''; ?>" href="../bookmarks/index.php">
+            <a class="nav-link text-white <?php echo $current_dir == 'bookmark' ? 'active' : ''; ?>" href="../bookmark.php/index.php">
                 <i class="fas fa-bookmark me-2"></i> Bookmarks
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-white <?php echo $current_dir == 'messages' ? 'active' : ''; ?>" href="../messages/index.php">
+            <a class="nav-link text-white <?php echo $current_dir == 'message' ? 'active' : ''; ?>" href="../message/index.php">
                 <i class="fas fa-envelope me-2"></i> Messages
                 <?php 
                 $unread = getUnreadMessages($pdo, getUserId());
@@ -77,7 +95,7 @@ $current_dir = basename(dirname($_SERVER['PHP_SELF']));
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-white <?php echo $current_dir == 'notifications' ? 'active' : ''; ?>" href="../notifications/index.php">
+            <a class="nav-link text-white <?php echo $current_dir == 'notification' ? 'active' : ''; ?>" href="../notification/index.php">
                 <i class="fas fa-bell me-2"></i> Notifications
                 <?php 
                 $unread = getUnreadNotifications($pdo, getUserId());
@@ -96,7 +114,7 @@ $current_dir = basename(dirname($_SERVER['PHP_SELF']));
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-white <?php echo $current_dir == 'account' && $current_page == 'settings.php' ? 'active' : ''; ?>" href="../account/settings.php">
+             <a class="nav-link text-white <?php echo $current_dir == 'setting' ? 'active' : ''; ?>" href="../account/setting.php">
                 <i class="fas fa-cog me-2"></i> Settings
             </a>
         </li>
@@ -111,32 +129,4 @@ $current_dir = basename(dirname($_SERVER['PHP_SELF']));
             </a>
         </li>
     </ul>
-</div>
-
-<div>
-    <li class="nav-item">
-    <a class="nav-link text-white <?php echo $current_dir == 'bookings' ? 'active' : ''; ?>" href="../bookings/index.php">
-        <i class="fas fa-calendar-check me-2"></i> My Bookings
-        <?php 
-        // Count pending bookings
-        $stmt = $pdo->prepare("SELECT COUNT(*) FROM bookings WHERE fresher_id = ? AND status = 'pending'");
-        $stmt->execute([getUserId()]);
-        $pending_bookings = $stmt->fetchColumn();
-        if ($pending_bookings > 0): ?>
-            <span class="badge bg-warning"><?php echo $pending_bookings; ?></span>
-        <?php endif; ?>
-    </a>
-</li>
-</div>
-<div>
-    <li class="nav-item">
-    <a class="nav-link text-white <?php echo $current_dir == 'messages' ? 'active' : ''; ?>" href="../messages/index.php">
-        <i class="fas fa-envelope me-2"></i> Messages
-        <?php 
-        $unread = getUnreadMessages($pdo, getUserId());
-        if ($unread > 0): ?>
-            <span class="badge bg-danger"><?php echo $unread; ?></span>
-        <?php endif; ?>
-    </a>
-</li>
 </div>

@@ -29,8 +29,8 @@ global $pdo;
                         <ul class="dropdown-menu dropdown-menu-end">
                             <?php if (getUserRole() === 'fresher'): ?>
                                 <li><a class="dropdown-item" href="<?php echo appUrl('fresher/dashboard.php'); ?>"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                                <li><a class="dropdown-item" href="<?php echo appUrl('fresher/learning/my-courses.php'); ?>"><i class="fas fa-book-open"></i> My Courses</a></li>
-                                <li><a class="dropdown-item" href="<?php echo appUrl('fresher/sessions/my-sessions.php'); ?>"><i class="fas fa-calendar-alt"></i> My Sessions</a></li>
+                                <li><a class="dropdown-item" href="<?php echo appUrl('fresher/learning/my-course.php'); ?>"><i class="fas fa-book-open"></i> My Courses</a></li>
+                                <li><a class="dropdown-item" href="<?php echo appUrl('fresher/sessions/my-session.php'); ?>"><i class="fas fa-calendar-alt"></i> My Sessions</a></li>
                                 <li><a class="dropdown-item" href="<?php echo appUrl('fresher/message/index.php'); ?>"><i class="fas fa-envelope"></i> Messages</a></li>
                             <?php elseif (getUserRole() === 'mentor'): ?>
                                 <li><a class="dropdown-item" href="<?php echo appUrl('mentor/dashboard.php'); ?>"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>

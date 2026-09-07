@@ -166,7 +166,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['leave_session'])) {
         'icon' => 'info-circle',
         'message' => 'You have left the session.'
     ];
-    redirect('my-sessions.php');
+    redirect('my-session.php');
 }
 ?>
 <?php include '../../includes/header.php'; ?>
@@ -183,7 +183,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['leave_session'])) {
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">Join Session</h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
-                    <a href="my-sessions.php" class="btn btn-outline-secondary">
+                     <a href="my-session.php" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left"></i> My Sessions
                     </a>
                 </div>

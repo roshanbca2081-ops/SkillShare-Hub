@@ -97,7 +97,7 @@ $certificates_count = $stmt->fetchColumn();
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">My Learning</h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
-                    <a href="my-courses.php" class="btn btn-primary">
+                    <a href="my-course.php" class="btn btn-primary">
                         <i class="fas fa-book-open"></i> View All Courses
                     </a>
                 </div>

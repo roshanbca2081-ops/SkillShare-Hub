@@ -58,7 +58,7 @@ $payments = $stmt->fetchAll();
                                 <td><?php echo formatDateTime($payment['payment_date']); ?></td>
                                 <td>
                                     <?php if ($payment['status'] === 'completed'): ?>
-                                        <a href="invoice.php?id=<?php echo $payment['id']; ?>" class="btn btn-sm btn-outline-primary">
+                                        <a href="#" class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-file-invoice"></i>
                                         </a>
                                     <?php endif; ?>

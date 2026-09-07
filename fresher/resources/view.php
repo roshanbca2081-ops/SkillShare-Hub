@@ -235,7 +235,7 @@ if (isset($_GET['download'])) {
                                     <i class="fas fa-book-open"></i> View Course
                                 </a>
                                 
-                                <a href="../mentors/details.php?id=<?php echo $resource['mentor_id']; ?>" class="btn btn-outline-secondary">
+                                 <a href="../mentor/details.php?id=<?php echo $resource['mentor_id']; ?>" class="btn btn-outline-secondary">
                                     <i class="fas fa-user"></i> View Mentor Profile
                                 </a>
                             </div>
