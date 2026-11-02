@@ -58,7 +58,7 @@ if (isset($_GET['remove']) && isset($_GET['id'])) {
                     <div class="col-md-4 col-lg-3">
                         <div class="course-card">
                             <div class="course-card-image">
-                                <img src="<?php echo $bookmark['thumbnail'] ?? '../../assets/images/course-placeholder.jpg'; ?>" 
+                                <img src="<?php echo htmlspecialchars(getCourseThumbnail($bookmark), ENT_QUOTES, 'UTF-8'); ?>"
                                      alt="<?php echo $bookmark['title']; ?>">
                                 <div class="course-card-badge">
                                     <span class="badge bg-danger"><i class="fas fa-bookmark"></i></span>

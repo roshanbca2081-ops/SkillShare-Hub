@@ -1,9 +1,19 @@
 <?php
 require_once 'config/session.php';
 
+// Ensure private pages are not restored from the browser cache after logout.
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+
 $_SESSION = [];
+
+if (ini_get('session.use_cookies')) {
+	$cookie = session_get_cookie_params();
+	setcookie(session_name(), '', time() - 42000, $cookie['path'], $cookie['domain'], $cookie['secure'], $cookie['httponly']);
+}
+
 session_destroy();
 
-header('Location: login.php');
+header('Location: index.php');
 exit();
 ?>

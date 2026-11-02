@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+  <title id="title">Course image placeholder</title>
+  <desc id="desc">A book and graduation cap illustration for a course without a thumbnail.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#eef2ff"/>
+      <stop offset="1" stop-color="#cffafe"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4f46e5"/>
+      <stop offset="1" stop-color="#0891b2"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="360" rx="24" fill="url(#background)"/>
+  <circle cx="515" cy="82" r="54" fill="#fff" opacity=".48"/>
+  <circle cx="116" cy="285" r="78" fill="#fff" opacity=".35"/>
+  <path d="M205 245c0-16 13-29 29-29h99v82h-99c-16 0-29-13-29-29zm230 0c0-16-13-29-29-29h-99v82h99c16 0 29-13 29-29z" fill="#fff" stroke="#c7d2fe" stroke-width="8" stroke-linejoin="round"/>
+  <path d="m246 141 75-38 75 38-75 38-75-38zm28 20v33c26 21 72 21 96 0v-33l-49 25-47-25zm122-20v53" fill="url(#accent)" stroke="#4f46e5" stroke-width="7" stroke-linejoin="round"/>
+  <circle cx="396" cy="203" r="9" fill="#06b6d4"/>
+</svg>

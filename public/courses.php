@@ -75,7 +75,7 @@ $fields = $pdo->query("SELECT * FROM academic_fields ORDER BY name")->fetchAll()
         <?php foreach ($courses as $course): ?>
         <div class="col-md-4">
             <div class="card h-100 shadow-sm hover-shadow">
-                <img src="<?php echo $course['thumbnail'] ?? '../assets/images/course-placeholder.jpg'; ?>" class="card-img-top" alt="<?php echo $course['title']; ?>" style="height: 200px; object-fit: cover;">
+                <img src="<?php echo htmlspecialchars(getCourseThumbnail($course), ENT_QUOTES, 'UTF-8'); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($course['title'], ENT_QUOTES, 'UTF-8'); ?>" style="height: 200px; object-fit: cover;">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <span class="badge bg-primary"><?php echo getCourseLevel($course['level']); ?></span>

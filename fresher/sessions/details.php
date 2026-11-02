@@ -35,18 +35,41 @@ if ($session['course_id']) {
     $stmt->execute([$user_id, $session['course_id']]);
     $is_enrolled = $stmt->fetch();
 }
+$is_upcoming = $session['status'] === 'scheduled' && strtotime($session['scheduled_at']) > time();
+$seatStmt = $pdo->prepare("SELECT COUNT(*) FROM bookings WHERE session_id = ? AND status IN ('pending', 'approved')");
+$seatStmt->execute([$session_id]);
+$booked_seats = (int)$seatStmt->fetchColumn();
+$session_is_full = $booked_seats >= max(1, (int)$session['max_participants']);
 
 // Handle booking
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
-    if (!$booking) {
-        $stmt = $pdo->prepare("INSERT INTO bookings (fresher_id, session_id, status) VALUES (?, ?, 'pending')");
-        $stmt->execute([$user_id, $session_id]);
+    $notes = sanitize($_POST['notes'] ?? '');
+    if (!$is_upcoming) {
+        $_SESSION['alert'] = ['type' => 'warning', 'icon' => 'exclamation-circle', 'message' => 'This session is no longer available for booking.'];
+        redirect('index.php');
+    } elseif (empty($session['is_free']) && !$is_enrolled) {
+        $_SESSION['alert'] = ['type' => 'info', 'icon' => 'info-circle', 'message' => 'Enroll in the linked course before booking this paid session.'];
+        redirect('../../public/course-detail.php?id=' . (int)$session['course_id']);
+    } elseif ($session_is_full) {
+        $_SESSION['alert'] = ['type' => 'warning', 'icon' => 'exclamation-circle', 'message' => 'This session is full. Please choose another session.'];
+        redirect('index.php');
+    } elseif ($booking && in_array($booking['status'], ['pending', 'approved'], true)) {
+        $_SESSION['alert'] = ['type' => 'info', 'icon' => 'info-circle', 'message' => 'You already have a ' . $booking['status'] . ' booking for this session.'];
+        redirect('details.php?id=' . $session_id);
+    } else {
+        if ($booking) {
+            $stmt = $pdo->prepare("UPDATE bookings SET status = 'pending', notes = ?, booking_date = CURRENT_TIMESTAMP WHERE id = ? AND fresher_id = ?");
+            $stmt->execute([$notes, $booking['id'], $user_id]);
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO bookings (fresher_id, session_id, status, notes) VALUES (?, ?, 'pending', ?)");
+            $stmt->execute([$user_id, $session_id, $notes]);
+        }
         
         // Create notification for mentor
         $stmt = $pdo->prepare("INSERT INTO notifications (user_id, type, title, message, link) 
                                VALUES (?, 'booking', 'New Booking Request', 
                                        CONCAT(?, ' has requested to book your session: ', ?),
-                                       'mentor/bookings/view.php?id=' || ?)");
+                                       CONCAT('mentor/bookings/view.php?id=', ?))");
         $stmt->execute([$session['mentor_id'], getUserName(), $session['title'], $session_id]);
         
         $_SESSION['alert'] = [
@@ -223,7 +246,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel'])) {
                                     <i class="fas fa-times-circle"></i> Booking was rejected
                                 </div>
                             <?php else: ?>
-                                <?php if ($session['status'] === 'scheduled' || $session['status'] === 'ongoing'): ?>
+                                    <?php if ($is_upcoming && $session_is_full): ?>
+                                        <div class="alert alert-warning"><i class="fas fa-users me-1"></i>This session is full.</div>
+                                    <?php elseif ($is_upcoming): ?>
                                     <?php if ($session['is_free'] || $is_enrolled): ?>
                                         <form method="POST">
                                             <button type="submit" name="book" class="btn btn-primary w-100">

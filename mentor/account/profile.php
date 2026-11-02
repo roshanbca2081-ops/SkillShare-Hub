@@ -12,6 +12,11 @@ $user_id = getUserId();
 $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch();
+$academicInterestOptions = require '../../includes/academic-interest-options.php';
+$selectedTeachingFields = array_values(array_intersect(
+    $academicInterestOptions,
+    array_map('trim', explode(',', (string)($user['interests'] ?? '')))
+));
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $full_name = sanitize($_POST['full_name']);
@@ -21,12 +26,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $phone = sanitize($_POST['phone']);
     $location = sanitize($_POST['location']);
     $website = sanitize($_POST['website']);
+    $submittedTeachingFields = $_POST['academic_interests'] ?? [];
+    if (!is_array($submittedTeachingFields)) {
+        $submittedTeachingFields = [];
+    }
+    $teachingFields = array_values(array_intersect(
+        $academicInterestOptions,
+        array_filter($submittedTeachingFields, 'is_string')
+    ));
+    $teachingFieldsString = implode(', ', $teachingFields);
     
     $stmt = $pdo->prepare("UPDATE users SET 
                            full_name = ?, bio = ?, title = ?, skills = ?, 
-                           phone = ?, location = ?, website = ? 
+                           phone = ?, location = ?, website = ?, interests = ?
                            WHERE id = ?");
-    $stmt->execute([$full_name, $bio, $title, $skills, $phone, $location, $website, $user_id]);
+    $stmt->execute([$full_name, $bio, $title, $skills, $phone, $location, $website, $teachingFieldsString, $user_id]);
     
     $_SESSION['full_name'] = $full_name;
     
@@ -195,6 +209,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_social'])) {
                                         <textarea name="skills" class="form-control" rows="2" 
                                                   placeholder="PHP, JavaScript, React, Python..."><?php echo htmlspecialchars($user['skills'] ?? ''); ?></textarea>
                                     </div>
+                                    <div class="col-md-12 mb-3">
+                                        <fieldset class="academic-interest-picker">
+                                            <legend class="form-label mb-1">Academic Fields You Teach</legend>
+                                            <p class="text-muted small mb-3">Select multiple fields and update them anytime.</p>
+                                            <input type="hidden" name="academic_interests_submitted" value="1">
+                                            <div class="academic-interest-grid">
+                                                <?php foreach ($academicInterestOptions as $interest): ?>
+                                                    <label class="academic-interest-option">
+                                                        <input type="checkbox" name="academic_interests[]" value="<?php echo htmlspecialchars($interest, ENT_QUOTES, 'UTF-8'); ?>" <?php echo in_array($interest, $selectedTeachingFields, true) ? 'checked' : ''; ?>>
+                                                        <span><?php echo htmlspecialchars($interest); ?></span>
+                                                    </label>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        </fieldset>
+                                    </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Phone</label>
                                         <input type="tel" name="phone" class="form-control" 
@@ -212,7 +241,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_social'])) {
                                     </div>
                                 </div>
                                 <button type="submit" name="update_profile" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> Save Changes
+                                    <i class="fas fa-save"></i> Save Profile &amp; Teaching Fields
                                 </button>
                             </form>
                         </div>

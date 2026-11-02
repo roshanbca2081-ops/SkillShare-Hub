@@ -91,7 +91,7 @@ if (isset($_GET['cancel']) && isset($_GET['id'])) {
         $stmt = $pdo->prepare("INSERT INTO notifications (user_id, type, title, message, link) 
                                VALUES (?, 'booking_cancelled', 'Booking Cancelled', 
                                        CONCAT(?, ' has cancelled the session: ', ?),
-                                       'mentor/bookings/view.php?id=' || ?)");
+                                       CONCAT('mentor/bookings/view.php?id=', ?))");
         $stmt->execute([
             $booking_data['mentor_id'],
             getUserName(),

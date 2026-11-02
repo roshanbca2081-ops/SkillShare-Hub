@@ -40,7 +40,7 @@ if (!$certificate) {
                     <div class="certificate-wrapper p-5 text-center" style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 12px;">
                         <div class="certificate-border p-4" style="border: 3px double #6C63FF; border-radius: 8px; background: white;">
                             <div class="certificate-header mb-4">
-                                <img src="../../assets/images/logo.png" alt="SkillShare Hub" style="height: 60px; margin-bottom: 16px;">
+                                <img src="../../assets/images/logo/skillshare-hub-mark.svg" alt="SkillShare Hub" style="width: 76px; height: 76px; object-fit: contain; margin-bottom: 16px;">
                                 <h1 class="display-4 fw-bold text-primary">Certificate of Completion</h1>
                                 <p class="text-muted">This certifies that</p>
                             </div>

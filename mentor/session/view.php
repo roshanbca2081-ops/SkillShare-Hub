@@ -84,7 +84,7 @@ $stmt->execute([$session_id]);
 $bookings = $stmt->fetchAll();
 
 // Get pending bookings for quick actions
-$pending_bookings = array_filter($bookings, fn($b) => $b['status'] === 'pending');
+$pendingBookingRows = array_filter($bookings, fn($b) => $b['status'] === 'pending');
 $approved_bookings = array_filter($bookings, fn($b) => $b['status'] === 'approved');
 
 // Status helpers
@@ -166,12 +166,12 @@ $occupancy = $session['max_participants'] > 0
             </div>
             <?php endif; ?>
 
-            <?php if ($is_upcoming && count($pending_bookings) > 0): ?>
+            <?php if ($is_upcoming && count($pendingBookingRows) > 0): ?>
             <!-- Pending Bookings Alert -->
             <div class="alert alert-warning d-flex align-items-center gap-2 mb-4">
                 <i class="fas fa-clock fa-lg"></i>
                 <div>
-                    <strong><?php echo count($pending_bookings); ?> pending booking request(s)</strong> waiting for your approval.
+                    <strong><?php echo count($pendingBookingRows); ?> pending booking request(s)</strong> waiting for your approval.
                     <a href="#bookings" class="alert-link ms-1">Review below</a>
                 </div>
             </div>
@@ -312,9 +312,9 @@ $occupancy = $session['max_participants'] > 0
                                 <i class="fas fa-calendar-check me-2 text-primary"></i>Bookings
                                 <span class="badge bg-secondary ms-1"><?php echo count($bookings); ?></span>
                             </h6>
-                            <?php if (!empty($pending_bookings)): ?>
+                            <?php if (!empty($pendingBookingRows)): ?>
                             <span class="badge bg-warning text-dark">
-                                <?php echo count($pending_bookings); ?> awaiting approval
+                                <?php echo count($pendingBookingRows); ?> awaiting approval
                             </span>
                             <?php endif; ?>
                         </div>

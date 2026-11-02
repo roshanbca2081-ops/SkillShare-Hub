@@ -13,6 +13,11 @@ $user_id = getUserId();
 $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch();
+$academicInterestOptions = require '../includes/academic-interest-options.php';
+$selectedAcademicInterests = array_intersect(
+    $academicInterestOptions,
+    array_map('trim', explode(',', (string)($user['interests'] ?? '')))
+);
 
 // Get statistics
 $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM enrollments WHERE fresher_id = ? AND status != 'dropped'");
@@ -92,14 +97,37 @@ $pending_assignments = $stmt->fetchAll();
         
         <div class="col-md-9 col-lg-10 ms-sm-auto px-md-4 py-4">
             <!-- Welcome Section -->
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">Welcome back, <?php echo htmlspecialchars($user['full_name']); ?>! 👋</h1>
-                <div class="btn-toolbar mb-2 mb-md-0">
-                    <a href="../public/courses.php" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Browse Courses
+            <header class="fresher-dashboard-head">
+                <div class="fresher-dashboard-welcome">
+                    <div class="fresher-dashboard-kicker">Welcome back,</div>
+                    <h1><?php echo htmlspecialchars(strtoupper($user['full_name'])); ?>! <span aria-hidden="true">👋</span></h1>
+                    <p>Keep learning, keep growing with SkillShare Hub.</p>
+                </div>
+                <i class="fas fa-graduation-cap fresher-hero-art" aria-hidden="true"></i>
+                <div class="fresher-dashboard-profile">
+                    <a class="fresher-profile-link" href="account/profile.php">
+                        <?php echo htmlspecialchars($user['full_name']); ?> <i class="fas fa-caret-down" aria-hidden="true"></i>
+                        <img src="<?php echo getAvatar($user); ?>" alt="Profile avatar">
+                    </a>
+                    <a class="fresher-dashboard-back" href="../public/courses.php" onclick="if (window.history.length > 1) { window.history.back(); return false; }">
+                        <i class="fas fa-arrow-left me-2" aria-hidden="true"></i>Back
                     </a>
                 </div>
-            </div>
+            </header>
+
+            <?php if (empty($selectedAcademicInterests)): ?>
+                <section class="dashboard-onboarding-card mb-4" aria-label="Choose academic interests">
+                    <span class="dashboard-onboarding-icon"><i class="fas fa-layer-group" aria-hidden="true"></i></span>
+                    <div class="dashboard-onboarding-copy">
+                        <strong>Choose Your Academic Interests</strong>
+                        <p>You can select multiple fields and change them anytime. We’ll use your interests to help you discover relevant mentors.</p>
+                    </div>
+                    <div class="dashboard-onboarding-actions">
+                        <a class="btn btn-outline-primary" href="account/profile.php">Choose Interests</a>
+                        <a class="btn btn-primary" href="mentor/index.php">Find Relevant Mentors <i class="fas fa-arrow-right ms-1" aria-hidden="true"></i></a>
+                    </div>
+                </section>
+            <?php endif; ?>
             
             <!-- Stats Cards -->
             <div class="row g-3 mb-4">
@@ -163,7 +191,7 @@ $pending_assignments = $stmt->fetchAll();
             <div class="row">
                 <!-- Recent Courses -->
                 <div class="col-lg-8">
-                    <div class="card border-0 shadow-sm mb-4">
+                    <div class="card border-0 shadow-sm mb-4 fresher-continue-card">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5 class="mb-0"><i class="fas fa-clock text-primary"></i> Continue Learning</h5>
@@ -174,7 +202,7 @@ $pending_assignments = $stmt->fetchAll();
                                 <?php foreach ($recent_courses as $course): ?>
                                 <div class="course-progress-item mb-3">
                                     <div class="d-flex align-items-center">
-                                        <img src="<?php echo $course['thumbnail'] ?? '../assets/images/course-placeholder.jpg'; ?>" 
+                                        <img src="<?php echo htmlspecialchars(getCourseThumbnail($course), ENT_QUOTES, 'UTF-8'); ?>"
                                              alt="<?php echo $course['title']; ?>" 
                                              class="rounded me-3" 
                                              style="width: 80px; height: 60px; object-fit: cover;">
@@ -206,6 +234,26 @@ $pending_assignments = $stmt->fetchAll();
                                     <a href="../public/courses.php" class="btn btn-primary">Start Learning</a>
                                 </div>
                             <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm mb-4 fresher-progress-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0"><i class="fas fa-chart-bar text-primary me-2"></i>Your Learning Progress</h5>
+                                <a href="learning/progress.php" class="btn btn-sm btn-outline-primary">View Details <i class="fas fa-arrow-right ms-1"></i></a>
+                            </div>
+                            <div class="fresher-learning-progress">
+                                <div class="fresher-progress-ring"><?php echo $total_courses > 0 ? (int) round(($completed_courses / $total_courses) * 100) : 0; ?>%</div>
+                                <div>
+                                    <small class="text-muted d-block mb-1"><i class="fas fa-arrow-down text-info me-2"></i>Courses Completed</small>
+                                    <strong><?php echo $completed_courses; ?> / <?php echo $total_courses; ?></strong>
+                                </div>
+                                <div>
+                                    <small class="text-muted d-block mb-1"><i class="fas fa-shield-alt text-warning me-2"></i>Learning Streak</small>
+                                    <strong><i class="fas fa-fire text-danger me-1"></i>0 days</strong>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     

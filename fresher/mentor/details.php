@@ -35,6 +35,10 @@ $stmt = $pdo->prepare("SELECT r.*, u.full_name, u.avatar
                        ORDER BY r.created_at DESC LIMIT 10");
 $stmt->execute([$mentor_id]);
 $reviews = $stmt->fetchAll();
+
+$sessionStmt = $pdo->prepare("SELECT COUNT(*) FROM sessions WHERE mentor_id = ? AND status = 'scheduled' AND scheduled_at > NOW()");
+$sessionStmt->execute([$mentor_id]);
+$upcomingSessionCount = (int)$sessionStmt->fetchColumn();
 ?>
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/navbar.php'; ?>
@@ -78,11 +82,15 @@ $reviews = $stmt->fetchAll();
                             </div>
                             
                             <?php if (getUserId() != $mentor_id): ?>
-                                <a href="../message/index.php?user_id=<?php echo $mentor_id; ?>" class="btn btn-primary w-100 mb-2">
-                                    <i class="fas fa-envelope"></i> Send Message
-                                </a>
-                                <a href="../sessions/booking.php?mentor=<?php echo $mentor_id; ?>" class="btn btn-outline-primary w-100">
-                                    <i class="fas fa-calendar-plus"></i> Book Session
+                                <?php if ($upcomingSessionCount > 0): ?>
+                                    <a href="../sessions/booking.php?mentor=<?php echo $mentor_id; ?>" class="btn btn-primary w-100 mb-2">
+                                        <i class="fas fa-calendar-plus"></i> Book Session (<?php echo $upcomingSessionCount; ?> available)
+                                    </a>
+                                <?php else: ?>
+                                    <div class="alert alert-info py-2 small text-start"><i class="fas fa-calendar-xmark me-1"></i>No upcoming sessions scheduled yet.</div>
+                                <?php endif; ?>
+                                <a href="../message/index.php?user_id=<?php echo $mentor_id; ?>" class="btn btn-outline-primary w-100">
+                                    <i class="fas fa-envelope"></i> Message Mentor
                                 </a>
                             <?php endif; ?>
                         </div>
@@ -124,7 +132,7 @@ $reviews = $stmt->fetchAll();
                                     <?php foreach ($courses as $course): ?>
                                     <div class="col-md-6">
                                         <div class="card h-100">
-                                            <img src="<?php echo $course['thumbnail'] ?? '../../assets/images/course-placeholder.jpg'; ?>" 
+                                            <img src="<?php echo htmlspecialchars(getCourseThumbnail($course), ENT_QUOTES, 'UTF-8'); ?>"
                                                  class="card-img-top" alt="<?php echo $course['title']; ?>" 
                                                  style="height: 140px; object-fit: cover;">
                                             <div class="card-body">

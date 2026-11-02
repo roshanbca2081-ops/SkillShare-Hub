@@ -56,10 +56,21 @@ $categories = $stmt->fetchAll();
 // Get fields
 $fields = $pdo->query("SELECT * FROM academic_fields WHERE is_active = 1 ORDER BY name")->fetchAll();
 
-// Get user's saved questions
-$stmt = $pdo->prepare("SELECT question_id FROM interview_saved WHERE fresher_id = ?");
-$stmt->execute([$user_id]);
-$saved_questions = $stmt->fetchAll(PDO::FETCH_COLUMN);
+// Saved-question storage is optional on older databases; never let its absence
+// prevent Interview Prep and the shared Fresher layout from rendering.
+$savedQuestionsAvailable = false;
+$saved_questions = [];
+try {
+    $savedQuestionsAvailable = (bool)$pdo->query("SHOW TABLES LIKE 'interview_saved'")->fetchColumn();
+    if ($savedQuestionsAvailable) {
+        $stmt = $pdo->prepare('SELECT question_id FROM interview_saved WHERE fresher_id = ?');
+        $stmt->execute([$user_id]);
+        $saved_questions = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
+} catch (PDOException $e) {
+    error_log('Interview saved-question lookup failed: ' . $e->getMessage());
+    $savedQuestionsAvailable = false;
+}
 
 // Get statistics
 $stats = [
@@ -75,8 +86,18 @@ foreach ($questions as $q) {
     elseif ($q['difficulty'] === 'hard') $stats['hard']++;
 }
 
-// Handle save/unsave
-if (isset($_GET['save']) && isset($_GET['id'])) {
+// Handle save/unsave only when this optional feature's table exists.
+if (isset($_GET['save'], $_GET['id']) && !$savedQuestionsAvailable) {
+    $_SESSION['alert'] = [
+        'type' => 'warning',
+        'icon' => 'exclamation-triangle',
+        'message' => 'Saved questions are not enabled in the current database. You can still browse and practice questions.',
+    ];
+    unset($_GET['save'], $_GET['id']);
+    redirect('index.php?' . http_build_query($_GET));
+}
+
+if (isset($_GET['save'], $_GET['id']) && $savedQuestionsAvailable) {
     $question_id = (int)$_GET['id'];
     if (in_array($question_id, $saved_questions)) {
         $stmt = $pdo->prepare("DELETE FROM interview_saved WHERE fresher_id = ? AND question_id = ?");
@@ -117,6 +138,12 @@ if (isset($_GET['save']) && isset($_GET['id'])) {
                     </a>
                 </div>
             </div>
+
+            <?php if (!$savedQuestionsAvailable): ?>
+                <div class="alert alert-info" role="status">
+                    Saved-question storage is not configured in this database. You can still browse questions and use Practice Mode.
+                </div>
+            <?php endif; ?>
             
             <!-- Stats -->
             <div class="row g-3 mb-4">
@@ -245,11 +272,17 @@ if (isset($_GET['save']) && isset($_GET['id'])) {
                                         <button class="btn btn-sm btn-outline-primary me-1" onclick="toggleAnswer(<?php echo $question['id']; ?>)">
                                             <i class="fas fa-eye"></i> Show Answer
                                         </button>
-                                        <a href="?save=1&id=<?php echo $question['id']; ?>&<?php echo http_build_query(['field' => $field_id, 'difficulty' => $difficulty, 'category' => $category, 'search' => $search]); ?>" 
-                                           class="btn btn-sm <?php echo $is_saved ? 'btn-warning' : 'btn-outline-secondary'; ?>">
-                                            <i class="fas fa-<?php echo $is_saved ? 'bookmark' : 'bookmark'; ?>"></i>
-                                            <?php echo $is_saved ? 'Saved' : 'Save'; ?>
-                                        </a>
+                                        <?php if ($savedQuestionsAvailable): ?>
+                                            <a href="?save=1&amp;id=<?php echo (int)$question['id']; ?>&amp;<?php echo htmlspecialchars(http_build_query(['field' => $field_id, 'difficulty' => $difficulty, 'category' => $category, 'search' => $search]), ENT_QUOTES, 'UTF-8'); ?>"
+                                               class="btn btn-sm <?php echo $is_saved ? 'btn-warning' : 'btn-outline-secondary'; ?>">
+                                                <i class="fas fa-bookmark" aria-hidden="true"></i>
+                                                <?php echo $is_saved ? 'Saved' : 'Save'; ?>
+                                            </a>
+                                        <?php else: ?>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Saved-question storage is not configured">
+                                                <i class="fas fa-bookmark" aria-hidden="true"></i> Save unavailable
+                                            </button>
+                                        <?php endif; ?>
                                     </div>
                                     
                                     <div id="answer_<?php echo $question['id']; ?>" class="mt-3 d-none">

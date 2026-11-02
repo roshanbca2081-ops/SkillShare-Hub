@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_session'])) {
     $why_choose_skill = sanitize($_POST['why_choose_skill'] ?? '');
     $preferred_time = sanitize($_POST['preferred_time'] ?? '');
     $payment_method = sanitize($_POST['payment_method'] ?? '');
-    $payment_before_session = isset($_POST['payment_before_session']) ? 1 : 0;
+    $payment_before_session = (string)($_POST['payment_before_session'] ?? '1') === '1' ? 1 : 0;
     $notes = sanitize($_POST['notes'] ?? '');
     
     $errors = [];
@@ -120,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_session'])) {
             $stmt = $pdo->prepare("INSERT INTO notifications (user_id, type, title, message, link) 
                                    VALUES (?, 'new_booking', 'New Booking Request', 
                                            CONCAT(?, ' has requested to book your session: ', ?),
-                                           'mentor/booking/view.php?id=' || ?)");
+                                           CONCAT('mentor/booking/view.php?id=', ?))");
             $stmt->execute([
                 $session_info['mentor_id'],
                 getUserName(),
@@ -136,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_session'])) {
         ];
         
         if ($payment_before_session && !in_array($payment_method, ['after_session'])) {
-            redirect('payment/checkout.php?booking=' . $booking_id);
+            redirect('../payment/checkout.php?booking=' . $booking_id);
         } else {
             redirect('index.php');
         }
@@ -455,9 +455,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_session'])) {
                 <?php else: ?>
                     <div class="text-center py-5">
                         <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-                        <h5>No sessions available</h5>
-                        <p class="text-muted">There are no upcoming sessions available for booking.</p>
-                        <a href="../dashboard.php" class="btn btn-primary">Go to Dashboard</a>
+                        <h5><?php echo $mentor_id ? 'This mentor has no sessions scheduled yet' : 'No sessions are currently scheduled'; ?></h5>
+                        <p class="text-muted">A mentor must publish an upcoming session before it can be booked. You can message the mentor to ask about availability.</p>
+                        <?php if ($mentor_id): ?>
+                            <a href="../message/index.php?user_id=<?php echo $mentor_id; ?>" class="btn btn-primary"><i class="fas fa-envelope me-1"></i> Message Mentor</a>
+                            <a href="../mentor/index.php" class="btn btn-outline-primary ms-2">Browse Mentors</a>
+                        <?php else: ?>
+                            <a href="../mentor/index.php" class="btn btn-primary">Browse Mentors</a>
+                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
             <?php endif; ?>

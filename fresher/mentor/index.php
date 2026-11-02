@@ -9,6 +9,14 @@ requireFresher();
 
 $search = isset($_GET['search']) ? sanitize($_GET['search']) : '';
 $field_id = isset($_GET['field']) ? (int)$_GET['field'] : 0;
+$recommendedOnly = isset($_GET['recommended']) && $_GET['recommended'] === '1';
+$fresherInterests = [];
+if ($recommendedOnly) {
+    $interestStmt = $pdo->prepare('SELECT interests FROM users WHERE id = ? LIMIT 1');
+    $interestStmt->execute([getUserId()]);
+    $interestText = (string)$interestStmt->fetchColumn();
+    $fresherInterests = array_values(array_filter(array_map('trim', explode(',', $interestText))));
+}
 
 $query = "SELECT u.*, 
           (SELECT COUNT(*) FROM courses WHERE mentor_id = u.id AND status = 'active') as course_count,
@@ -29,6 +37,18 @@ if ($search) {
 if ($field_id) {
     $query .= " AND EXISTS (SELECT 1 FROM courses c WHERE c.mentor_id = u.id AND c.field_id = ? AND c.status = 'active')";
     $params[] = $field_id;
+}
+
+if ($recommendedOnly && !empty($fresherInterests)) {
+    $interestFilters = [];
+    foreach ($fresherInterests as $interest) {
+        $interestFilters[] = '(u.interests LIKE ? OR u.skills LIKE ?)';
+        $params[] = '%' . $interest . '%';
+        $params[] = '%' . $interest . '%';
+    }
+    $query .= ' AND (' . implode(' OR ', $interestFilters) . ')';
+} elseif ($recommendedOnly) {
+    $query .= ' AND 1 = 0';
 }
 
 $query .= " ORDER BY avg_rating DESC, course_count DESC";
@@ -53,6 +73,11 @@ $fields = $pdo->query("SELECT * FROM academic_fields WHERE is_active = 1 ORDER B
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">Mentors</h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
+                    <?php if (!empty($fresherInterests)): ?>
+                        <a href="index.php?recommended=1" class="btn btn-outline-primary me-2"><i class="fas fa-wand-magic-sparkles me-1"></i> Recommended for you</a>
+                    <?php else: ?>
+                        <a href="../account/profile.php" class="btn btn-outline-primary me-2"><i class="fas fa-layer-group me-1"></i> Set interests</a>
+                    <?php endif; ?>
                     <a href="../dashboard.php" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left"></i> Dashboard
                     </a>

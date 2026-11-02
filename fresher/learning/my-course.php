@@ -61,7 +61,7 @@ if (isset($_GET['drop']) && isset($_GET['id'])) {
                     <?php foreach ($courses as $course): ?>
                     <div class="col-md-6 col-lg-4">
                         <div class="card h-100 shadow-sm">
-                            <img src="<?php echo $course['thumbnail'] ?? '../../assets/images/course-placeholder.jpg'; ?>" 
+                            <img src="<?php echo htmlspecialchars(getCourseThumbnail($course), ENT_QUOTES, 'UTF-8'); ?>"
                                  class="card-img-top" alt="<?php echo $course['title']; ?>" 
                                  style="height: 180px; object-fit: cover;">
                             <div class="card-body">

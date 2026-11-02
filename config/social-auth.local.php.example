@@ -1,0 +1,9 @@
+<?php
+// Copy to config/social-auth.local.php and fill in values from Google Cloud Console.
+// This example contains no real credentials and is safe to commit.
+return [
+    'google' => [
+        'client_id' => '',
+        'client_secret' => '',
+    ],
+];

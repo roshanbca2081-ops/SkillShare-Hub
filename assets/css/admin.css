@@ -1,6 +1,6 @@
 .admin-body { min-height: 100vh; background: #f7f8fc; color: #172033; }
 .admin-shell { display: flex; min-height: 100vh; }
-.admin-sidebar { width: 245px; flex: 0 0 245px; padding: 22px 14px; color: #cbd5e1; background: #111827; }
+.admin-sidebar { position: fixed; z-index: 1020; top: 0; bottom: 0; left: 0; width: 245px; height: 100vh; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; padding: 22px 14px; color: #cbd5e1; background: #111827; }
 .admin-brand { display: flex; align-items: center; gap: 10px; padding: 8px 12px 24px; color: #fff; font: 700 1rem 'Space Grotesk', sans-serif; }
 .admin-brand i { color: #818cf8; font-size: 1.3rem; }
 .admin-label { margin: 20px 12px 8px; color: #64748b; font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
@@ -8,7 +8,7 @@
 .admin-link:hover, .admin-link-danger:hover { color: #fff; background: rgba(129, 140, 248, .16); }
 .admin-link i { width: 18px; text-align: center; }
 .admin-link-danger { color: #fda4af; }
-.admin-main { flex: 1; min-width: 0; padding: 34px; }
+.admin-main { flex: 1; min-width: 0; margin-left: 245px; padding: 34px; }
 .admin-topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
 .admin-title { margin: 0; font: 700 clamp(1.6rem, 3vw, 2.2rem) 'Space Grotesk', sans-serif; }
 .admin-subtitle { margin: 6px 0 0; color: #667085; }
@@ -42,5 +42,5 @@
 .level-pill, .status-pill { display: inline-block; padding: 4px 9px; border-radius: 999px; font-size: .68rem; font-weight: 700; }.level-beginner { color: #15803d; background: #dcfce7; }.level-intermediate { color: #a16207; background: #fef3c7; }.level-advanced { color: #b91c1c; background: #fee2e2; }.status-active { color: #15803d; background: #dcfce7; }.status-pending { color: #a16207; background: #fef3c7; }.status-draft, .status-inactive, .status-archived { color: #667085; background: #f2f4f7; }
 .course-action-buttons { display: flex; align-items: center; gap: 5px; }.course-action { width: 29px; height: 29px; display: grid; place-items: center; color: #667085; background: transparent; border: 0; border-radius: 7px; }.course-action:hover { color: #4f46e5; background: #eef2ff; }.course-action.delete:hover { color: #dc2626; background: #fef2f2; }.course-action-buttons form { margin: 0; }.courses-empty { padding: 42px !important; text-align: center !important; color: #98a2b3 !important; }.courses-empty i, .courses-empty strong, .courses-empty span { display: block; }.courses-empty i { margin-bottom: 10px; font-size: 1.7rem; }.courses-empty strong { color: #475467; }.courses-empty span { margin-top: 4px; font-size: .78rem; }
 @media (max-width: 640px) { .courses-topbar { padding: 13px; } .courses-topbar-right { display: none; } .courses-mobile-toggle { display: block; } .courses-page-header { align-items: flex-start; flex-direction: column; } .courses-stats { grid-template-columns: 1fr; } .courses-filter-bar { align-items: stretch; flex-direction: column; } .courses-filter-bar select, .courses-filter-bar .btn, .courses-search { width: 100%; } .courses-table-card { padding: 13px; } }
-@media (max-width: 900px) { .admin-sidebar { width: 205px; flex-basis: 205px; } .admin-main { padding: 24px 18px; } .admin-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 640px) { .admin-shell { display: block; } .admin-sidebar { width: 100%; padding: 12px; } .admin-brand { padding-bottom: 12px; } .admin-label { display: none; } .admin-link { display: inline-flex; margin-right: 3px; padding: 8px 9px; font-size: .74rem; } .admin-link span { display: none; } .admin-main { padding: 20px 12px; } .admin-form-grid { grid-template-columns: 1fr; } .admin-form-grid .full { grid-column: auto; } .admin-kpis { gap: 10px; } .admin-kpi { padding: 14px; } }
+@media (max-width: 900px) { .admin-sidebar { width: 205px; } .admin-main { margin-left: 205px; padding: 24px 18px; } .admin-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .admin-shell { display: block; } .admin-sidebar { position: static; width: 100%; height: auto; min-height: 0; max-height: none; padding: 12px; } .admin-brand { padding-bottom: 12px; } .admin-label { display: none; } .admin-link { display: inline-flex; margin-right: 3px; padding: 8px 9px; font-size: .74rem; } .admin-link span { display: none; } .admin-main { margin-left: 0; padding: 20px 12px; } .admin-form-grid { grid-template-columns: 1fr; } .admin-form-grid .full { grid-column: auto; } .admin-kpis { gap: 10px; } .admin-kpi { padding: 14px; } }

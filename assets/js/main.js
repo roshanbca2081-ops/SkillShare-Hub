@@ -31,12 +31,39 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Mobile sidebar toggle
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    if (sidebarToggle) {
+    // Fresher mobile drawer: keep page scrolling locked while the drawer is open.
+    const sidebarToggle = document.getElementById('fresherSidebarToggle');
+    const fresherSidebar = document.getElementById('fresherSidebar');
+    const setFresherSidebarOpen = open => {
+        document.body.classList.toggle('fresher-sidebar-open', open);
+        if (sidebarToggle) {
+            sidebarToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            sidebarToggle.setAttribute('aria-label', open ? 'Close student navigation' : 'Open student navigation');
+        }
+    };
+
+    if (sidebarToggle && fresherSidebar) {
         sidebarToggle.addEventListener('click', function() {
-            const sidebar = document.querySelector('.sidebar');
-            sidebar.classList.toggle('show');
+            setFresherSidebarOpen(!document.body.classList.contains('fresher-sidebar-open'));
+        });
+
+        document.querySelectorAll('[data-fresher-sidebar-close]').forEach(button => {
+            button.addEventListener('click', () => setFresherSidebarOpen(false));
+        });
+
+        fresherSidebar.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => setFresherSidebarOpen(false));
+        });
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && document.body.classList.contains('fresher-sidebar-open')) {
+                setFresherSidebarOpen(false);
+                sidebarToggle.focus();
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768) setFresherSidebarOpen(false);
         });
     }
 });

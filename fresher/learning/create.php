@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_course'])) {
                                VALUES ((SELECT id FROM users WHERE role = 'admin' LIMIT 1), 'course_request', 
                                        'New Course Request', 
                                        CONCAT(?, ' has requested a new course: ', ?), 
-                                       'admin/courses/edit.php?id=' || ?)");
+                                       CONCAT('admin/courses/edit.php?id=', ?))");
         $stmt->execute([getUserName(), $title, $course_id]);
         
         $_SESSION['alert'] = [

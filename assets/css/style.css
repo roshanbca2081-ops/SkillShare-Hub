@@ -68,6 +68,77 @@ a:hover {
     padding: 20px 0;
 }
 
+/* Keep role navigation in place while the main page scrolls. */
+.role-section-sidebar {
+    position: fixed;
+    z-index: 1020;
+    top: 72px;
+    left: 0;
+    width: 25vw;
+    height: calc(100vh - 72px);
+    min-height: 0 !important;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+}
+
+.navbar-glass.role-section-navbar {
+    width: calc(100% - 25vw - 24px);
+    max-width: none;
+    margin: 12px 12px 0 calc(25vw + 12px);
+    z-index: 1030 !important;
+}
+
+@media (min-width: 992px) {
+    .role-section-sidebar {
+        width: 16.666667vw;
+    }
+
+    .navbar-glass.role-section-navbar {
+        width: calc(100% - 16.666667vw - 24px);
+        margin-left: calc(16.666667vw + 12px);
+    }
+}
+
+@media (max-width: 767.98px) {
+    .role-section-sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        min-height: 0 !important;
+        overflow: visible;
+    }
+
+    .navbar-glass.role-section-navbar {
+        width: min(94%, 1200px);
+        margin: 12px auto 0;
+    }
+}
+
+@media (min-width: 768px) and (max-height: 900px) {
+    .role-section-sidebar {
+        padding-top: 8px !important;
+        padding-bottom: 8px !important;
+    }
+
+    .role-section-sidebar .nav-link {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        padding: 4px 12px !important;
+        font-size: .82rem;
+        line-height: 1.15;
+    }
+
+    .role-section-sidebar h6 {
+        margin-bottom: 4px;
+    }
+
+    .role-section-sidebar hr {
+        margin: 6px 0;
+    }
+}
+
 .sidebar .nav-link {
     color: #cbd5e0;
     padding: 10px 20px;
@@ -268,5 +339,11 @@ footer a:hover {
     
     .display-4 {
         font-size: 2rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .container-fluid > .row > .sidebar:not(.role-section-sidebar) {
+        display: none !important;
     }
 }

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 520" fill="none">
+  <defs>
+    <linearGradient id="bookBlue" x1="160" y1="250" x2="480" y2="410" gradientUnits="userSpaceOnUse"><stop stop-color="#69A8FF"/><stop offset=".52" stop-color="#3474F5"/><stop offset="1" stop-color="#4933D9"/></linearGradient>
+    <linearGradient id="bookViolet" x1="202" y1="315" x2="463" y2="435" gradientUnits="userSpaceOnUse"><stop stop-color="#B89BFF"/><stop offset="1" stop-color="#7650EE"/></linearGradient>
+    <linearGradient id="laptop" x1="356" y1="305" x2="524" y2="420" gradientUnits="userSpaceOnUse"><stop stop-color="#343A78"/><stop offset="1" stop-color="#151A48"/></linearGradient>
+    <linearGradient id="cap" x1="270" y1="92" x2="468" y2="185" gradientUnits="userSpaceOnUse"><stop stop-color="#272C75"/><stop offset="1" stop-color="#10163E"/></linearGradient>
+    <linearGradient id="leaf" x1="462" y1="148" x2="596" y2="284" gradientUnits="userSpaceOnUse"><stop stop-color="#A98CFF"/><stop offset="1" stop-color="#5A64E9"/></linearGradient>
+    <filter id="shadow" x="79" y="137" width="510" height="354" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feGaussianBlur stdDeviation="17"/></filter>
+  </defs>
+  <ellipse cx="335" cy="418" rx="221" ry="31" fill="#6678E8" opacity=".18" filter="url(#shadow)"/>
+  <circle cx="448" cy="182" r="116" fill="#B8A7FF" opacity=".18"/>
+  <circle cx="174" cy="213" r="91" fill="#8EC8FF" opacity=".20"/>
+  <path d="M497 294c-7-74 25-128 82-153 9 61-16 114-82 153Z" fill="url(#leaf)" opacity=".82"/>
+  <path d="M488 297c-2-62-35-103-85-117 1 54 28 96 85 117Z" fill="#7462F2" opacity=".73"/>
+  <path d="M503 300c26-53 72-75 121-64-22 49-61 72-121 64Z" fill="#8F79FA" opacity=".74"/>
+  <path d="M493 304c-31-54-29-102 5-143 27 48 26 94-5 143Z" fill="#B6A1FF" opacity=".74"/>
+  <path d="M492 304 531 166M492 304l-78-122M492 304l132-68M492 304l6-143" stroke="#7768E8" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+  <path d="M137 362c35-30 70-43 105-37l224 38c10 2 15 13 8 21l-27 31c-5 6-13 9-21 7l-224-40c-32-6-54-12-65-20Z" fill="#E7EBFF" stroke="#BCC9FF" stroke-width="3"/>
+  <path d="M161 330c12-12 26-16 44-13l258 44c11 2 15 13 8 22l-30 34c-6 7-14 10-23 8l-254-45c-18-3-31-11-40-24l37-26Z" fill="url(#bookViolet)"/>
+  <path d="M160 330c14-9 27-12 45-9l260 45-19 20-266-45c-10-2-17-6-20-11Z" fill="#F7F6FF"/>
+  <path d="M133 284c15-16 31-23 51-19l284 48c11 2 15 13 8 22l-34 40c-6 7-14 10-23 8l-277-48c-20-4-34-12-43-25l34-26Z" fill="url(#bookBlue)"/>
+  <path d="M134 284c13-12 29-17 49-14l287 48-21 21-282-48c-16-3-27-6-33-7Z" fill="#F8FAFF"/>
+  <path d="M171 251c11-12 25-16 41-13l239 39c11 2 14 12 7 20l-28 31-250-42c-14-2-24-9-30-18l21-17Z" fill="#C9D7FF"/>
+  <path d="M169 250c14-11 27-14 43-11l239 39-17 18-249-41c-8-1-13-3-16-5Z" fill="#fff"/>
+  <path d="M343 320 470 343c10 2 16 11 14 21l-10 43-155-27 24-60Z" fill="url(#laptop)"/>
+  <path d="m310 380 160 28 36-8c8-2 12 7 5 12l-27 18-196-34 22-16Z" fill="#626CBA"/>
+  <path d="m367 337 84 15-8 29-90-16 14-28Z" fill="#8293F5" opacity=".8"/>
+  <path d="m260 151 126-63 143 50-124 69-145-56Z" fill="url(#cap)"/>
+  <path d="m260 151 145 56 124-69-2 18-121 72-147-59 1-18Z" fill="#1C225C"/>
+  <path d="M404 151v45" stroke="#FF9E31" stroke-width="5" stroke-linecap="round"/>
+  <path d="M404 196c-11 9-12 24 0 31 12-7 12-22 0-31Z" fill="#FF9E31"/>
+  <path d="M382 99c27 11 46 22 65 39" stroke="#FFB34B" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="399" cy="148" rx="11" ry="5" fill="#0E1338"/>
+  <path d="M130 213c-20-20-26-42-17-65 24 10 38 29 40 56-3 5-11 9-23 9Z" fill="#8BC9FF" opacity=".72"/>
+  <path d="M116 193c8-13 19-25 34-35" stroke="#528BEE" stroke-width="3" stroke-linecap="round"/>
+  <path d="M107 154c0-7 5-12 12-12s12 5 12 12-5 12-12 12-12-5-12-12Z" fill="#fff" stroke="#C8D1FF" stroke-width="3"/>
+  <path d="M500 94 506 80M493 99l-14-5M509 101l13-8" stroke="#7C60F5" stroke-width="3" stroke-linecap="round"/>
+  <path d="M192 182v-18m-9 9h18M559 338v-14m-7 7h14" stroke="#4D77F4" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+</svg>

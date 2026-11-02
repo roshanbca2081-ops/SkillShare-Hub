@@ -62,9 +62,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_course'])) {
 if (isset($_POST['add_module'])) {
     $module_title = sanitize($_POST['module_title']);
     $order_number = (int)$_POST['order_number'];
+    $is_published = isset($_POST['module_is_published']) ? 1 : 0;
     
-    $stmt = $pdo->prepare("INSERT INTO course_modules (course_id, title, order_number) VALUES (?, ?, ?)");
-    $stmt->execute([$course_id, $module_title, $order_number]);
+    $stmt = $pdo->prepare("INSERT INTO course_modules (course_id, title, order_number, is_published) VALUES (?, ?, ?, ?)");
+    $stmt->execute([$course_id, $module_title, $order_number, $is_published]);
     
     $_SESSION['alert'] = [
         'type' => 'success',
@@ -72,6 +73,24 @@ if (isset($_POST['add_module'])) {
         'message' => 'Module added successfully!'
     ];
     redirect('edit.php?id=' . $course_id);
+}
+
+// Update module details and learner visibility.
+if (isset($_POST['update_module'])) {
+    $module_id = (int)($_POST['module_id'] ?? 0);
+    $module_title = trim(sanitize($_POST['module_title'] ?? ''));
+    $order_number = max(0, (int)($_POST['module_order'] ?? 0));
+    $is_published = isset($_POST['module_is_published']) ? 1 : 0;
+    if ($module_id && $module_title !== '') {
+        $stmt = $pdo->prepare('UPDATE course_modules SET title = ?, order_number = ?, is_published = ? WHERE id = ? AND course_id = ?');
+        $stmt->execute([$module_title, $order_number, $is_published, $module_id, $course_id]);
+    }
+    $_SESSION['alert'] = [
+        'type' => 'success',
+        'icon' => 'check-circle',
+        'message' => 'Module updated. Published modules are visible to enrolled freshers.',
+    ];
+    redirect('edit.php?id=' . $course_id . '#modules');
 }
 
 // Delete module
@@ -97,24 +116,64 @@ if (isset($_POST['add_lesson'])) {
     $content = sanitize($_POST['lesson_content']);
     $duration = (int)$_POST['lesson_duration'];
     $is_free = isset($_POST['is_free']) ? 1 : 0;
+    $resource_url = trim(sanitize($_POST['resource_url'] ?? ''));
+    $is_published = isset($_POST['is_published']) ? 1 : 0;
+
+    // Never allow a mentor to add content to another mentor's course.
+    $stmt = $pdo->prepare('SELECT id FROM course_modules WHERE id = ? AND course_id = ?');
+    $stmt->execute([$module_id, $course_id]);
+    if (!$stmt->fetchColumn()) {
+        $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => 'Module not found for this course.'];
+        redirect('edit.php?id=' . $course_id . '#modules');
+    }
     
-    $stmt = $pdo->prepare("INSERT INTO course_lessons (module_id, title, video_url, content, video_duration, order_number, is_free) 
-                           VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$module_id, $lesson_title, $video_url, $content, $duration, $order_number, $is_free]);
+    $stmt = $pdo->prepare("INSERT INTO course_lessons (module_id, title, video_url, resource_url, content, video_duration, order_number, is_free, is_published) 
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$module_id, $lesson_title, $video_url, $resource_url, $content, $duration, $order_number, $is_free, $is_published]);
     
     $_SESSION['alert'] = [
         'type' => 'success',
         'icon' => 'check-circle',
-        'message' => 'Lesson added successfully!'
+        'message' => $is_published ? 'Lesson published and visible to enrolled freshers.' : 'Lesson saved as a draft.'
     ];
-    redirect('edit.php?id=' . $course_id);
+    redirect('edit.php?id=' . $course_id . '#modules');
+}
+
+// Update existing lesson content and publication state.
+if (isset($_POST['update_lesson'])) {
+    $lesson_id = (int)($_POST['lesson_id'] ?? 0);
+    $lesson_title = trim(sanitize($_POST['lesson_title'] ?? ''));
+    $video_url = trim(sanitize($_POST['video_url'] ?? ''));
+    $resource_url = trim(sanitize($_POST['resource_url'] ?? ''));
+    $content = sanitize($_POST['lesson_content'] ?? '');
+    $duration = max(0, (int)($_POST['lesson_duration'] ?? 0));
+    $order_number = max(0, (int)($_POST['lesson_order'] ?? 0));
+    $is_free = isset($_POST['is_free']) ? 1 : 0;
+    $is_published = isset($_POST['is_published']) ? 1 : 0;
+
+    $stmt = $pdo->prepare('UPDATE course_lessons l JOIN course_modules m ON m.id = l.module_id SET l.title = ?, l.video_url = ?, l.resource_url = ?, l.content = ?, l.video_duration = ?, l.order_number = ?, l.is_free = ?, l.is_published = ? WHERE l.id = ? AND m.course_id = ?');
+    $stmt->execute([$lesson_title, $video_url, $resource_url, $content, $duration, $order_number, $is_free, $is_published, $lesson_id, $course_id]);
+    if ($stmt->rowCount() === 0) {
+        $verifyStmt = $pdo->prepare('SELECT COUNT(*) FROM course_lessons l JOIN course_modules m ON m.id = l.module_id WHERE l.id = ? AND m.course_id = ?');
+        $verifyStmt->execute([$lesson_id, $course_id]);
+        if (!(int)$verifyStmt->fetchColumn()) {
+            $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => 'Lesson not found for this course.'];
+            redirect('edit.php?id=' . $course_id . '#modules');
+        }
+    }
+    $_SESSION['alert'] = [
+        'type' => 'success',
+        'icon' => 'check-circle',
+        'message' => $is_published ? 'Lesson changes saved and published to enrolled freshers.' : 'Lesson changes saved as a draft.',
+    ];
+    redirect('edit.php?id=' . $course_id . '#modules');
 }
 
 // Delete lesson
 if (isset($_GET['delete_lesson']) && isset($_GET['lesson_id'])) {
     $lesson_id = (int)$_GET['lesson_id'];
-    $stmt = $pdo->prepare("DELETE FROM course_lessons WHERE id = ?");
-    $stmt->execute([$lesson_id]);
+    $stmt = $pdo->prepare("DELETE l FROM course_lessons l JOIN course_modules m ON m.id = l.module_id WHERE l.id = ? AND m.course_id = ?");
+    $stmt->execute([$lesson_id, $course_id]);
     
     $_SESSION['alert'] = [
         'type' => 'warning',
@@ -253,7 +312,11 @@ if (isset($_GET['delete_lesson']) && isset($_GET['lesson_id'])) {
                                         <div class="col-md-3">
                                             <input type="number" name="order_number" class="form-control" placeholder="Order" value="<?php echo count($modules) + 1; ?>">
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-3 d-flex align-items-center gap-2">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" name="module_is_published" id="newModulePublished" checked>
+                                                <label class="form-check-label" for="newModulePublished">Publish</label>
+                                            </div>
                                             <button type="submit" name="add_module" class="btn btn-primary w-100">
                                                 <i class="fas fa-plus"></i> Add Module
                                             </button>
@@ -269,6 +332,7 @@ if (isset($_GET['delete_lesson']) && isset($_GET['lesson_id'])) {
                                         Module <?php echo $module['order_number']; ?>: <?php echo htmlspecialchars($module['title']); ?>
                                     </h6>
                                     <div>
+                                        <span class="badge bg-<?php echo !empty($module['is_published']) ? 'success' : 'secondary'; ?> me-2"><?php echo !empty($module['is_published']) ? 'Published' : 'Draft'; ?></span>
                                         <span class="badge bg-secondary"><?php echo count($module['lessons']); ?> lessons</span>
                                         <a href="?delete_module=1&module_id=<?php echo $module['id']; ?>&id=<?php echo $course_id; ?>" 
                                            class="btn btn-sm btn-danger" onclick="return confirm('Delete this module?')">
@@ -277,6 +341,13 @@ if (isset($_GET['delete_lesson']) && isset($_GET['lesson_id'])) {
                                     </div>
                                 </div>
                                 <div class="card-body">
+                                    <form method="POST" class="row g-2 align-items-center mb-3 p-2 rounded bg-light">
+                                        <input type="hidden" name="module_id" value="<?php echo (int)$module['id']; ?>">
+                                        <div class="col-md-6"><input type="text" name="module_title" class="form-control form-control-sm" value="<?php echo htmlspecialchars($module['title'], ENT_QUOTES, 'UTF-8'); ?>" required aria-label="Module title"></div>
+                                        <div class="col-md-2"><input type="number" name="module_order" class="form-control form-control-sm" value="<?php echo (int)$module['order_number']; ?>" min="0" aria-label="Module order"></div>
+                                        <div class="col-md-2"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="module_is_published" id="modulePublished<?php echo (int)$module['id']; ?>" <?php echo !empty($module['is_published']) ? 'checked' : ''; ?>><label class="form-check-label small" for="modulePublished<?php echo (int)$module['id']; ?>">Visible</label></div></div>
+                                        <div class="col-md-2"><button type="submit" name="update_module" class="btn btn-sm btn-outline-primary w-100">Save Module</button></div>
+                                    </form>
                                     <!-- Add Lesson Form -->
                                     <form method="POST" class="row g-2 mb-3">
                                         <input type="hidden" name="module_id" value="<?php echo $module['id']; ?>">
@@ -299,9 +370,18 @@ if (isset($_GET['delete_lesson']) && isset($_GET['lesson_id'])) {
                                             <input type="text" name="video_url" class="form-control form-control-sm" placeholder="Video URL (optional)">
                                         </div>
                                         <div class="col-md-12">
-                                            <textarea name="lesson_content" class="form-control form-control-sm" rows="2" placeholder="Lesson content..."></textarea>
+                                            <input type="text" name="resource_url" class="form-control form-control-sm" placeholder="Resource URL (optional)">
                                         </div>
                                         <div class="col-md-12">
+                                            <textarea name="lesson_content" class="form-control form-control-sm" rows="2" placeholder="Lesson content..."></textarea>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check form-switch mt-2">
+                                                <input class="form-check-input" type="checkbox" name="is_published" id="lessonPublishedNew<?php echo (int)$module['id']; ?>" checked>
+                                                <label class="form-check-label small" for="lessonPublishedNew<?php echo (int)$module['id']; ?>">Publish and show to enrolled freshers</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
                                             <button type="submit" name="add_lesson" class="btn btn-sm btn-success">
                                                 <i class="fas fa-plus"></i> Add Lesson
                                             </button>
@@ -316,6 +396,7 @@ if (isset($_GET['delete_lesson']) && isset($_GET['lesson_id'])) {
                                             <div>
                                                 <span class="badge bg-secondary me-2"><?php echo $lesson['order_number']; ?></span>
                                                 <?php echo htmlspecialchars($lesson['title']); ?>
+                                                <span class="badge bg-<?php echo !empty($lesson['is_published']) ? 'success' : 'secondary'; ?> ms-1"><?php echo !empty($lesson['is_published']) ? 'Published' : 'Draft'; ?></span>
                                                 <?php if ($lesson['is_free']): ?>
                                                     <span class="badge bg-success">Free</span>
                                                 <?php endif; ?>
@@ -327,6 +408,23 @@ if (isset($_GET['delete_lesson']) && isset($_GET['lesson_id'])) {
                                                     <i class="fas fa-trash"></i>
                                                 </a>
                                             </div>
+                                        </li>
+                                        <li class="list-group-item bg-light">
+                                            <details>
+                                                <summary class="small fw-semibold">Edit lesson content and visibility</summary>
+                                                <form method="POST" class="row g-2 mt-2">
+                                                    <input type="hidden" name="lesson_id" value="<?php echo (int)$lesson['id']; ?>">
+                                                    <div class="col-md-8"><label class="form-label small">Lesson title</label><input type="text" name="lesson_title" class="form-control form-control-sm" value="<?php echo htmlspecialchars($lesson['title'], ENT_QUOTES, 'UTF-8'); ?>" required></div>
+                                                    <div class="col-md-4"><label class="form-label small">Order</label><input type="number" name="lesson_order" class="form-control form-control-sm" min="0" value="<?php echo (int)$lesson['order_number']; ?>"></div>
+                                                    <div class="col-md-6"><label class="form-label small">Video URL</label><input type="url" name="video_url" class="form-control form-control-sm" value="<?php echo htmlspecialchars((string)($lesson['video_url'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"></div>
+                                                    <div class="col-md-6"><label class="form-label small">Resource URL</label><input type="url" name="resource_url" class="form-control form-control-sm" value="<?php echo htmlspecialchars((string)($lesson['resource_url'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"></div>
+                                                    <div class="col-md-12"><label class="form-label small">Lesson content</label><textarea name="lesson_content" class="form-control form-control-sm" rows="5"><?php echo htmlspecialchars((string)($lesson['content'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></textarea></div>
+                                                    <div class="col-md-4"><label class="form-label small">Duration (minutes)</label><input type="number" name="lesson_duration" class="form-control form-control-sm" min="0" value="<?php echo (int)($lesson['video_duration'] ?? 0); ?>"></div>
+                                                    <div class="col-md-4 d-flex align-items-end"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" name="is_free" id="lessonFree<?php echo (int)$lesson['id']; ?>" <?php echo !empty($lesson['is_free']) ? 'checked' : ''; ?>><label class="form-check-label small" for="lessonFree<?php echo (int)$lesson['id']; ?>">Free lesson</label></div></div>
+                                                    <div class="col-md-4 d-flex align-items-end"><div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" name="is_published" id="lessonPublished<?php echo (int)$lesson['id']; ?>" <?php echo !empty($lesson['is_published']) ? 'checked' : ''; ?>><label class="form-check-label small" for="lessonPublished<?php echo (int)$lesson['id']; ?>">Visible to freshers</label></div></div>
+                                                    <div class="col-12"><button type="submit" name="update_lesson" class="btn btn-sm btn-primary"><i class="fas fa-save me-1"></i>Save Lesson</button></div>
+                                                </form>
+                                            </details>
                                         </li>
                                         <?php endforeach; ?>
                                     </ul>

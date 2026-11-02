@@ -158,7 +158,7 @@ $certificates_count = $stmt->fetchColumn();
                             <?php foreach ($continue_courses as $course): ?>
                             <div class="continue-item mb-3">
                                 <div class="d-flex align-items-center">
-                                    <img src="<?php echo $course['thumbnail'] ?? '../../assets/images/course-placeholder.jpg'; ?>" 
+                                    <img src="<?php echo htmlspecialchars(getCourseThumbnail($course), ENT_QUOTES, 'UTF-8'); ?>" 
                                          alt="<?php echo $course['title']; ?>" 
                                          class="rounded me-3" 
                                          style="width: 80px; height: 60px; object-fit: cover;">
@@ -308,7 +308,7 @@ $certificates_count = $stmt->fetchColumn();
                             <?php foreach ($recommended_courses as $course): ?>
                             <div class="p-3 border-bottom">
                                 <div class="d-flex align-items-center">
-                                    <img src="<?php echo $course['thumbnail'] ?? '../../assets/images/course-placeholder.jpg'; ?>" 
+                                    <img src="<?php echo htmlspecialchars(getCourseThumbnail($course), ENT_QUOTES, 'UTF-8'); ?>" 
                                          alt="<?php echo $course['title']; ?>" 
                                          class="rounded me-2" 
                                          style="width: 50px; height: 40px; object-fit: cover;">

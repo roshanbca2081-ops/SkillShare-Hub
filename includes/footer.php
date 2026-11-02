@@ -2,7 +2,7 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-4 mb-4">
-                <h5 class="mb-3"><i class="fas fa-graduation-cap"></i> SkillShare Hub</h5>
+                <h5 class="mb-3"><img class="site-brand-mark" src="<?php echo appUrl('assets/images/logo/skillshare-hub-mark.svg'); ?>" alt=""> SkillShare Hub</h5>
                 <p>Connecting freshers with experienced mentors for skill development and career growth.</p>
                 <div class="mt-3">
                     <a href="#" class="text-white-50 me-3"><i class="fab fa-facebook-f"></i></a>
@@ -42,7 +42,7 @@
     </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?php echo appUrl('assets/js/main.js'); ?>"></script>
+<script src="<?php echo appUrl('assets/js/main.js'); ?>?v=20261031-fresher-sidebar-drawer-v1"></script>
 <?php if (isset($page_js)): ?>
     <script src="<?php echo appUrl('assets/js/' . $page_js); ?>"></script>
 <?php endif; ?>

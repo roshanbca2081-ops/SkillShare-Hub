@@ -101,6 +101,10 @@ function csrfToken()
  */
 function verifyCsrfToken($token)
 {
+    if (!is_string($token)) {
+        return false;
+    }
+
     if (
         empty($_SESSION['csrf_token']) ||
         empty($token)
@@ -380,18 +384,113 @@ function formatCurrency($amount, $currency = 'Rs. ')
 function getAvatar($user)
 {
     $avatar = '';
-
     if (is_array($user)) {
         $avatar = $user['avatar'] ?? '';
     } elseif (is_object($user)) {
         $avatar = $user->avatar ?? '';
     }
 
-    if (!empty($avatar)) {
-        return $avatar;
+    $fallbackPath = 'assets/images/default-avatar.svg';
+    $urlForPath = static function ($path) {
+        $encodedPath = implode('/', array_map('rawurlencode', explode('/', $path)));
+        if (function_exists('appUrl')) {
+            return appUrl($encodedPath);
+        }
+        return '/' . ltrim($encodedPath, '/');
+    };
+
+    $avatar = trim((string)$avatar);
+    if ($avatar === '' || strpos($avatar, "\0") !== false) {
+        return $urlForPath($fallbackPath);
     }
 
-    return '/SkillShare-Hub/assets/images/default-avatar.png';
+    // User profile images are local uploads. Normalize legacy root-relative and
+    // route-relative values so they resolve consistently from every app section.
+    $avatar = str_replace('\\', '/', $avatar);
+    $baseUrl = function_exists('appUrl') ? appUrl('') : '/';
+    $basePath = '/' . trim((string)(parse_url($baseUrl, PHP_URL_PATH) ?? ''), '/');
+    if ($basePath !== '/' && strpos($avatar, $basePath . '/') === 0) {
+        $avatar = substr($avatar, strlen($basePath) + 1);
+    }
+    $avatar = ltrim($avatar, '/');
+
+    // Only serve files inside uploads/profiles. Invalid, stale, or external
+    // database paths should use the local fallback instead of a broken image.
+    if (strpos($avatar, 'uploads/profiles/') !== 0 || preg_match('~(^|/)\.\.?(/|$)~', $avatar)) {
+        return $urlForPath($fallbackPath);
+    }
+
+    $projectRoot = dirname(__DIR__);
+    $resolvedRoot = realpath($projectRoot . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'profiles');
+    $resolvedAvatar = realpath($projectRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $avatar));
+    if ($resolvedRoot === false || $resolvedAvatar === false || !is_file($resolvedAvatar)
+        || strpos($resolvedAvatar, $resolvedRoot . DIRECTORY_SEPARATOR) !== 0) {
+        return $urlForPath($fallbackPath);
+    }
+
+    return $urlForPath($avatar);
+}
+
+
+/**
+ * Resolve a course thumbnail to an existing project image, otherwise use the
+ * branded local placeholder. Database thumbnail values may be stale filenames.
+ */
+function getCourseThumbnail($course)
+{
+    $thumbnail = '';
+    if (is_array($course)) {
+        $thumbnail = $course['thumbnail'] ?? '';
+    } elseif (is_object($course)) {
+        $thumbnail = $course->thumbnail ?? '';
+    }
+
+    $fallback = 'assets/images/course-placeholder.svg';
+    $toUrl = static function ($path) {
+        $encodedPath = implode('/', array_map('rawurlencode', explode('/', $path)));
+        return function_exists('appUrl') ? appUrl($encodedPath) : '/' . ltrim($encodedPath, '/');
+    };
+
+    $thumbnail = trim((string)$thumbnail);
+    if ($thumbnail === '' || strpos($thumbnail, "\0") !== false) {
+        return $toUrl($fallback);
+    }
+
+    if (filter_var($thumbnail, FILTER_VALIDATE_URL)) {
+        $scheme = strtolower((string)parse_url($thumbnail, PHP_URL_SCHEME));
+        return in_array($scheme, ['http', 'https'], true) ? $thumbnail : $toUrl($fallback);
+    }
+
+    $thumbnail = str_replace('\\', '/', $thumbnail);
+    $baseUrl = function_exists('appUrl') ? appUrl('') : '/';
+    $basePath = '/' . trim((string)(parse_url($baseUrl, PHP_URL_PATH) ?? ''), '/');
+    if ($basePath !== '/' && strpos($thumbnail, $basePath . '/') === 0) {
+        $thumbnail = substr($thumbnail, strlen($basePath) + 1);
+    }
+    $thumbnail = ltrim($thumbnail, '/');
+
+    // Older rows contain bare filenames; current uploads live under uploads/courses.
+    if (strpos($thumbnail, '/') === false) {
+        $thumbnail = 'uploads/courses/' . $thumbnail;
+    }
+    if (strpos($thumbnail, 'uploads/courses/') !== 0
+        && strpos($thumbnail, 'assets/images/courses/') !== 0) {
+        return $toUrl($fallback);
+    }
+    if (preg_match('~(^|/)\.\.?(/|$)~', $thumbnail)) {
+        return $toUrl($fallback);
+    }
+
+    $projectRoot = dirname(__DIR__);
+    $allowedRoot = strpos($thumbnail, 'uploads/courses/') === 0 ? 'uploads/courses' : 'assets/images/courses';
+    $resolvedRoot = realpath($projectRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $allowedRoot));
+    $resolvedFile = realpath($projectRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $thumbnail));
+    if ($resolvedRoot === false || $resolvedFile === false || !is_file($resolvedFile)
+        || strpos($resolvedFile, $resolvedRoot . DIRECTORY_SEPARATOR) !== 0) {
+        return $toUrl($fallback);
+    }
+
+    return $toUrl($thumbnail);
 }
 
 

@@ -1,0 +1,14 @@
+-- OPTIONAL, DESTRUCTIVE CLEANUP — not run by the application or setup scripts.
+-- OAuth sign-in has been removed. The application no longer reads or writes this table.
+-- Existing rows and the table are retained unless you choose to remove them.
+--
+-- Before continuing:
+-- 1. Back up the database, for example from PowerShell:
+--    E:\xampp\mysql\bin\mysqldump.exe -u root skillshare_hub > skillshare_hub_before_oauth_cleanup.sql
+--    Add -p if your MySQL root account uses a password.
+-- 2. Verify the backup file exists and can be restored.
+-- 3. Check whether you need any legacy linked identity records:
+SELECT COUNT(*) AS oauth_account_rows FROM oauth_accounts;
+-- 4. Confirm no other application or service uses oauth_accounts.
+-- 5. Only then manually uncomment and run the next statement:
+-- DROP TABLE IF EXISTS `oauth_accounts`;

@@ -97,7 +97,7 @@ $ratings = $stmt->fetchAll();
                             <?php foreach ($courses as $course): ?>
                             <div class="col-md-6">
                                 <div class="card h-100">
-                                    <img src="<?php echo $course['thumbnail'] ?? '../assets/images/course-placeholder.jpg'; ?>" class="card-img-top" alt="<?php echo $course['title']; ?>" style="height: 140px; object-fit: cover;">
+                                    <img src="<?php echo htmlspecialchars(getCourseThumbnail($course), ENT_QUOTES, 'UTF-8'); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($course['title'], ENT_QUOTES, 'UTF-8'); ?>" style="height: 140px; object-fit: cover;">
                                     <div class="card-body">
                                         <h6><?php echo htmlspecialchars($course['title']); ?></h6>
                                         <div class="d-flex justify-content-between align-items-center">

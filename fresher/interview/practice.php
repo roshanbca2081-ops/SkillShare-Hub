@@ -10,6 +10,17 @@ requireFresher();
 $user_id = getUserId();
 $question_id = isset($_GET['question']) ? (int)$_GET['question'] : 0;
 $mode = isset($_GET['mode']) ? sanitize($_GET['mode']) : 'random';
+$savedQuestionsAvailable = (bool)$pdo->query("SHOW TABLES LIKE 'interview_saved'")->fetchColumn();
+$practiceHistoryAvailable = (bool)$pdo->query("SHOW TABLES LIKE 'interview_practice'")->fetchColumn();
+
+if ($mode === 'saved' && !$savedQuestionsAvailable) {
+    $_SESSION['alert'] = [
+        'type' => 'warning',
+        'icon' => 'exclamation-triangle',
+        'message' => 'Saved-question practice is not enabled in this database yet.',
+    ];
+    redirect('index.php');
+}
 
 // Get questions for practice
 if ($question_id) {
@@ -37,7 +48,7 @@ if ($question_id) {
         $query .= " AND q.difficulty = 'medium'";
     } elseif ($mode === 'hard') {
         $query .= " AND q.difficulty = 'hard'";
-    } elseif ($mode === 'saved') {
+    } elseif ($mode === 'saved' && $savedQuestionsAvailable) {
         $query .= " AND q.id IN (SELECT question_id FROM interview_saved WHERE fresher_id = ?)";
         $params[] = $user_id;
     }
@@ -77,7 +88,13 @@ if (isset($_GET['next']) && $current_index < $total_questions - 1) {
 $show_answer = isset($_GET['show_answer']) ? true : false;
 
 // Save practice session
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_practice'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_practice']) && !$practiceHistoryAvailable) {
+    $_SESSION['alert'] = [
+        'type' => 'warning',
+        'icon' => 'exclamation-triangle',
+        'message' => 'Practice history storage is not configured in this database. Continue practicing without saving history.',
+    ];
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_practice']) && $practiceHistoryAvailable) {
     $question_id = (int)$_POST['question_id'];
     $difficulty = sanitize($_POST['difficulty']);
     $notes = sanitize($_POST['notes'] ?? '');
@@ -94,14 +111,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_practice'])) {
 }
 
 // Get practice stats
-$stmt = $pdo->prepare("SELECT COUNT(*) as total, 
-                       AVG(CASE WHEN difficulty = 'easy' THEN 1 ELSE 0 END) as easy_ratio,
-                       AVG(CASE WHEN difficulty = 'medium' THEN 1 ELSE 0 END) as medium_ratio,
-                       AVG(CASE WHEN difficulty = 'hard' THEN 1 ELSE 0 END) as hard_ratio
-                       FROM interview_practice 
-                       WHERE fresher_id = ?");
-$stmt->execute([$user_id]);
-$stats = $stmt->fetch();
+if ($practiceHistoryAvailable) {
+    $stmt = $pdo->prepare("SELECT COUNT(*) as total,
+                           AVG(CASE WHEN difficulty = 'easy' THEN 1 ELSE 0 END) as easy_ratio,
+                           AVG(CASE WHEN difficulty = 'medium' THEN 1 ELSE 0 END) as medium_ratio,
+                           AVG(CASE WHEN difficulty = 'hard' THEN 1 ELSE 0 END) as hard_ratio
+                           FROM interview_practice
+                           WHERE fresher_id = ?");
+    $stmt->execute([$user_id]);
+    $stats = $stmt->fetch();
+} else {
+    $stats = ['total' => 0, 'easy_ratio' => null, 'medium_ratio' => null, 'hard_ratio' => null];
+}
 ?>
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/navbar.php'; ?>
@@ -221,6 +242,7 @@ $stats = $stmt->fetch();
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-body p-4">
                             <h6>Practice Notes</h6>
+                            <?php if ($practiceHistoryAvailable): ?>
                             <form method="POST">
                                 <input type="hidden" name="question_id" value="<?php echo $current_question['id']; ?>">
                                 <input type="hidden" name="difficulty" value="<?php echo $current_question['difficulty']; ?>">
@@ -232,6 +254,9 @@ $stats = $stmt->fetch();
                                     <i class="fas fa-save"></i> Save Notes
                                 </button>
                             </form>
+                            <?php else: ?>
+                                <p class="small text-muted mb-0">Practice history storage is not configured in this database, so notes cannot be saved yet.</p>
+                            <?php endif; ?>
                         </div>
                     </div>
                     

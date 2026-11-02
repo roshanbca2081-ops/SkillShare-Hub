@@ -89,7 +89,7 @@ $total_progress = $total_courses > 0 ? array_sum(array_column($courses, 'progres
                     <div class="card border-0 shadow-sm">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
-                                <img src="<?php echo $course['thumbnail'] ?? '../../assets/images/course-placeholder.jpg'; ?>" 
+                                <img src="<?php echo htmlspecialchars(getCourseThumbnail($course), ENT_QUOTES, 'UTF-8'); ?>"
                                      alt="<?php echo $course['title']; ?>" 
                                      class="rounded me-3" style="width: 80px; height: 60px; object-fit: cover;">
                                 <div class="flex-grow-1">

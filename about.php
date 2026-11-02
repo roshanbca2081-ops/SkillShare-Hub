@@ -1,88 +1,73 @@
 <?php
 $page_title = 'About Us';
-require_once 'config/session.php';
+require_once __DIR__ . '/config/session.php';
+require_once __DIR__ . '/config/functions.php';
 ?>
-<?php include 'includes/header.php'; ?>
-<?php include 'includes/navbar.php'; ?>
+<?php include __DIR__ . '/includes/header.php'; ?>
+<?php include __DIR__ . '/includes/navbar.php'; ?>
 
-<div class="container py-5">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <h1 class="display-4 fw-bold text-center mb-4">About SkillShare Hub</h1>
-            <p class="lead text-center text-muted mb-5">Bridging the gap between freshers and industry experts</p>
-            
-            <div class="mb-5">
-                <h3>Our Mission</h3>
-                <p>At SkillShare Hub, our mission is to democratize education and make quality learning accessible to everyone. We believe that everyone deserves an opportunity to learn from the best minds in the industry.</p>
-            </div>
-            
-            <div class="mb-5">
-                <h3>What We Do</h3>
-                <p>We connect freshers with experienced mentors across various domains. Our platform offers:</p>
-                <ul>
-                    <li>Live interactive sessions with industry experts</li>
-                    <li>Self-paced courses with practical projects</li>
-                    <li>One-on-one mentorship opportunities</li>
-                    <li>Research collaboration with experienced researchers</li>
-                    <li>Interview preparation and career guidance</li>
-                </ul>
-            </div>
-            
-            <div class="mb-5">
-                <h3>Why Choose Us</h3>
-                <div class="row g-4">
-                    <div class="col-md-4">
-                        <div class="card h-100 border-0 shadow-sm text-center p-3">
-                            <i class="fas fa-users fs-1 text-primary mb-2"></i>
-                            <h5>Expert Mentors</h5>
-                            <p class="text-muted small">Learn from professionals with real-world experience</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card h-100 border-0 shadow-sm text-center p-3">
-                            <i class="fas fa-laptop fs-1 text-success mb-2"></i>
-                            <h5>Practical Approach</h5>
-                            <p class="text-muted small">Hands-on learning with real projects</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card h-100 border-0 shadow-sm text-center p-3">
-                            <i class="fas fa-certificate fs-1 text-info mb-2"></i>
-                            <h5>Recognized Certificates</h5>
-                            <p class="text-muted small">Earn certificates valued by employers</p>
-                        </div>
-                    </div>
+<main class="landing-home public-info-page">
+    <section class="public-page-hero">
+        <div class="container public-page-hero-inner">
+            <span class="public-page-kicker"><i class="fas fa-sparkles" aria-hidden="true"></i> Our story</span>
+            <h1>Learning grows<br><span>when we grow together.</span></h1>
+            <p>SkillShare Hub brings aspiring learners and experienced professionals together to make meaningful career growth more accessible.</p>
+            <a href="<?php echo appUrl('contact.php'); ?>" class="btn-hero-primary">Meet us halfway <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+        </div>
+        <div class="public-hero-orb public-hero-orb-one" aria-hidden="true"></div>
+        <div class="public-hero-orb public-hero-orb-two" aria-hidden="true"></div>
+    </section>
+
+    <section class="public-story-section">
+        <div class="container">
+            <div class="row g-4 align-items-stretch">
+                <div class="col-lg-7">
+                    <article class="public-story-card h-100">
+                        <span class="public-section-kicker">Why we are here</span>
+                        <h2>Knowledge should open doors for everyone.</h2>
+                        <p>Our mission is to make quality, practical learning accessible by connecting freshers with people who have real-world experience and a willingness to share it.</p>
+                        <p>From guided learning and project support to career conversations, we help turn curiosity into confidence and skills into new opportunities.</p>
+                    </article>
                 </div>
-            </div>
-            
-            <div>
-                <h3>Our Team</h3>
-                <p>We are a team of passionate educators, developers, and designers committed to creating the best learning experience for our users.</p>
-                <div class="row g-3">
-                    <div class="col-md-3 col-6 text-center">
-                        <div class="team-avatar-modern mb-2">JD</div>
-                        <h6 class="mb-0">John Doe</h6>
-                        <small class="text-muted">Founder & CEO</small>
-                    </div>
-                    <div class="col-md-3 col-6 text-center">
-                        <div class="team-avatar-modern mb-2">JS</div>
-                        <h6 class="mb-0">Jane Smith</h6>
-                        <small class="text-muted">CTO</small>
-                    </div>
-                    <div class="col-md-3 col-6 text-center">
-                        <div class="team-avatar-modern mb-2">MJ</div>
-                        <h6 class="mb-0">Mike Johnson</h6>
-                        <small class="text-muted">Head of Mentorship</small>
-                    </div>
-                    <div class="col-md-3 col-6 text-center">
-                        <div class="team-avatar-modern mb-2">SW</div>
-                        <h6 class="mb-0">Sarah Wilson</h6>
-                        <small class="text-muted">Curriculum Designer</small>
-                    </div>
+                <div class="col-lg-5">
+                    <article class="public-story-card public-story-highlight h-100">
+                        <span class="public-story-icon"><i class="fas fa-book-open" aria-hidden="true"></i></span>
+                        <h3>Learn with purpose</h3>
+                        <p>Build practical skills, get thoughtful guidance, and become part of a community that celebrates progress.</p>
+                        <div class="public-story-signoff"><span>Learn</span><i class="fas fa-circle" aria-hidden="true"></i><span>Connect</span><i class="fas fa-circle" aria-hidden="true"></i><span>Grow</span></div>
+                    </article>
                 </div>
             </div>
         </div>
-    </div>
-</div>
+    </section>
 
-<?php include 'includes/footer.php'; ?>
+    <section class="public-benefits-section">
+        <div class="container">
+            <div class="landing-section-heading">
+                <span class="landing-heading-rule" aria-hidden="true"></span>
+                <h2>What makes us different?</h2>
+                <span class="landing-heading-rule" aria-hidden="true"></span>
+                <p>Support for every step of your learning journey.</p>
+            </div>
+            <div class="row g-3 landing-benefit-grid">
+                <div class="col-sm-6 col-xl-3"><article class="landing-benefit-card benefit-experts"><span class="landing-benefit-icon"><i class="fas fa-user-tie" aria-hidden="true"></i></span><span><strong>Guidance from Experts</strong><small>Learn from professionals with firsthand experience.</small></span></article></div>
+                <div class="col-sm-6 col-xl-3"><article class="landing-benefit-card benefit-career"><span class="landing-benefit-icon"><i class="fas fa-laptop-code" aria-hidden="true"></i></span><span><strong>Practical Learning</strong><small>Apply knowledge through projects and practice.</small></span></article></div>
+                <div class="col-sm-6 col-xl-3"><article class="landing-benefit-card benefit-peers"><span class="landing-benefit-icon"><i class="fas fa-people-group" aria-hidden="true"></i></span><span><strong>Community</strong><small>Make connections and keep learning together.</small></span></article></div>
+                <div class="col-sm-6 col-xl-3"><article class="landing-benefit-card benefit-achieve"><span class="landing-benefit-icon"><i class="fas fa-award" aria-hidden="true"></i></span><span><strong>Recognize Progress</strong><small>Celebrate achievements as you move forward.</small></span></article></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="public-cta-section">
+        <div class="container public-cta-card">
+            <div><span class="public-section-kicker">Your next step starts here</span><h2>Ready to learn, connect and grow?</h2></div>
+            <a href="<?php echo appUrl('register.php'); ?>" class="btn-hero-primary">Join SkillShare Hub <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+        </div>
+    </section>
+</main>
+
+<?php include __DIR__ . '/includes/landing-footer.php'; ?>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<?php echo appUrl('assets/js/main.js'); ?>"></script>
+</body>
+</html>

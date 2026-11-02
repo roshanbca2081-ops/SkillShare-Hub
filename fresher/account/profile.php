@@ -13,6 +13,11 @@ $user_id = getUserId();
 $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch();
+$academicInterestOptions = require '../../includes/academic-interest-options.php';
+$selectedAcademicInterests = array_values(array_intersect(
+    $academicInterestOptions,
+    array_map('trim', explode(',', (string)($user['interests'] ?? '')))
+));
 
 // Handle profile update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
@@ -22,13 +27,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $phone = sanitize($_POST['phone']);
     $location = sanitize($_POST['location']);
     $website = sanitize($_POST['website']);
-    $interests = sanitize($_POST['interests']);
+    $submittedInterests = $_POST['academic_interests'] ?? [];
+    if (!is_array($submittedInterests)) {
+        $submittedInterests = [];
+    }
+    $interests = array_values(array_intersect(
+        $academicInterestOptions,
+        array_filter($submittedInterests, 'is_string')
+    ));
+    $interestsString = implode(', ', $interests);
     
     // Validation
     $errors = [];
     if (strlen($full_name) < 2) $errors[] = 'Full name must be at least 2 characters.';
-    if (!empty($phone) && !preg_match('/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/', $phone)) {
-        $errors[] = 'Please enter a valid phone number.';
+    $phoneDigits = preg_replace('/\D+/', '', $phone);
+    if (!empty($phone) && (strlen($phone) > 20 || strlen($phoneDigits) < 7 || strlen($phoneDigits) > 15)) {
+        $errors[] = 'Please enter a valid contact number.';
     }
     if (!empty($website) && !filter_var($website, FILTER_VALIDATE_URL)) {
         $errors[] = 'Please enter a valid URL.';
@@ -39,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                                full_name = ?, bio = ?, title = ?, phone = ?, 
                                location = ?, website = ?, interests = ? 
                                WHERE id = ?");
-        $stmt->execute([$full_name, $bio, $title, $phone, $location, $website, $interests, $user_id]);
+        $stmt->execute([$full_name, $bio, $title, $phone, $location, $website, $interestsString, $user_id]);
         
         $_SESSION['full_name'] = $full_name;
         
@@ -265,9 +279,19 @@ $social_links = $user['social_links'] ? json_decode($user['social_links'], true)
                                                   placeholder="Tell us about yourself..."><?php echo htmlspecialchars($user['bio'] ?? ''); ?></textarea>
                                     </div>
                                     <div class="col-md-12 mb-3">
-                                        <label class="form-label">Interests</label>
-                                        <textarea name="interests" class="form-control" rows="2" 
-                                                  placeholder="e.g., Web Development, Data Science, AI, Design"><?php echo htmlspecialchars($user['interests'] ?? ''); ?></textarea>
+                                        <fieldset class="academic-interest-picker">
+                                            <legend class="form-label mb-1">Choose Your Academic Interests</legend>
+                                            <p class="text-muted small mb-3">You can select multiple fields and change them anytime.</p>
+                                            <input type="hidden" name="academic_interests_submitted" value="1">
+                                            <div class="academic-interest-grid">
+                                                <?php foreach ($academicInterestOptions as $index => $interest): ?>
+                                                    <label class="academic-interest-option">
+                                                        <input type="checkbox" name="academic_interests[]" value="<?php echo htmlspecialchars($interest, ENT_QUOTES, 'UTF-8'); ?>" <?php echo in_array($interest, $selectedAcademicInterests, true) ? 'checked' : ''; ?>>
+                                                        <span><?php echo htmlspecialchars($interest); ?></span>
+                                                    </label>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        </fieldset>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Phone Number</label>
@@ -290,7 +314,7 @@ $social_links = $user['social_links'] ? json_decode($user['social_links'], true)
                                 </div>
                                 
                                 <button type="submit" name="update_profile" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> Save Changes
+                                    <i class="fas fa-save"></i> Save Profile &amp; Interests
                                 </button>
                             </form>
                         </div>

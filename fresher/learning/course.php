@@ -43,11 +43,11 @@ foreach ($modules as $module) {
     $module_lessons = $stmt->fetchAll();
     
     // Get progress for each lesson
-    foreach ($module_lessons as &$lesson) {
+    foreach ($module_lessons as $lessonIndex => $lesson) {
         $stmt = $pdo->prepare("SELECT completed FROM lesson_progress WHERE fresher_id = ? AND lesson_id = ?");
         $stmt->execute([$user_id, $lesson['id']]);
         $progress = $stmt->fetch();
-        $lesson['completed'] = $progress ? $progress['completed'] : false;
+        $module_lessons[$lessonIndex]['completed'] = $progress ? (int)$progress['completed'] : 0;
     }
     $lessons[$module['id']] = $module_lessons;
 }
@@ -65,8 +65,13 @@ foreach ($modules as $module) {
 $lesson_id = isset($_GET['lesson']) ? (int)$_GET['lesson'] : ($first_lesson ? $first_lesson['id'] : 0);
 $current_lesson = null;
 if ($lesson_id) {
-    $stmt = $pdo->prepare("SELECT * FROM course_lessons WHERE id = ? AND is_published = 1");
-    $stmt->execute([$lesson_id]);
+    $stmt = $pdo->prepare("SELECT l.*, COALESCE(lp.completed, 0) AS completed
+                           FROM course_lessons l
+                           JOIN course_modules m ON m.id = l.module_id AND m.course_id = ? AND m.is_published = 1
+                           LEFT JOIN lesson_progress lp ON lp.lesson_id = l.id AND lp.fresher_id = ?
+                           WHERE l.id = ? AND l.is_published = 1
+                           LIMIT 1");
+    $stmt->execute([$course_id, $user_id, $lesson_id]);
     $current_lesson = $stmt->fetch();
 }
 

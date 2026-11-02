@@ -1,6 +1,7 @@
 <?php
 $page_title = 'Page Not Found';
 require_once 'config/session.php';
+require_once 'config/database.php';
 ?>
 <?php include 'includes/header.php'; ?>
 <?php include 'includes/navbar.php'; ?>

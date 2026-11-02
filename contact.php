@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ->required('email', 'Email is required.')
         ->email('email', 'Please enter a valid email address.')
         ->required('subject', 'Subject is required.')
-        ->minLength('subject', 3, 'Subject must be at least 3 characters.')
+        ->minLength('subject', 7, 'Subject must be at least 7 characters.')
         ->required('message', 'Message is required.')
         ->minLength('message', 10, 'Message must be at least 10 characters.');
     
@@ -39,62 +39,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php include 'includes/navbar.php'; ?>
 <?php include 'includes/alerts.php'; ?>
 
-<div class="container py-5">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <h1 class="display-4 fw-bold text-center mb-4">Contact Us</h1>
-            <p class="text-center text-muted mb-5">Have questions or feedback? We'd love to hear from you.</p>
+<main class="landing-home public-info-page">
+    <section class="public-page-hero public-contact-hero">
+        <div class="container public-page-hero-inner">
+            <span class="public-page-kicker"><i class="fas fa-paper-plane" aria-hidden="true"></i> We're listening</span>
+            <h1>Let’s start a<br><span>conversation.</span></h1>
+            <p>Have a question, idea, or feedback? Send us a note and the SkillShare Hub team will be glad to hear from you.</p>
+        </div>
+        <div class="public-hero-orb public-hero-orb-one" aria-hidden="true"></div>
+        <div class="public-hero-orb public-hero-orb-two" aria-hidden="true"></div>
+    </section>
+
+    <section class="public-contact-section">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="public-contact-intro">
+                        <span class="public-section-kicker">Get in touch</span>
+                        <h2>We’re here to help.</h2>
+                        <p>Reach out about learning, mentorship, or anything else you’d like to share.</p>
+                    </div>
             
-            <div class="row g-4 mb-5">
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm text-center p-4 h-100">
-                        <i class="fas fa-map-marker-alt fs-1 text-primary mb-3"></i>
-                        <h6>Address</h6>
-                        <p class="text-muted small">123 Learning Street<br>Education City, EC 12345</p>
+            <div class="row g-3 mt-2">
+                <div class="col-12">
+                    <div class="public-contact-card">
+                        <span class="public-contact-icon benefit-experts"><i class="fas fa-location-dot" aria-hidden="true"></i></span>
+                        <div><h6>Address</h6><p>kavre<br>Banepa-5</p></div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm text-center p-4 h-100">
-                        <i class="fas fa-envelope fs-1 text-primary mb-3"></i>
-                        <h6>Email</h6>
-                        <p class="text-muted small">support@skillsharehub.com<br>info@skillsharehub.com</p>
+                <div class="col-12">
+                    <div class="public-contact-card">
+                        <span class="public-contact-icon benefit-peers"><i class="fas fa-envelope" aria-hidden="true"></i></span>
+                        <div><h6>Email</h6><p><a href="mailto:support@skillsharehub.com">skillsharehub123@gmail.com</a><br><a href="mailto:info@skillsharehub.com">info@skillsharehub.com</a></p></div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm text-center p-4 h-100">
-                        <i class="fas fa-phone fs-1 text-primary mb-3"></i>
-                        <h6>Phone</h6>
-                        <p class="text-muted small">+1 (555) 123-4567<br>+1 (555) 987-6543</p>
+                <div class="col-12">
+                    <div class="public-contact-card">
+                        <span class="public-contact-icon benefit-career"><i class="fas fa-phone" aria-hidden="true"></i></span>
+                        <div><h6>Phone</h6><p>9768438873<br>+9767650006</p></div>
                     </div>
                 </div>
             </div>
-            
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
-                    <h3 class="mb-4">Send us a Message</h3>
+                </div>
+                <div class="col-lg-8">
+                    <div class="public-contact-form-card">
+                    <div class="public-contact-form-heading"><span class="public-contact-icon benefit-achieve"><i class="fas fa-message" aria-hidden="true"></i></span><div><h2>Send us a message</h2><p>Fill out the form below and we’ll get back to you.</p></div></div>
                     <form method="POST" id="contactForm" novalidate>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">Full Name <span class="text-danger">*</span></label>
                                 <input type="text" name="name" class="form-control" 
-                                       value="<?php echo $_SESSION['old']['name'] ?? ''; ?>" required>
+                                        value="<?php echo htmlspecialchars((string)($_SESSION['old']['name'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" required>
                                 <div class="invalid-feedback" id="contactNameError"></div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Email Address <span class="text-danger">*</span></label>
                                 <input type="email" name="email" class="form-control" 
-                                       value="<?php echo $_SESSION['old']['email'] ?? ''; ?>" required>
+                                        value="<?php echo htmlspecialchars((string)($_SESSION['old']['email'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" required>
                                 <div class="invalid-feedback" id="contactEmailError"></div>
                             </div>
                             <div class="col-12">
                                 <label class="form-label">Subject <span class="text-danger">*</span></label>
                                 <input type="text" name="subject" class="form-control" 
-                                       value="<?php echo $_SESSION['old']['subject'] ?? ''; ?>" required>
+                                        value="<?php echo htmlspecialchars((string)($_SESSION['old']['subject'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" required>
                                 <div class="invalid-feedback" id="contactSubjectError"></div>
                             </div>
                             <div class="col-12">
                                 <label class="form-label">Message <span class="text-danger">*</span></label>
-                                <textarea name="message" rows="5" class="form-control" required><?php echo $_SESSION['old']['message'] ?? ''; ?></textarea>
+                                <textarea name="message" rows="5" class="form-control" required><?php echo htmlspecialchars((string)($_SESSION['old']['message'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></textarea>
                                 <div class="invalid-feedback" id="contactMessageError"></div>
                                 <small class="text-muted" id="charCount">0 / 1000 characters</small>
                             </div>
@@ -106,11 +118,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
                     </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
+    </section>
+</main>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -188,4 +201,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<?php include 'includes/footer.php'; ?>
+<?php include 'includes/landing-footer.php'; ?>

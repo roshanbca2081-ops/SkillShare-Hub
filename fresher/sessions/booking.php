@@ -15,7 +15,7 @@ if ($session_id) {
     $stmt = $pdo->prepare("SELECT s.*, u.full_name as mentor_name, u.id as mentor_id 
                            FROM sessions s 
                            JOIN users u ON s.mentor_id = u.id 
-                           WHERE s.id = ? AND s.status = 'scheduled'");
+                           WHERE s.id = ? AND s.status = 'scheduled' AND s.scheduled_at > NOW() AND u.role = 'mentor' AND u.is_active = 1");
     $stmt->execute([$session_id]);
     $session = $stmt->fetch();
     
@@ -24,10 +24,10 @@ if ($session_id) {
     }
 } else {
     // Get mentor's available sessions
-    $query = "SELECT s.*, u.full_name as mentor_name 
+    $query = "SELECT s.*, u.full_name as mentor_name, u.id as mentor_id 
               FROM sessions s 
               JOIN users u ON s.mentor_id = u.id 
-              WHERE s.status = 'scheduled' AND s.scheduled_at > NOW()";
+              WHERE s.status = 'scheduled' AND s.scheduled_at > NOW() AND u.role = 'mentor' AND u.is_active = 1";
     $params = [];
     
     if ($mentor_id) {
@@ -45,16 +45,66 @@ if ($session_id) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_session'])) {
     $session_id = (int)$_POST['session_id'];
     $notes = sanitize($_POST['notes'] ?? '');
-    
-    $stmt = $pdo->prepare("INSERT INTO bookings (fresher_id, session_id, notes) VALUES (?, ?, ?)");
-    $stmt->execute([getUserId(), $session_id, $notes]);
-    
-    $_SESSION['alert'] = [
-        'type' => 'success',
-        'icon' => 'check-circle',
-        'message' => 'Session booked successfully!'
-    ];
-    redirect('my-session.php');
+    $user_id = getUserId();
+
+    $stmt = $pdo->prepare("SELECT s.id, s.mentor_id, s.status, s.scheduled_at, s.is_free, s.course_id, s.max_participants, s.title
+                           FROM sessions s JOIN users u ON u.id = s.mentor_id
+                           WHERE s.id = ? AND s.status = 'scheduled' AND s.scheduled_at > NOW()
+                             AND u.role = 'mentor' AND u.is_active = 1 LIMIT 1");
+    $stmt->execute([$session_id]);
+    $bookableSession = $stmt->fetch();
+
+    if (!$bookableSession) {
+        $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => 'This mentor session is no longer available. Please choose another scheduled session.'];
+        redirect('booking.php' . ($mentor_id ? '?mentor=' . $mentor_id : ''));
+    }
+
+    $hasEnrollment = false;
+    if (!empty($bookableSession['course_id'])) {
+        $enrollmentStmt = $pdo->prepare("SELECT 1 FROM enrollments WHERE fresher_id = ? AND course_id = ? AND status != 'dropped' LIMIT 1");
+        $enrollmentStmt->execute([$user_id, $bookableSession['course_id']]);
+        $hasEnrollment = (bool)$enrollmentStmt->fetchColumn();
+    }
+    if (empty($bookableSession['is_free']) && !$hasEnrollment) {
+        $_SESSION['alert'] = ['type' => 'info', 'icon' => 'info-circle', 'message' => 'Enroll in the linked course before booking this paid session.'];
+        redirect('booking.php?session=' . $session_id);
+    }
+
+    $seatStmt = $pdo->prepare("SELECT COUNT(*) FROM bookings WHERE session_id = ? AND status IN ('pending', 'approved')");
+    $seatStmt->execute([$session_id]);
+    if ((int)$seatStmt->fetchColumn() >= max(1, (int)$bookableSession['max_participants'])) {
+        $_SESSION['alert'] = ['type' => 'warning', 'icon' => 'exclamation-circle', 'message' => 'This session is full. Please choose another session.'];
+        redirect('booking.php' . ($mentor_id ? '?mentor=' . $mentor_id : ''));
+    }
+
+    $existingStmt = $pdo->prepare('SELECT id, status FROM bookings WHERE fresher_id = ? AND session_id = ? LIMIT 1');
+    $existingStmt->execute([$user_id, $session_id]);
+    $existingBooking = $existingStmt->fetch();
+    if ($existingBooking && in_array($existingBooking['status'], ['pending', 'approved'], true)) {
+        $_SESSION['alert'] = ['type' => 'info', 'icon' => 'info-circle', 'message' => 'You already have a ' . $existingBooking['status'] . ' booking for this session.'];
+        redirect('my-session.php');
+    }
+
+    try {
+        if ($existingBooking) {
+            $stmt = $pdo->prepare("UPDATE bookings SET status = 'pending', notes = ?, booking_date = CURRENT_TIMESTAMP WHERE id = ? AND fresher_id = ?");
+            $stmt->execute([$notes, $existingBooking['id'], $user_id]);
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO bookings (fresher_id, session_id, notes, status) VALUES (?, ?, ?, 'pending')");
+            $stmt->execute([$user_id, $session_id, $notes]);
+        }
+
+        $notificationStmt = $pdo->prepare("INSERT INTO notifications (user_id, type, title, message, link)
+                                           VALUES (?, 'booking', 'New Booking Request', CONCAT(?, ' requested your session: ', ?), CONCAT('mentor/booking/view.php?id=', ?))");
+        $notificationStmt->execute([$bookableSession['mentor_id'], getUserName(), $bookableSession['title'], $session_id]);
+
+        $_SESSION['alert'] = ['type' => 'success', 'icon' => 'check-circle', 'message' => 'Booking request sent successfully. Waiting for mentor approval.'];
+        redirect('my-session.php');
+    } catch (PDOException $e) {
+        error_log('Session booking failed: ' . $e->getMessage());
+        $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => 'The booking could not be completed. Please refresh and try again.'];
+        redirect('booking.php?session=' . $session_id);
+    }
 }
 ?>
 <?php include '../../includes/header.php'; ?>
@@ -162,8 +212,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_session'])) {
                     <?php else: ?>
                         <div class="col-12 text-center py-5">
                             <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-                            <h5>No sessions available</h5>
-                            <p class="text-muted">Check back later for new sessions.</p>
+                            <h5><?php echo $mentor_id ? 'This mentor has no sessions scheduled yet' : 'No sessions are currently scheduled'; ?></h5>
+                            <p class="text-muted">Mentors need to schedule an upcoming session before learners can book it. You can message the mentor to ask when they will be available.</p>
+                            <?php if ($mentor_id): ?>
+                                <a href="../message/index.php?user_id=<?php echo $mentor_id; ?>" class="btn btn-primary"><i class="fas fa-envelope me-1"></i> Message Mentor</a>
+                                <a href="../mentor/index.php" class="btn btn-outline-primary ms-2">Browse Mentors</a>
+                            <?php else: ?>
+                                <a href="../mentor/index.php" class="btn btn-primary">Browse Mentors</a>
+                            <?php endif; ?>
                         </div>
                     <?php endif; ?>
                 </div>

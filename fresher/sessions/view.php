@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_session'])) {
         $stmt = $pdo->prepare("INSERT INTO notifications (user_id, type, title, message, link) 
                                VALUES (?, 'new_booking', 'New Booking Request', 
                                        CONCAT(?, ' has requested to book your session: ', ?),
-                                       'mentor/bookings/view.php?id=' || ?)");
+                                       CONCAT('mentor/bookings/view.php?id=', ?))");
         $stmt->execute([
             $session['mentor_id'],
             getUserName(),

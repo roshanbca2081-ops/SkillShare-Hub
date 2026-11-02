@@ -13,6 +13,11 @@ $user_id = getUserId();
 $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $mentor = $stmt->fetch();
+$academicInterestOptions = require '../includes/academic-interest-options.php';
+$selectedTeachingFields = array_intersect(
+    $academicInterestOptions,
+    array_map('trim', explode(',', (string)($mentor['interests'] ?? '')))
+);
 
 // Get statistics
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM courses WHERE mentor_id = ? AND status = 'active'");
@@ -110,6 +115,20 @@ $unread_notifications = getUnreadNotifications($pdo, $user_id);
                     </a>
                 </div>
             </div>
+
+            <?php if (empty($selectedTeachingFields) || empty(trim((string)($mentor['skills'] ?? '')))): ?>
+                <section class="dashboard-onboarding-card mb-4" aria-label="Complete mentor profile">
+                    <span class="dashboard-onboarding-icon"><i class="fas fa-chalkboard-user" aria-hidden="true"></i></span>
+                    <div class="dashboard-onboarding-copy">
+                        <strong>Set Up Your Teaching Profile</strong>
+                        <p>Select the academic fields you teach and add your expertise. Then create courses and build them out with modules and lessons.</p>
+                    </div>
+                    <div class="dashboard-onboarding-actions">
+                        <a class="btn btn-outline-primary" href="account/profile.php">Complete Profile</a>
+                        <a class="btn btn-primary" href="my-course/create.php">Create Course</a>
+                    </div>
+                </section>
+            <?php endif; ?>
             
             <!-- Stats Cards -->
             <div class="row g-3 mb-4">

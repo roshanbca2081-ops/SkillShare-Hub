@@ -94,9 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['enroll'])) {
     <div class="row">
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm mb-4">
-                <?php if ($course['thumbnail']): ?>
-                <img src="<?php echo $course['thumbnail']; ?>" class="card-img-top" alt="<?php echo $course['title']; ?>" style="max-height: 400px; object-fit: cover;">
-                <?php endif; ?>
+                <img src="<?php echo htmlspecialchars(getCourseThumbnail($course), ENT_QUOTES, 'UTF-8'); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($course['title'], ENT_QUOTES, 'UTF-8'); ?>" style="max-height: 400px; object-fit: cover;">
                 <div class="card-body p-4">
                     <div class="d-flex flex-wrap gap-2 mb-3">
                         <span class="badge bg-primary"><?php echo getCourseLevel($course['level']); ?></span>

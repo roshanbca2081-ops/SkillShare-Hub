@@ -37,6 +37,8 @@ SOURCE schema/22_blog_posts.sql;
 SOURCE schema/23_blog_comments.sql;
 SOURCE schema/24_system_logs.sql;
 SOURCE schema/25_settings.sql;
+SOURCE schema/26_oauth_accounts.sql;
+SOURCE schema/27_interview_activity.sql;
 
 -- =============================================
 -- VIEWS

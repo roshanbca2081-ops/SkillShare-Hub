@@ -10,10 +10,21 @@ requireFresher();
 $field_id = isset($_GET['field']) ? (int)$_GET['field'] : 0;
 $search = isset($_GET['search']) ? sanitize($_GET['search']) : '';
 
-// Get field info
-$stmt = $pdo->prepare("SELECT * FROM academic_fields WHERE id = ?");
-$stmt->execute([$field_id]);
-$field = $stmt->fetch();
+// Resolve only active fields and send invalid/stale field links back to the list.
+$field = null;
+if ($field_id > 0) {
+    $stmt = $pdo->prepare('SELECT * FROM academic_fields WHERE id = ? AND is_active = 1 LIMIT 1');
+    $stmt->execute([$field_id]);
+    $field = $stmt->fetch();
+    if (!$field) {
+        $_SESSION['alert'] = [
+            'type' => 'warning',
+            'icon' => 'exclamation-triangle',
+            'message' => 'That academic field is unavailable. Choose an active field below.',
+        ];
+        redirect('fiels.php');
+    }
+}
 
 $query = "SELECT c.*, u.full_name as mentor_name, u.avatar 
           FROM courses c 
@@ -40,9 +51,12 @@ $courses = $stmt->fetchAll();
 
 // Get all fields for filter
 $fields = $pdo->query("SELECT * FROM academic_fields WHERE is_active = 1 ORDER BY name")->fetchAll();
+$courseRecommendations = require '../../config/course-recommendations.php';
+$recommendations = $field ? ($courseRecommendations[$field['name']] ?? []) : [];
 ?>
 <?php include '../../includes/header.php'; ?>
 <?php include '../../includes/navbar.php'; ?>
+<?php include '../../includes/alerts.php'; ?>
 
 <div class="container-fluid">
     <div class="row">
@@ -60,7 +74,7 @@ $fields = $pdo->query("SELECT * FROM academic_fields WHERE is_active = 1 ORDER B
                     <?php endif; ?>
                 </h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
-                    <a href="fields.php" class="btn btn-outline-secondary">
+                    <a href="fiels.php" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left"></i> All Fields
                     </a>
                 </div>
@@ -74,7 +88,7 @@ $fields = $pdo->query("SELECT * FROM academic_fields WHERE is_active = 1 ORDER B
                         <input type="text" name="search" class="form-control" placeholder="Search courses..." value="<?php echo htmlspecialchars($search); ?>">
                         <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
                         <?php if ($search): ?>
-                            <a href="courses.php?field=<?php echo $field_id; ?>" class="btn btn-secondary">Clear</a>
+                            <a href="course.php?field=<?php echo $field_id; ?>" class="btn btn-secondary">Clear</a>
                         <?php endif; ?>
                     </form>
                 </div>
@@ -101,7 +115,7 @@ $fields = $pdo->query("SELECT * FROM academic_fields WHERE is_active = 1 ORDER B
                 <div class="col-md-4 col-lg-3">
                     <div class="course-card">
                         <div class="course-card-image">
-                            <img src="<?php echo $course['thumbnail'] ?? '../../assets/images/course-placeholder.jpg'; ?>" 
+                            <img src="<?php echo htmlspecialchars(getCourseThumbnail($course), ENT_QUOTES, 'UTF-8'); ?>"
                                  alt="<?php echo $course['title']; ?>">
                             <?php if ($course['featured']): ?>
                                 <span class="badge bg-warning position-absolute top-0 start-0 m-2">Featured</span>
@@ -140,12 +154,42 @@ $fields = $pdo->query("SELECT * FROM academic_fields WHERE is_active = 1 ORDER B
                 <?php if (empty($courses)): ?>
                 <div class="col-12 text-center py-5">
                     <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                    <h5>No courses found</h5>
-                    <p class="text-muted">Try adjusting your search or filters.</p>
-                    <a href="courses.php" class="btn btn-primary">Clear Filters</a>
+                    <h5>No published courses found</h5>
+                    <p class="text-muted">Try adjusting your search or filters, or explore the suggested learning paths below.</p>
+                    <a href="course.php<?php echo $field_id ? '?field=' . (int)$field_id : ''; ?>" class="btn btn-primary">Clear Search</a>
                 </div>
                 <?php endif; ?>
             </div>
+
+            <?php if ($recommendations): ?>
+            <section class="mt-5" aria-labelledby="learningPathSuggestions">
+                <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+                    <div>
+                        <span class="badge text-bg-info mb-2">CURATED ROADMAP IDEAS</span>
+                        <h2 class="h4 mb-1" id="learningPathSuggestions">In-demand learning paths for <?php echo htmlspecialchars($field['name'], ENT_QUOTES, 'UTF-8'); ?></h2>
+                        <p class="text-muted small mb-0">These are suggested topics, not published courses. An approved mentor and course content are needed before enrollment is available.</p>
+                    </div>
+                    <span class="badge text-bg-secondary"><?php echo count($recommendations); ?> suggestions</span>
+                </div>
+                <div class="row g-3">
+                    <?php foreach ($recommendations as $recommendation): ?>
+                    <div class="col-md-6 col-xl-4">
+                        <article class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                    <span class="badge bg-primary-subtle text-primary">Suggested</span>
+                                    <span class="badge bg-secondary-subtle text-secondary"><?php echo htmlspecialchars(ucfirst($recommendation['level']), ENT_QUOTES, 'UTF-8'); ?></span>
+                                </div>
+                                <h3 class="h6 card-title"><?php echo htmlspecialchars($recommendation['title'], ENT_QUOTES, 'UTF-8'); ?></h3>
+                                <p class="card-text small text-muted mb-2"><?php echo htmlspecialchars($recommendation['description'], ENT_QUOTES, 'UTF-8'); ?></p>
+                                <small class="text-muted"><i class="fas fa-clock me-1" aria-hidden="true"></i>Approx. <?php echo (int)$recommendation['hours']; ?> learning hours</small>
+                            </div>
+                        </article>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </section>
+            <?php endif; ?>
         </div>
     </div>
 </div>

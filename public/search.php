@@ -49,7 +49,7 @@ if ($query) {
                                 <div class="card-body">
                                     <?php if ($result['type'] === 'course'): ?>
                                         <div class="d-flex align-items-start">
-                                            <img src="<?php echo $result['thumbnail'] ?? '../assets/images/course-placeholder.jpg'; ?>" class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                                            <img src="<?php echo htmlspecialchars(getCourseThumbnail($result), ENT_QUOTES, 'UTF-8'); ?>" class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
                                             <div>
                                                 <span class="badge bg-primary mb-1">Course</span>
                                                 <h5><?php echo htmlspecialchars($result['title']); ?></h5>

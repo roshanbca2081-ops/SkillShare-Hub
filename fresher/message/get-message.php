@@ -30,6 +30,10 @@ $stmt = $pdo->prepare("SELECT m.*, u.full_name, u.avatar
                        ORDER BY m.created_at ASC");
 $stmt->execute([$user_id, $chat_user_id, $chat_user_id, $user_id, $last_id]);
 $messages = $stmt->fetchAll();
+foreach ($messages as &$message) {
+    $message['avatar_url'] = getAvatar($message);
+}
+unset($message);
 
 // Mark messages as read
 if (!empty($messages)) {

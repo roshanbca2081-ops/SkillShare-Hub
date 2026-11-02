@@ -31,8 +31,11 @@ database/
 │   ├── 22_blog_posts.sql
 │   ├── 23_blog_comments.sql
 │   ├── 24_system_logs.sql
-│   └── 25_settings.sql
+│   ├── 25_settings.sql
+│   ├── 26_oauth_accounts.sql
+│   └── 27_interview_activity.sql
 ├── migrations/                      # Versioned migration files
+│   ├── 2026_10_31_000001_create_interview_activity_tables.sql
 │   ├── 2024_01_01_000001_create_users_table.sql
 │   ├── 2024_01_01_000002_create_academic_fields_table.sql
 │   ├── 2024_01_01_000025_create_settings_table.sql
@@ -156,6 +159,10 @@ SHOW VARIABLES LIKE 'event_scheduler';
 | 23 | blog_comments | Blog comments |
 | 24 | system_logs | System activity logs |
 | 25 | settings | Application settings |
+| 26 | oauth_accounts | Legacy OAuth identity data; no longer used by the application. Existing databases retain this table unless the optional cleanup is run. |
+| 27 | interview_saved, interview_practice | Fresher saved interview questions and practice history |
+
+Existing databases can enable saved questions and practice-history persistence by importing `migrations/2026_10_31_000001_create_interview_activity_tables.sql` once. The migration only creates missing tables; it does not alter or delete existing user/course data. Until it is applied, Interview Prep and regular practice still work, while saving questions/notes is clearly marked unavailable.
 
 ## Views
 

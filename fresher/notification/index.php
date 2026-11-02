@@ -64,6 +64,22 @@ if (isset($_GET['delete']) && isset($_GET['id'])) {
             <?php if (!empty($notifications)): ?>
                 <div class="notifications-list">
                     <?php foreach ($notifications as $notification): ?>
+                    <?php
+                    $notificationLink = trim((string)($notification['link'] ?? ''));
+                    if ($notificationLink === '1' && ($notification['type'] ?? '') === 'message') {
+                        $messageStmt = $pdo->prepare('SELECT sender_id FROM messages WHERE receiver_id = ? ORDER BY created_at DESC LIMIT 1');
+                        $messageStmt->execute([$user_id]);
+                        $messageSenderId = (int)$messageStmt->fetchColumn();
+                        $notificationLink = $messageSenderId > 0
+                            ? 'fresher/message/index.php?user_id=' . $messageSenderId
+                            : '';
+                    }
+                    if (preg_match('~^(fresher|mentor|admin|public)/~', $notificationLink)) {
+                        $notificationLink = appUrl($notificationLink);
+                    } elseif (!preg_match('~^(https?://|/)~i', $notificationLink)) {
+                        $notificationLink = '';
+                    }
+                    ?>
                     <div class="notification-item <?php echo $notification['is_read'] ? '' : 'unread'; ?> border-bottom py-3">
                         <div class="d-flex align-items-start">
                             <div class="notification-item-icon notification-item-icon-<?php echo $notification['type'] ?? 'info'; ?> me-3">
@@ -88,8 +104,8 @@ if (isset($_GET['delete']) && isset($_GET['id'])) {
                                         </a>
                                     </div>
                                 </div>
-                                <?php if ($notification['link']): ?>
-                                    <a href="<?php echo $notification['link']; ?>" class="btn btn-sm btn-primary mt-2">
+                                <?php if ($notificationLink !== ''): ?>
+                                    <a href="<?php echo htmlspecialchars($notificationLink, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-sm btn-primary mt-2">
                                         View Details
                                     </a>
                                 <?php endif; ?>

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" fill="none">
+  <defs>
+    <linearGradient id="blue" x1="129" y1="313" x2="374" y2="533" gradientUnits="userSpaceOnUse"><stop stop-color="#0878FF"/><stop offset="1" stop-color="#1028D8"/></linearGradient>
+    <linearGradient id="purple" x1="267" y1="101" x2="530" y2="544" gradientUnits="userSpaceOnUse"><stop stop-color="#603DFF"/><stop offset="1" stop-color="#3900B8"/></linearGradient>
+    <linearGradient id="arc" x1="264" y1="76" x2="585" y2="375" gradientUnits="userSpaceOnUse"><stop stop-color="#5635FF"/><stop offset="1" stop-color="#7900E9"/></linearGradient>
+  </defs>
+  <!-- Rising arc: guidance and upward momentum -->
+  <path d="M205 102C275 40 395 31 484 84c64 38 102 106 108 181 6 76-25 150-87 199 45-53 65-121 56-185-10-69-49-126-107-159-75-43-169-42-249 2Z" fill="url(#arc)"/>
+  <path d="M583 213c31 90 12 193-48 270-39 49-93 83-153 99 72-40 122-102 146-170 24-67 22-137 4-199 22 0 39 0 51 0Z" fill="#0878FF"/>
+  <!-- Spark -->
+  <path d="m164 130 13 40 40 13-40 13-13 40-13-40-40-13 40-13 13-40Z" fill="#4930F1"/>
+  <!-- Mentor silhouette -->
+  <path d="m355 121 86-3-31 31-87 2 32-30Z" fill="#160C8C"/>
+  <path d="m368 149 42-1 7 28-35 22-23-23 9-26Z" fill="#2510A5"/>
+  <path d="M387 190c20-17 49-15 65 4 15 18 12 45-6 59l-15 11-27-4-22-21-5-26 10-23Z" fill="#3010B0"/>
+  <path d="m397 260 27 18-21 39-41 33-38-27 30-39 43-24Z" fill="#2C0CA5"/>
+  <path d="m421 266 39-5 41 28 24 74-43 26-37-64-48-20 24-39Z" fill="#320FAD"/>
+  <path d="m366 334 45 4 20 57 43 48-47 25-63-55-20-45 22-34Z" fill="#24109A"/>
+  <path d="m477 385 35-20 21 50 21 75-44 17-28-70-15-52 10 0Z" fill="#25109A"/>
+  <!-- Mentor's helping arm and book -->
+  <path d="m392 282-46 39-43 33-30-31 40-54 57-46 22 59Z" fill="#2F13B0"/>
+  <path d="m332 347-37 33-33-13 19-33 34-28 17 41Z" fill="#3216BB"/>
+  <path d="m460 302 40 26-26 66-26-12 12-80Z" fill="#fff" stroke="#4930D9" stroke-width="8" stroke-linejoin="round"/>
+  <path d="m490 330 25-11-3 40-20 19-14-14 12-34Z" fill="#fff"/>
+  <!-- Learner climbing toward the mentor -->
+  <path d="M185 260c6-25 31-40 56-34 25 6 39 30 33 55l-5 17-30 15-35-16-19-20v-17Z" fill="#073BD2"/>
+  <path d="m203 252-10-16 20 5c10-9 24-12 38-9l25 10-13 15c-16 7-35 6-60-5Z" fill="#062DB9"/>
+  <path d="m194 292 37 10 18 41-33 53-51-4 9-59 20-41Z" fill="#0753E5"/>
+  <path d="m176 321-36 13-30 49-7 76 41 11 22-63 40-38-30-48Z" fill="#0878FF"/>
+  <path d="m208 333 39 13 50-8 38-22 25 23-38 50-70 29-62-23 18-62Z" fill="#0964F2"/>
+  <path d="m259 407 66-23 32 22-10 73-43-3-2-42-47-1 4-26Z" fill="#102DCE"/>
+  <path d="m175 407-27 59-5 34 46 1 32-66-46-28Z" fill="#0C42D9"/>
+  <path d="m337 313 20-14 17 10-7 21-20 10-15-10 5-17Z" fill="#0754E2"/>
+  <!-- Open book base -->
+  <path d="M75 541c85-54 184-48 245 13 61-61 160-67 245-13-87-19-170-10-245 45-75-55-158-64-245-45Z" fill="url(#blue)"/>
+  <path d="M79 541c99-37 179-22 241 37v20c-66-52-143-70-241-57Z" fill="#fff"/>
+  <path d="M561 541c-99-37-179-22-241 37v20c66-52 143-70 241-57Z" fill="#fff"/>
+  <path d="M84 571c101-31 173-13 236 37v19c-68-46-143-60-236-43Z" fill="#17119D"/>
+  <path d="M556 571c-101-31-173-13-236 37v19c68-46 143-60 236-43Z" fill="url(#purple)"/>
+  <!-- Graduation cap tassel -->
+  <path d="m438 118 10 34" stroke="#3D18BB" stroke-width="5" stroke-linecap="round"/>
+  <path d="M445 150c-8 6-8 16 0 21 8-5 8-15 0-21Z" fill="#6C2DE8"/>
+</svg>

@@ -17,7 +17,7 @@ $stmt = $pdo->prepare("SELECT DISTINCT
                            WHEN sender_id = ? THEN receiver_id 
                            ELSE sender_id 
                        END as other_user_id,
-                       u.full_name, u.avatar, u.role, u.is_active,
+                       u.full_name, u.avatar, u.role, u.is_active, u.last_login,
                        (SELECT message FROM messages 
                         WHERE (sender_id = ? AND receiver_id = u.id) 
                            OR (sender_id = u.id AND receiver_id = ?) 
@@ -36,7 +36,7 @@ $stmt = $pdo->prepare("SELECT DISTINCT
                        WHERE (m.sender_id = ? OR m.receiver_id = ?)
                        AND u.id != ?
                        AND u.is_active = 1
-                       GROUP BY other_user_id, u.full_name, u.avatar, u.role, u.is_active
+                       GROUP BY other_user_id, u.full_name, u.avatar, u.role, u.is_active, u.last_login
                        ORDER BY last_time DESC");
 $stmt->execute([$user_id, $user_id, $user_id, $user_id, $user_id, $user_id, $user_id, $user_id, $user_id, $user_id, $user_id]);
 $conversations = $stmt->fetchAll();
@@ -47,7 +47,7 @@ $chat_user = null;
 
 if ($chat_user_id) {
     // Get chat user info
-    $stmt = $pdo->prepare("SELECT id, full_name, avatar, role, is_active, last_login FROM users WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT id, full_name, avatar, role, is_active, last_login, created_at FROM users WHERE id = ?");
     $stmt->execute([$chat_user_id]);
     $chat_user = $stmt->fetch();
     
@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
             $stmt = $pdo->prepare("INSERT INTO notifications (user_id, type, title, message, link) 
                                    VALUES (?, 'message', 'New Message', 
                                            CONCAT(?, ' sent you a message'), 
-                                            'fresher/message/index.php?user_id=' || ?)");
+                                            CONCAT('fresher/message/index.php?user_id=', ?))");
             $stmt->execute([$receiver_id, getUserName(), $user_id]);
             
             // Redirect to refresh chat
@@ -155,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_file'])) {
                 $stmt = $pdo->prepare("INSERT INTO notifications (user_id, type, title, message, link) 
                                        VALUES (?, 'message', 'New File', 
                                                CONCAT(?, ' sent you a file'), 
-                                               'fresher/message/index.php?user_id=' || ?)");
+                                               CONCAT('fresher/message/index.php?user_id=', ?))");
                 $stmt->execute([$receiver_id, getUserName(), $user_id]);
                 
                 $_SESSION['alert'] = [
@@ -231,7 +231,9 @@ if (isset($_GET['delete']) && isset($_GET['user_id'])) {
                                     <?php foreach ($conversations as $conv): ?>
                                         <?php
                                         $is_active = $chat_user_id == $conv['other_user_id'];
-                                        $is_online = $conv['is_active'] && $conv['last_login'] && strtotime($conv['last_login']) > strtotime('-5 minutes');
+                                        $last_login = $conv['last_login'] ?? null;
+                                        $last_login_timestamp = $last_login ? strtotime($last_login) : false;
+                                        $is_online = !empty($conv['is_active']) && $last_login_timestamp !== false && $last_login_timestamp > strtotime('-5 minutes');
                                         ?>
                                         <a href="?user_id=<?php echo $conv['other_user_id']; ?>" 
                                            class="text-decoration-none d-block conversation-link <?php echo $is_active ? 'active' : ''; ?>">
@@ -298,7 +300,9 @@ if (isset($_GET['delete']) && isset($_GET['user_id'])) {
                     <div class="card border-0 shadow-sm">
                         <?php if ($chat_user && $chat_user_id): ?>
                             <?php
-                            $is_online = $chat_user['is_active'] && $chat_user['last_login'] && strtotime($chat_user['last_login']) > strtotime('-5 minutes');
+                            $chat_last_login = $chat_user['last_login'] ?? null;
+                            $chat_last_login_timestamp = $chat_last_login ? strtotime($chat_last_login) : false;
+                            $is_online = !empty($chat_user['is_active']) && $chat_last_login_timestamp !== false && $chat_last_login_timestamp > strtotime('-5 minutes');
                             ?>
                             <!-- Chat Header -->
                             <div class="card-header bg-transparent border-bottom">
@@ -316,7 +320,7 @@ if (isset($_GET['delete']) && isset($_GET['user_id'])) {
                                         <div class="ms-3">
                                             <h6 class="mb-0"><?php echo htmlspecialchars($chat_user['full_name']); ?></h6>
                                             <small class="text-muted">
-                                                <?php echo $is_online ? '<span class="text-success">Online</span>' : 'Last seen ' . getTimeAgo($chat_user['last_login'] ?? $chat_user['created_at']); ?>
+                                                <?php echo $is_online ? '<span class="text-success">Online</span>' : 'Last seen ' . getTimeAgo($chat_last_login ?: ($chat_user['created_at'] ?? null)); ?>
                                                 • <?php echo ucfirst($chat_user['role']); ?>
                                             </small>
                                         </div>
@@ -475,27 +479,37 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // File input handler
-    document.getElementById('fileInput').addEventListener('change', function() {
-        const file = this.files[0];
-        if (file) {
-            document.getElementById('fileName').textContent = file.name;
-            document.getElementById('filePreview').classList.remove('d-none');
-        }
-    });
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('filePreview').classList.remove('d-none');
+            }
+        });
+    }
     
     // Enter key to send message
-    document.getElementById('messageInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            document.getElementById('messageForm').submit();
-        }
-    });
+    const messageInput = document.getElementById('messageInput');
+    if (messageInput) {
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('messageForm').submit();
+            }
+        });
+    }
     
     // Poll for new messages
     <?php if ($chat_user_id): ?>
+    let lastId = <?php echo !empty($messages) ? (int)end($messages)['id'] : 0; ?>;
     setInterval(function() {
-        fetch('get-messages.php?user_id=<?php echo $chat_user_id; ?>&last_id=<?php echo !empty($messages) ? end($messages)['id'] : 0; ?>')
-            .then(response => response.json())
+        fetch('get-message.php?user_id=<?php echo $chat_user_id; ?>&last_id=' + encodeURIComponent(lastId))
+            .then(response => {
+                if (!response.ok) throw new Error('Message polling request failed.');
+                return response.json();
+            })
             .then(data => {
                 if (data.length > 0) {
                     // Append new messages
@@ -518,6 +532,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function createMessageHtml(msg) {
     const isMine = msg.sender_id == <?php echo $user_id; ?>;
     const messageText = msg.message;
+    const senderAvatar = msg.avatar_url || <?php echo json_encode(getAvatar([]), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
     const isFile = messageText.indexOf('[File:') !== -1;
     
     let content = '';
@@ -534,7 +549,7 @@ function createMessageHtml(msg) {
     
     return `
         <div class="d-flex ${isMine ? 'justify-content-end' : 'justify-content-start'} mb-3">
-            ${!isMine ? `<img src="${msg.avatar || '../../assets/images/default-avatar.png'}" class="rounded-circle me-2 align-self-end" style="width: 32px; height: 32px; object-fit: cover;">` : ''}
+            ${!isMine ? `<img src="${senderAvatar}" alt="" class="rounded-circle me-2 align-self-end" style="width: 32px; height: 32px; object-fit: cover;">` : ''}
             <div class="message-wrapper" style="max-width: 70%;">
                 <div class="message-bubble p-2 rounded ${isMine ? 'bg-primary text-white' : 'bg-white shadow-sm'}" style="word-wrap: break-word;">
                     ${content}
