@@ -3,6 +3,7 @@ $page_title = 'My Profile';
 require_once '../../config/database.php';
 require_once '../../config/session.php';
 require_once '../../config/functions.php';
+require_once '../../config/profile-image.php';
 require_once '../../config/auth.php';
 
 requireFresher();
@@ -72,57 +73,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     }
 }
 
-// Handle avatar upload
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_avatar'])) {
-    if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
-        $allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        $max_size = 2 * 1024 * 1024; // 2MB
-        
-        if (!in_array($_FILES['avatar']['type'], $allowed_types)) {
-            $_SESSION['alert'] = [
-                'type' => 'danger',
-                'icon' => 'exclamation-circle',
-                'message' => 'Please upload a valid image (JPEG, PNG, GIF, WEBP).'
-            ];
-            redirect('profile.php');
-        }
-        
-        if ($_FILES['avatar']['size'] > $max_size) {
-            $_SESSION['alert'] = [
-                'type' => 'danger',
-                'icon' => 'exclamation-circle',
-                'message' => 'Image size must be less than 2MB.'
-            ];
-            redirect('profile.php');
-        }
-        
-        $upload_dir = '../../uploads/profiles/';
-        if (!file_exists($upload_dir)) {
-            mkdir($upload_dir, 0777, true);
-        }
-        
-        $file_extension = pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION);
-        $file_name = 'profile_' . $user_id . '_' . time() . '.' . $file_extension;
-        $file_path = $upload_dir . $file_name;
-        
-        if (move_uploaded_file($_FILES['avatar']['tmp_name'], $file_path)) {
-            // Delete old avatar if exists
-            if ($user['avatar'] && file_exists('../../' . $user['avatar'])) {
-                unlink('../../' . $user['avatar']);
-            }
-            
-            $avatar_path = 'uploads/profiles/' . $file_name;
-            $stmt = $pdo->prepare("UPDATE users SET avatar = ? WHERE id = ?");
-            $stmt->execute([$avatar_path, $user_id]);
-            
-            $_SESSION['alert'] = [
-                'type' => 'success',
-                'icon' => 'check-circle',
-                'message' => 'Profile picture updated successfully!'
-            ];
-            redirect('profile.php');
-        }
+// The file input auto-submits without the submit button's name in the POST data.
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['avatar'])) {
+    if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+        $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => 'The image upload could not be verified. Reload the page and try again.'];
+        redirect('profile.php');
     }
+    try {
+        saveUserProfileImage($pdo, $user_id, $_FILES['avatar']);
+        $_SESSION['alert'] = ['type' => 'success', 'icon' => 'check-circle', 'message' => 'Profile picture updated successfully.'];
+    } catch (Throwable $e) {
+        error_log('Fresher profile image upload failed: ' . $e->getMessage());
+        $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => $e->getMessage()];
+    }
+    redirect('profile.php');
 }
 
 // Handle social links update
@@ -199,6 +163,7 @@ $social_links = $user['social_links'] ? json_decode($user['social_links'], true)
                             <?php endif; ?>
                             
                             <form method="POST" enctype="multipart/form-data" class="d-none">
+                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8'); ?>">
                                 <input type="file" name="avatar" id="avatarInput" accept="image/*" onchange="this.form.submit()">
                                 <button type="submit" name="upload_avatar"></button>
                             </form>

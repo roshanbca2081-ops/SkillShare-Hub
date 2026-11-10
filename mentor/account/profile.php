@@ -3,6 +3,7 @@ $page_title = 'My Profile';
 require_once '../../config/database.php';
 require_once '../../config/session.php';
 require_once '../../config/functions.php';
+require_once '../../config/profile-image.php';
 require_once '../../config/auth.php';
 
 requireMentor();
@@ -52,30 +53,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     redirect('profile.php');
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_avatar'])) {
-    if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
-        $upload_dir = '../../uploads/profiles/';
-        if (!file_exists($upload_dir)) mkdir($upload_dir, 0777, true);
-        
-        $ext = pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION);
-        $file_name = 'mentor_' . $user_id . '_' . time() . '.' . $ext;
-        $file_path = $upload_dir . $file_name;
-        
-        if (move_uploaded_file($_FILES['avatar']['tmp_name'], $file_path)) {
-            if ($user['avatar'] && file_exists('../../' . $user['avatar'])) {
-                unlink('../../' . $user['avatar']);
-            }
-            $stmt = $pdo->prepare("UPDATE users SET avatar = ? WHERE id = ?");
-            $stmt->execute(['uploads/profiles/' . $file_name, $user_id]);
-            
-            $_SESSION['alert'] = [
-                'type' => 'success',
-                'icon' => 'check-circle',
-                'message' => 'Profile picture updated!'
-            ];
-            redirect('profile.php');
-        }
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['avatar'])) {
+    if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+        $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => 'The image upload could not be verified. Reload the page and try again.'];
+        redirect('profile.php');
     }
+    try {
+        saveUserProfileImage($pdo, $user_id, $_FILES['avatar']);
+        $_SESSION['alert'] = ['type' => 'success', 'icon' => 'check-circle', 'message' => 'Profile picture updated successfully.'];
+    } catch (Throwable $e) {
+        error_log('Mentor profile image upload failed: ' . $e->getMessage());
+        $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => $e->getMessage()];
+    }
+    redirect('profile.php');
 }
 
 // Get social links
@@ -144,6 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_social'])) {
                             <?php endif; ?>
                             
                             <form method="POST" enctype="multipart/form-data" class="d-none">
+                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8'); ?>">
                                 <input type="file" name="avatar" id="avatarInput" accept="image/*" onchange="this.form.submit()">
                                 <button type="submit" name="upload_avatar"></button>
                             </form>
