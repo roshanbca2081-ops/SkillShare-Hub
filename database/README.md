@@ -33,9 +33,11 @@ database/
 │   ├── 24_system_logs.sql
 │   ├── 25_settings.sql
 │   ├── 26_oauth_accounts.sql
-│   └── 27_interview_activity.sql
+│   ├── 27_interview_activity.sql
+│   └── 28_lesson_quizzes.sql
 ├── migrations/                      # Versioned migration files
 │   ├── 2026_10_31_000001_create_interview_activity_tables.sql
+│   ├── 2026_11_10_000001_add_lesson_quizzes.sql
 │   ├── 2024_01_01_000001_create_users_table.sql
 │   ├── 2024_01_01_000002_create_academic_fields_table.sql
 │   ├── 2024_01_01_000025_create_settings_table.sql
@@ -161,8 +163,11 @@ SHOW VARIABLES LIKE 'event_scheduler';
 | 25 | settings | Application settings |
 | 26 | oauth_accounts | Legacy OAuth identity data; no longer used by the application. Existing databases retain this table unless the optional cleanup is run. |
 | 27 | interview_saved, interview_practice | Fresher saved interview questions and practice history |
+| 28 | lesson_quiz_questions, lesson_quiz_attempts | Mentor-authored lesson checks and fresher attempt history |
 
 Existing databases can enable saved questions and practice-history persistence by importing `migrations/2026_10_31_000001_create_interview_activity_tables.sql` once. The migration only creates missing tables; it does not alter or delete existing user/course data. Until it is applied, Interview Prep and regular practice still work, while saving questions/notes is clearly marked unavailable.
+
+Existing databases must apply `migrations/2026_11_10_000001_add_lesson_quizzes.sql` once to enable lesson quizzes. This adds optional quiz settings to lessons and creates question/attempt tables without deleting existing course data.
 
 ## Views
 

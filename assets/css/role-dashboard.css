@@ -2,8 +2,8 @@
 body.role-dashboard-page {
     min-height: 100vh;
     overflow-x: hidden;
-    background: #f3f5ff;
-    color: #172033;
+    background: var(--app-bg);
+    color: var(--app-text);
     font-family: 'DM Sans', 'Inter', sans-serif;
 }
 
@@ -13,7 +13,7 @@ body.role-dashboard-page h3,
 body.role-dashboard-page h4,
 body.role-dashboard-page h5,
 body.role-dashboard-page h6 {
-    color: #172033;
+    color: var(--app-text);
     font-family: 'Space Grotesk', 'Inter', sans-serif;
     font-weight: 700;
 }
@@ -35,11 +35,11 @@ body.admin-dashboard-page .admin-sidebar {
     overflow-y: auto;
     overscroll-behavior: contain;
     padding: 18px 14px 14px !important;
-    color: #dbe5ff !important;
-    background: linear-gradient(180deg, #101b3d 0%, #142653 54%, #111d43 100%) !important;
-    border-right: 1px solid rgba(148, 163, 255, .16);
+    color: var(--app-sidebar-text) !important;
+    background: var(--app-sidebar-bg) !important;
+    border-right: 1px solid var(--app-border);
     scrollbar-width: thin;
-    scrollbar-color: #394b79 transparent;
+    scrollbar-color: var(--app-muted) transparent;
 }
 
 .mentor-sidebar-brand,
@@ -50,9 +50,9 @@ body.admin-dashboard-page .admin-brand {
     gap: 11px;
     padding: 3px 8px 17px;
     margin: 0 0 14px;
-    color: #f8faff !important;
+    color: var(--app-sidebar-text) !important;
     text-decoration: none;
-    border-bottom: 1px solid rgba(203, 213, 255, .16);
+    border-bottom: 1px solid var(--app-border);
 }
 
 .mentor-brand-icon {
@@ -68,7 +68,7 @@ body.admin-dashboard-page .admin-brand {
 .mentor-sidebar-brand strong,
 .admin-brand-copy strong {
     display: block;
-    color: #f8faff;
+    color: var(--app-sidebar-text);
     font: 700 1rem/1.2 'Space Grotesk', sans-serif;
     white-space: nowrap;
 }
@@ -83,7 +83,7 @@ body.admin-dashboard-page .admin-brand {
 .admin-brand-copy small {
     display: block;
     margin-top: 4px;
-    color: #9fb0d8;
+    color: var(--app-muted);
     font-size: .68rem;
     letter-spacing: .025em;
 }
@@ -91,7 +91,7 @@ body.admin-dashboard-page .admin-brand {
 body.role-dashboard-page .role-sidebar-label,
 body.admin-dashboard-page .admin-label.role-sidebar-label {
     margin: 13px 10px 8px !important;
-    color: #8193bd !important;
+    color: var(--app-muted) !important;
     font-size: .63rem !important;
     font-weight: 800 !important;
     letter-spacing: .14em !important;
@@ -105,7 +105,7 @@ body.role-dashboard-page .mentor-role-sidebar .role-sidebar-links {
 
 body.role-dashboard-page .mentor-nav-group-label {
     padding: 7px 11px 2px;
-    color: #8193bd;
+    color: var(--app-muted);
     font-size: .59rem;
     font-weight: 800;
     letter-spacing: .13em;
@@ -122,7 +122,7 @@ body.admin-dashboard-page .admin-sidebar .admin-link {
     gap: 11px;
     padding: 7px 10px !important;
     margin: 0 !important;
-    color: #c8d4f1 !important;
+    color: var(--app-sidebar-text) !important;
     background: transparent;
     border: 0;
     border-radius: 11px;
@@ -136,7 +136,7 @@ body.admin-dashboard-page .admin-sidebar .admin-link {
 body.role-dashboard-page .mentor-role-sidebar .mentor-nav-subitem .nav-link {
     min-height: 31px;
     padding: 5px 10px 5px 22px !important;
-    color: #aebfe8 !important;
+    color: var(--app-muted) !important;
     font-size: .75rem;
 }
 body.role-dashboard-page .mentor-role-sidebar .mentor-nav-subitem .nav-link i { font-size: .79rem; }
@@ -147,14 +147,14 @@ body.admin-dashboard-page .admin-sidebar .admin-link i {
     width: 20px;
     flex: 0 0 20px;
     place-items: center;
-    color: #a9bcf4;
+    color: var(--primary);
     text-align: center;
 }
 
 body.role-dashboard-page .mentor-role-sidebar .nav-link:hover,
 body.admin-dashboard-page .admin-sidebar .admin-link:hover {
-    color: #fff !important;
-    background: rgba(149, 169, 232, .14);
+    color: var(--app-text) !important;
+    background: var(--app-dropdown-hover);
     transform: translateX(2px);
 }
 
@@ -181,15 +181,15 @@ body.role-dashboard-page .role-sidebar-footer {
     flex: 0 0 auto;
     padding: 10px 0 0;
     margin-top: auto;
-    background: #111d43;
-    border-top: 1px solid rgba(203, 213, 255, .16);
+    background: var(--app-sidebar-bg);
+    border-top: 1px solid var(--app-border);
 }
 
 body.role-dashboard-page .role-sidebar-footer .nav-link,
 body.admin-dashboard-page .admin-sidebar .admin-link-danger {
-    color: #ffc9d1 !important;
-    background: rgba(114, 76, 158, .17);
-    border: 1px solid rgba(143, 111, 224, .24);
+    color: var(--danger) !important;
+    background: color-mix(in srgb, var(--danger) 10%, var(--app-sidebar-bg));
+    border: 1px solid color-mix(in srgb, var(--danger) 28%, var(--app-border));
     border-radius: 11px;
 }
 
@@ -204,10 +204,10 @@ body.mentor-dashboard-page .navbar-glass.role-section-navbar {
     justify-content: flex-end;
     padding: 7px 15px;
     margin: 10px 18px 18px 242px;
-    background: rgba(255, 255, 255, .88);
-    border: 1px solid rgba(255, 255, 255, .92);
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
     border-radius: 17px;
-    box-shadow: 0 10px 32px rgba(48, 61, 122, .11);
+    box-shadow: var(--app-shadow);
     backdrop-filter: blur(18px);
 }
 
@@ -230,8 +230,8 @@ body.mentor-dashboard-page .role-section-navbar .navbar-nav {
 
 body.mentor-dashboard-page .role-section-navbar .navbar-nav .dropdown-toggle {
     padding: 9px 13px !important;
-    color: #182440;
-    background: #f3f5ff;
+    color: var(--app-text);
+    background: var(--app-surface-alt);
     border-radius: 999px;
 }
 
@@ -252,10 +252,10 @@ body.admin-dashboard-page .admin-role-topbar {
     width: calc(100% - 224px - 36px);
     padding: 8px 15px 8px 20px;
     margin: 10px 18px 0 242px;
-    background: rgba(255, 255, 255, .88);
-    border: 1px solid rgba(255, 255, 255, .92);
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
     border-radius: 17px;
-    box-shadow: 0 10px 32px rgba(48, 61, 122, .11);
+    box-shadow: var(--app-shadow);
     backdrop-filter: blur(18px);
 }
 
@@ -265,13 +265,13 @@ body.admin-dashboard-page .admin-role-topbar {
 }
 
 .role-topbar-context strong {
-    color: #172033;
+    color: var(--app-text);
     font: 700 .96rem 'Space Grotesk', sans-serif;
 }
 
 .role-topbar-eyebrow {
     margin-bottom: 3px;
-    color: #7c87a7;
+    color: var(--app-muted);
     font-size: .58rem;
     font-weight: 800;
     letter-spacing: .14em;
@@ -284,10 +284,11 @@ body.admin-dashboard-page .admin-role-topbar {
 }
 
 .role-topbar-actions { gap: 14px; }
-.role-topbar-user { gap: 9px; color: #28334f; font-size: .78rem; font-weight: 700; }
+.role-topbar-actions .role-theme-control { box-shadow: none; }
+.role-topbar-user { gap: 9px; color: var(--app-text); font-size: .78rem; font-weight: 700; }
 .role-topbar-avatar { display: grid; width: 34px; height: 34px; place-items: center; color: #fff; background: linear-gradient(135deg,#2864ff,#6046f5); border-radius: 50%; }
-.role-topbar-back { display: inline-flex; min-height: 38px; align-items: center; gap: 8px; padding: 8px 14px; color: #26314d; background: #f8f9ff; border: 1px solid #d7ddff; border-radius: 12px; font-size: .78rem; font-weight: 700; text-decoration: none; }
-.role-topbar-back:hover { color: #4338ca; background: #eef1ff; }
+.role-topbar-back { display: inline-flex; min-height: 38px; align-items: center; gap: 8px; padding: 8px 14px; color: var(--app-text); background: var(--app-surface-alt); border: 1px solid var(--app-border); border-radius: 12px; font-size: .78rem; font-weight: 700; text-decoration: none; }
+.role-topbar-back:hover { color: var(--primary-dark); background: var(--app-dropdown-hover); }
 
 /* Content starts to the right of the fixed navigation on every desktop section. */
 body.mentor-dashboard-page .container-fluid > .row,
@@ -340,11 +341,11 @@ body.admin-dashboard-page .admin-main {
 body.role-dashboard-page .dashboard-widget,
 body.role-dashboard-page .card,
 body.admin-dashboard-page .admin-card {
-    color: #172033;
-    background: rgba(255,255,255,.9);
-    border: 1px solid rgba(119, 142, 230, .13) !important;
+    color: var(--app-text);
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
     border-radius: 17px !important;
-    box-shadow: 0 8px 24px rgba(52, 73, 153, .09) !important;
+    box-shadow: var(--app-shadow);
 }
 
 body.role-dashboard-page .dashboard-widget {
@@ -355,7 +356,7 @@ body.role-dashboard-page .dashboard-widget {
 
 body.role-dashboard-page .dashboard-widget:hover,
 body.role-dashboard-page .card:hover {
-    box-shadow: 0 13px 30px rgba(52, 73, 153, .13) !important;
+    box-shadow: var(--app-shadow);
 }
 
 body.role-dashboard-page .dashboard-widget-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -364,20 +365,20 @@ body.role-dashboard-page .dashboard-widget-icon-primary { color: #fff; backgroun
 body.role-dashboard-page .dashboard-widget-icon-success { color: #fff; background: #23ad72; }
 body.role-dashboard-page .dashboard-widget-icon-warning { color: #fff; background: #f6a333; }
 body.role-dashboard-page .dashboard-widget-icon-danger { color: #fff; background: #ef4567; }
-body.role-dashboard-page .dashboard-widget-value { margin-top: 13px; color: #111a38; font: 700 1.8rem 'Space Grotesk',sans-serif; }
-body.role-dashboard-page .dashboard-widget-label { margin-top: 3px; color: #26314d; font-size: .88rem; font-weight: 700; }
-body.role-dashboard-page .dashboard-widget small { display: block; margin-top: 5px; color: #7480a4 !important; }
-body.role-dashboard-page .card-header { padding: 16px 19px; background: rgba(255,255,255,.75) !important; border-bottom: 1px solid #edf0fb; border-radius: 17px 17px 0 0 !important; }
-body.role-dashboard-page .card-body { color: #26314d; }
-body.role-dashboard-page .border-bottom { border-color: #e8ecfa !important; }
-body.role-dashboard-page .text-muted { color: #7480a4 !important; }
+body.role-dashboard-page .dashboard-widget-value { margin-top: 13px; color: var(--app-text); font: 700 1.8rem 'Space Grotesk',sans-serif; }
+body.role-dashboard-page .dashboard-widget-label { margin-top: 3px; color: var(--app-text); font-size: .88rem; font-weight: 700; }
+body.role-dashboard-page .dashboard-widget small { display: block; margin-top: 5px; color: var(--app-muted) !important; }
+body.role-dashboard-page .card-header { padding: 16px 19px; background: var(--app-surface-alt); border-bottom: 1px solid var(--app-border); border-radius: 17px 17px 0 0 !important; }
+body.role-dashboard-page .card-body { color: var(--app-text); }
+body.role-dashboard-page .border-bottom { border-color: var(--app-border) !important; }
+body.role-dashboard-page .text-muted { color: var(--app-muted) !important; }
 body.role-dashboard-page .btn-primary { background: linear-gradient(120deg,#397eff,#632de8); border: 0; box-shadow: 0 7px 16px rgba(69, 88, 232, .18); }
-body.role-dashboard-page .btn-outline-primary { color: #385fe3; border-color: #cbd5ff; }
+body.role-dashboard-page .btn-outline-primary { color: var(--primary); border-color: var(--primary); }
 body.role-dashboard-page .btn { border-radius: 10px; font-weight: 650; }
 body.role-dashboard-page .form-control,
-body.role-dashboard-page .form-select { border-color: #dce3f6; border-radius: 10px; }
+body.role-dashboard-page .form-select { border-color: var(--app-border); border-radius: 10px; background-color: var(--app-input-bg); color: var(--app-input-text); }
 body.role-dashboard-page .admin-kpi { min-height: 126px; }
-body.admin-dashboard-page .admin-title { color: #111a38; }
+body.admin-dashboard-page .admin-title { color: var(--app-text); }
 body.admin-dashboard-page .admin-table-wrap { padding: 19px; }
 
 @media (max-width: 1100px) and (min-width: 768px) {

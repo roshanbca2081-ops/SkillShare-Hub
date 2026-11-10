@@ -43,11 +43,12 @@ foreach ($modules as &$module) {
 }
 
 // Get recent enrollments
-$stmt = $pdo->prepare("SELECT e.*, u.full_name, u.email, u.avatar 
+$enrollmentDateColumn = getEnrollmentDateColumn($pdo);
+$stmt = $pdo->prepare("SELECT e.*, e.$enrollmentDateColumn AS enrolled_at, u.full_name, u.email, u.avatar 
                        FROM enrollments e 
                        JOIN users u ON e.fresher_id = u.id 
                        WHERE e.course_id = ? 
-                       ORDER BY e.started_at DESC LIMIT 10");
+                       ORDER BY e.$enrollmentDateColumn DESC");
 $stmt->execute([$course_id]);
 $enrollments = $stmt->fetchAll();
 ?>
@@ -209,6 +210,7 @@ $enrollments = $stmt->fetchAll();
                                             <th>Progress</th>
                                             <th>Status</th>
                                             <th>Enrolled</th>
+                                            <th>Report</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -238,6 +240,11 @@ $enrollments = $stmt->fetchAll();
                                                 </span>
                                             </td>
                                             <td><?php echo formatDate($enrollment['enrolled_at']); ?></td>
+                                            <td>
+                                                <a href="student-report.php?enrollment=<?php echo (int)$enrollment['id']; ?>" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-chart-bar"></i> View report
+                                                </a>
+                                            </td>
                                         </tr>
                                         <?php endforeach; ?>
                                     </tbody>

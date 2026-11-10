@@ -17,8 +17,27 @@ $stmt->execute([$user_id]);
 $courses = $stmt->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['issue_certificate'])) {
-    $course_id = (int)$_POST['course_id'];
-    $student_id = (int)$_POST['student_id'];
+    if (!verifyCsrfToken($_POST['csrf_token'] ?? null)) {
+        $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => 'Your session token expired. Please try again.'];
+        redirect('issue.php');
+    }
+
+    $course_id = (int)($_POST['course_id'] ?? 0);
+    $student_id = (int)($_POST['student_id'] ?? 0);
+
+    $stmt = $pdo->prepare("SELECT id FROM courses WHERE id = ? AND mentor_id = ? AND status = 'active'");
+    $stmt->execute([$course_id, $user_id]);
+    if (!$stmt->fetchColumn()) {
+        $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => 'Select one of your active courses.'];
+        redirect('issue.php');
+    }
+
+    $stmt = $pdo->prepare("SELECT id FROM enrollments WHERE fresher_id = ? AND course_id = ? AND status = 'completed' LIMIT 1");
+    $stmt->execute([$student_id, $course_id]);
+    if (!$stmt->fetchColumn()) {
+        $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => 'A certificate can only be issued to a student who completed this course.'];
+        redirect('issue.php?course=' . $course_id);
+    }
     
     // Check if certificate already exists
     $stmt = $pdo->prepare("SELECT id FROM certificates WHERE fresher_id = ? AND course_id = ?");
@@ -32,18 +51,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['issue_certificate']))
         redirect('issue.php');
     }
     
-    // Generate certificate code
-    $code = 'CERT-' . strtoupper(substr(md5($course_id . $student_id . time()), 0, 10));
-    
-    $stmt = $pdo->prepare("INSERT INTO certificates (fresher_id, course_id, certificate_code) VALUES (?, ?, ?)");
-    $stmt->execute([$student_id, $course_id, $code]);
-    
-    // Notify student
-     $stmt = $pdo->prepare("INSERT INTO notifications (user_id, type, title, message, link) 
-                            VALUES (?, 'certificate', 'Certificate Issued', 
-                                    CONCAT('You have been issued a certificate for completing the course.'),
-                                    'fresher/certificate/view.php?id=' || ?)");
-    $stmt->execute([$student_id, $course_id]);
+    // Generate a hard-to-guess code and store the certificate once per student/course.
+    $certificate_id = ensureCourseCertificate($pdo, $student_id, $course_id);
+    if (!$certificate_id) {
+        $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => 'This certificate was revoked and cannot be reissued automatically.'];
+        redirect('issue.php?course=' . $course_id);
+    }
+
+    try {
+        $stmt = $pdo->prepare("INSERT INTO notifications (user_id, type, title, message, link) VALUES (?, 'certificate', 'Certificate Issued', ?, ?)");
+        $stmt->execute([$student_id, 'You have been issued a certificate for completing the course.', 'fresher/certificate/view.php?id=' . $certificate_id]);
+    } catch (PDOException $e) {
+        error_log('Certificate notification failed: ' . $e->getMessage());
+    }
     
     $_SESSION['alert'] = [
         'type' => 'success',
@@ -56,8 +76,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['issue_certificate']))
 // Get students for selected course via AJAX
 $course_id = isset($_GET['course']) ? (int)$_GET['course'] : 0;
 $students = [];
+$authorizedCourse = false;
 
 if ($course_id) {
+    $stmt = $pdo->prepare("SELECT c.id FROM courses c WHERE c.id = ? AND c.mentor_id = ? AND c.status = 'active'");
+    $stmt->execute([$course_id, $user_id]);
+    $authorizedCourse = (bool)$stmt->fetchColumn();
+}
+
+if ($course_id && $authorizedCourse) {
     $stmt = $pdo->prepare("SELECT u.id, u.full_name, u.email, e.progress 
                            FROM enrollments e 
                            JOIN users u ON e.fresher_id = u.id 
@@ -92,6 +119,7 @@ if ($course_id) {
                     <div class="card border-0 shadow-sm">
                         <div class="card-body p-4">
                             <form method="POST">
+                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8'); ?>">
                                 <div class="mb-3">
                                     <label class="form-label">Select Course <span class="text-danger">*</span></label>
                                     <select name="course_id" class="form-select" id="courseSelect" required>

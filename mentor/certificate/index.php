@@ -74,17 +74,18 @@ $total_count = $stmt->fetchColumn();
                                         </td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                <a href="view.php?id=<?php echo $cert['id']; ?>" class="btn btn-outline-primary">
+                                                <a href="view.php?id=<?php echo (int)$cert['id']; ?>" class="btn btn-outline-primary" title="View and print">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <a href="download.php?id=<?php echo $cert['id']; ?>" class="btn btn-outline-secondary">
+                                                <?php if ($cert['is_valid']): ?><a href="download.php?id=<?php echo (int)$cert['id']; ?>" class="btn btn-outline-secondary" title="Download PDF">
                                                     <i class="fas fa-download"></i>
-                                                </a>
+                                                </a><?php endif; ?>
                                                 <?php if ($cert['is_valid']): ?>
-                                                    <a href="revoke.php?id=<?php echo $cert['id']; ?>" class="btn btn-outline-danger" 
-                                                       onclick="return confirm('Revoke this certificate?')">
-                                                        <i class="fas fa-times"></i>
-                                                    </a>
+                                                    <form method="POST" action="revoke.php" onsubmit="return confirm('Revoke this certificate?');">
+                                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8'); ?>">
+                                                        <input type="hidden" name="id" value="<?php echo (int)$cert['id']; ?>">
+                                                        <button type="submit" class="btn btn-outline-danger" title="Revoke"><i class="fas fa-times"></i></button>
+                                                    </form>
                                                 <?php endif; ?>
                                             </div>
                                         </td>

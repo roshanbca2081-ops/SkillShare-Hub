@@ -76,7 +76,7 @@ if ($certificate_code) {
                         <p><strong>Course:</strong> <?php echo htmlspecialchars($cert['course_title']); ?></p>
                         <p><strong>Instructor:</strong> <?php echo htmlspecialchars($cert['mentor_name']); ?></p>
                         <p><strong>Issued:</strong> <?php echo formatDate($cert['issued_at']); ?></p>
-                        <p><strong>Certificate Code:</strong> <?php echo $cert['certificate_code']; ?></p>
+                        <p><strong>Certificate Code:</strong> <?php echo htmlspecialchars($cert['certificate_code'], ENT_QUOTES, 'UTF-8'); ?></p>
                         <p><strong>Status:</strong> <span class="badge bg-success">Valid</span></p>
                     </div>
                 <?php else: ?>

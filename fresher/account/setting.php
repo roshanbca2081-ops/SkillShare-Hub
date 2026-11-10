@@ -4,10 +4,16 @@ require_once '../../config/database.php';
 require_once '../../config/session.php';
 require_once '../../config/functions.php';
 require_once '../../config/auth.php';
+require_once '../../config/user-preferences.php';
 
 requireFresher();
 
 $user_id = getUserId();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+    $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => 'Your session token expired. Please reload settings and try again.'];
+    redirect('setting.php');
+}
 
 // Get user data
 $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
@@ -73,13 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_preferences'])
     ];
     
     // Save to settings table
-    $stmt = $pdo->prepare("INSERT INTO settings (setting_key, setting_value, setting_group) 
-                           VALUES (?, ?, 'notifications') 
-                           ON DUPLICATE KEY UPDATE setting_value = ?");
-    
-    foreach ($preferences as $key => $value) {
-        $stmt->execute([$key, $value, $value]);
-    }
+    saveUserPreferences($pdo, $user_id, $preferences);
     
     $_SESSION['alert'] = [
         'type' => 'success',
@@ -89,13 +89,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_preferences'])
     redirect('setting.php');
 }
 
-// Get current preferences
-$preferences = [];
-$stmt = $pdo->prepare("SELECT setting_key, setting_value FROM settings WHERE setting_group = 'notifications'");
-$stmt->execute();
-while ($row = $stmt->fetch()) {
-    $preferences[$row['setting_key']] = $row['setting_value'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_privacy'])) {
+    $visibility = (string)($_POST['profile_visibility'] ?? 'mentors');
+    if (!in_array($visibility, ['public', 'mentors', 'private'], true)) {
+        $visibility = 'mentors';
+    }
+    saveUserPreferences($pdo, $user_id, [
+        'profile_visibility' => $visibility,
+        'show_email' => isset($_POST['show_email']) ? 1 : 0,
+        'show_progress' => isset($_POST['show_progress']) ? 1 : 0,
+        'allow_messages' => isset($_POST['allow_messages']) ? 1 : 0,
+    ]);
+    $_SESSION['alert'] = ['type' => 'success', 'icon' => 'check-circle', 'message' => 'Privacy preferences saved.'];
+    redirect('setting.php#privacy');
 }
+
+// Get current preferences
+$preferences = getUserPreferences($pdo, $user_id);
+$stmt = $pdo->prepare("SELECT created_at, ip_address, description FROM system_logs WHERE user_id = ? AND action = 'login' ORDER BY created_at DESC LIMIT 10");
+$stmt->execute([$user_id]);
+$login_history = $stmt->fetchAll();
 
 // Handle account deactivation
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deactivate_account'])) {
@@ -112,6 +125,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deactivate_account'])
     session_destroy();
     header('Location: ../../login.php?deactivated=1');
     exit();
+}
+
+// Get user theme preference
+$theme_preference = getUserThemePreference($pdo, $user_id);
+
+// Handle theme preference
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_theme'])) {
+    $theme = (string)($_POST['theme_preference'] ?? 'system');
+    if (!in_array($theme, ['light', 'dark', 'system'], true)) {
+        $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => 'Choose a valid theme.'];
+        redirect('setting.php');
+    }
+    saveUserThemePreference($pdo, $user_id, $theme);
+    $theme_preference = $theme;
+    
+    $_SESSION['alert'] = [
+        'type' => 'success',
+        'icon' => 'check-circle',
+        'message' => 'Theme preference updated successfully!'
+    ];
+    redirect('setting.php');
 }
 ?>
 <?php include '../../includes/header.php'; ?>
@@ -140,7 +174,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deactivate_account'])
                     <!-- Quick Navigation -->
                     <div class="card border-0 shadow-sm sticky-top" style="top: 80px;">
                         <div class="list-group list-group-flush">
-                            <a href="#security" class="list-group-item list-group-item-action active">
+                            <a href="#theme" class="list-group-item list-group-item-action active">
+                                <i class="fas fa-palette"></i> Theme
+                            </a>
+                            <a href="#security" class="list-group-item list-group-item-action">
                                 <i class="fas fa-shield-alt"></i> Security
                             </a>
                             <a href="#notifications" class="list-group-item list-group-item-action">
@@ -161,6 +198,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deactivate_account'])
                 
                 <!-- Right Column -->
                 <div class="col-lg-8">
+                    <!-- Theme Section -->
+                    <div id="theme" class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-transparent">
+                            <h5 class="mb-0"><i class="fas fa-palette text-primary"></i> Theme Preference</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <p class="text-muted small">Choose your preferred color theme. This will be applied across the platform.</p>
+                            
+                            <form method="POST">
+                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8'); ?>">
+                                <input type="hidden" name="update_theme" value="1">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <div class="theme-option card h-100 border-2 <?php echo $theme_preference === 'light' ? 'border-primary' : ''; ?>" onclick="document.getElementById('themeLight').checked = true; this.form.submit();" style="cursor: pointer;">
+                                            <div class="card-body text-center p-4">
+                                                <div class="theme-preview bg-light border rounded mb-3" style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                                                    <i class="fas fa-sun fa-2x text-warning"></i>
+                                                </div>
+                                                <h6 class="mb-1">Light</h6>
+                                                <small class="text-muted">Bright and clean</small>
+                                                <input type="radio" name="theme_preference" id="themeLight" value="light" class="d-none" <?php echo $theme_preference === 'light' ? 'checked' : ''; ?>>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="theme-option card h-100 border-2 <?php echo $theme_preference === 'dark' ? 'border-primary' : ''; ?>" onclick="document.getElementById('themeDark').checked = true; this.form.submit();" style="cursor: pointer;">
+                                            <div class="card-body text-center p-4">
+                                                <div class="theme-preview bg-dark border rounded mb-3" style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                                                    <i class="fas fa-moon fa-2x text-info"></i>
+                                                </div>
+                                                <h6 class="mb-1">Dark</h6>
+                                                <small class="text-muted">Easy on the eyes</small>
+                                                <input type="radio" name="theme_preference" id="themeDark" value="dark" class="d-none" <?php echo $theme_preference === 'dark' ? 'checked' : ''; ?>>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="theme-option card h-100 border-2 <?php echo $theme_preference === 'system' ? 'border-primary' : ''; ?>" onclick="document.getElementById('themeSystem').checked = true; this.form.submit();" style="cursor: pointer;">
+                                            <div class="card-body text-center p-4">
+                                                <div class="theme-preview bg-gradient border rounded mb-3" style="height: 80px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f8f9fa 50%, #212529 50%);">
+                                                    <i class="fas fa-desktop fa-2x text-secondary"></i>
+                                                </div>
+                                                <h6 class="mb-1">System</h6>
+                                                <small class="text-muted">Match your OS</small>
+                                                <input type="radio" name="theme_preference" id="themeSystem" value="system" class="d-none" <?php echo $theme_preference === 'system' ? 'checked' : ''; ?>>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" name="update_theme" class="btn btn-primary mt-3">
+                                    <i class="fas fa-save"></i> Save Theme
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-transparent"><h5 class="mb-0"><i class="fas fa-clock-rotate-left text-primary"></i> Recent sign-ins</h5></div>
+                        <div class="card-body p-0">
+                            <?php if ($login_history): ?><div class="table-responsive"><table class="table table-hover mb-0"><thead><tr><th>Date</th><th>IP address</th><th>Details</th></tr></thead><tbody><?php foreach ($login_history as $login): ?><tr><td><?php echo htmlspecialchars(formatDateTime($login['created_at']), ENT_QUOTES, 'UTF-8'); ?></td><td><?php echo htmlspecialchars($login['ip_address'] ?: 'Unavailable', ENT_QUOTES, 'UTF-8'); ?></td><td><?php echo htmlspecialchars($login['description'] ?: 'Sign-in recorded', ENT_QUOTES, 'UTF-8'); ?></td></tr><?php endforeach; ?></tbody></table></div><?php else: ?><p class="text-muted p-4 mb-0">No sign-in history is available.</p><?php endif; ?>
+                        </div>
+                    </div>
+                    
                     <!-- Security Section -->
                     <div id="security" class="card border-0 shadow-sm mb-4">
                         <div class="card-header bg-transparent">
@@ -171,6 +271,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deactivate_account'])
                             <p class="text-muted small">Choose a strong password with at least 8 characters, including uppercase, lowercase, numbers, and special characters.</p>
                             
                             <form method="POST">
+                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8'); ?>">
                                 <div class="mb-3">
                                     <label class="form-label">Current Password</label>
                                     <div class="input-group">
@@ -228,6 +329,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deactivate_account'])
                         </div>
                         <div class="card-body p-4">
                             <form method="POST">
+                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8'); ?>">
                                 <div class="form-check form-switch mb-3">
                                     <input class="form-check-input" type="checkbox" name="email_notifications" id="emailNotifications" 
                                            <?php echo ($preferences['email_notifications'] ?? 1) ? 'checked' : ''; ?>>
@@ -286,40 +388,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deactivate_account'])
                             <h5 class="mb-0"><i class="fas fa-lock text-primary"></i> Privacy Settings</h5>
                         </div>
                         <div class="card-body p-4">
+                            <form method="POST">
+                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8'); ?>">
                             <div class="mb-3">
-                                <label class="form-label">Profile Visibility</label>
-                                <select class="form-select">
-                                    <option value="public">Public - Visible to everyone</option>
-                                    <option value="mentors" selected>Mentors Only - Visible to mentors</option>
-                                    <option value="private">Private - Visible only to you</option>
+                                <label class="form-label" for="profileVisibility">Profile visibility</label>
+                                <select class="form-select" id="profileVisibility" name="profile_visibility">
+                                    <option value="public" <?php echo ($preferences['profile_visibility'] ?? 'mentors') === 'public' ? 'selected' : ''; ?>>Public - Visible to everyone</option>
+                                    <option value="mentors" <?php echo ($preferences['profile_visibility'] ?? 'mentors') === 'mentors' ? 'selected' : ''; ?>>Mentors only</option>
+                                    <option value="private" <?php echo ($preferences['profile_visibility'] ?? 'mentors') === 'private' ? 'selected' : ''; ?>>Private - Visible only to you</option>
                                 </select>
                             </div>
                             
                             <div class="mb-3">
-                                <label class="form-label">Show Email in Profile</label>
-                                <select class="form-select">
-                                    <option value="yes">Yes, show my email</option>
-                                    <option value="no" selected>No, hide my email</option>
-                                </select>
+                                <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="show_email" id="showEmail" <?php echo !empty($preferences['show_email']) ? 'checked' : ''; ?>><label class="form-check-label" for="showEmail">Show my email on my profile</label></div>
                             </div>
                             
                             <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="showProgress" checked>
+                                <input class="form-check-input" type="checkbox" name="show_progress" id="showProgress" <?php echo !isset($preferences['show_progress']) || (int)$preferences['show_progress'] ? 'checked' : ''; ?>>
                                 <label class="form-check-label" for="showProgress">
                                     Show my course progress to mentors
                                 </label>
                             </div>
                             
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="allowMessages" checked>
+                                <input class="form-check-input" type="checkbox" name="allow_messages" id="allowMessages" <?php echo !isset($preferences['allow_messages']) || (int)$preferences['allow_messages'] ? 'checked' : ''; ?>>
                                 <label class="form-check-label" for="allowMessages">
                                     Allow mentors to send me messages
                                 </label>
                             </div>
                             
-                            <button class="btn btn-primary mt-3" onclick="savePrivacy()">
+                            <button class="btn btn-primary mt-3" type="submit" name="update_privacy" value="1">
                                 <i class="fas fa-save"></i> Save Privacy Settings
                             </button>
+                            </form>
                         </div>
                     </div>
                     
@@ -361,6 +462,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deactivate_account'])
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8'); ?>">
                 <div class="modal-body">
                     <p>Are you sure you want to deactivate your account?</p>
                     <p class="text-muted small">Your profile will be hidden and you won't be able to access your courses until reactivation.</p>
@@ -388,6 +490,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deactivate_account'])
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="delete-account.php">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8'); ?>">
                 <div class="modal-body">
                     <div class="alert alert-danger">
                         <i class="fas fa-exclamation-triangle"></i> 
@@ -471,11 +574,6 @@ document.querySelector('input[name="confirm_delete"]').addEventListener('input',
     const deleteBtn = document.getElementById('deleteBtn');
     deleteBtn.disabled = this.value !== 'DELETE';
 });
-
-// Save privacy settings
-function savePrivacy() {
-    showNotification('Privacy settings saved successfully!', 'success');
-}
 
 // Smooth scroll to section
 document.querySelectorAll('.list-group-item').forEach(item => {

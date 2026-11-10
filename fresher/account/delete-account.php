@@ -6,6 +6,11 @@ require_once '../../config/auth.php';
 
 requireFresher();
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+    $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => 'The account deletion request could not be verified.'];
+    redirect('setting.php#danger');
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_account'])) {
     $confirm = sanitize($_POST['confirm_delete'] ?? '');
     

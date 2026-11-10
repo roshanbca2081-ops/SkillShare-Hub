@@ -11,6 +11,7 @@ $user_id = getUserId();
 
 // Get all enrolled courses
 $stmt = $pdo->prepare("SELECT e.*, c.id as course_id, c.title, c.thumbnail, c.level, c.price, c.duration,
+                       (SELECT cert.id FROM certificates cert WHERE cert.course_id = c.id AND cert.fresher_id = e.fresher_id AND cert.is_valid = 1 ORDER BY cert.issued_at DESC LIMIT 1) AS certificate_id,
                        u.full_name as mentor_name, u.id as mentor_id, u.avatar as mentor_avatar,
                        (SELECT COUNT(*) FROM course_lessons cl 
                         JOIN course_modules cm ON cl.module_id = cm.id 
@@ -101,8 +102,8 @@ if (isset($_GET['drop']) && isset($_GET['id'])) {
                                         <i class="fas fa-play"></i> Continue Learning
                                     </a>
                                 <?php elseif ($course['status'] === 'completed'): ?>
-                                    <a href="../../public/course-detail.php?id=<?php echo $course['course_id']; ?>" class="btn btn-outline-success w-100">
-                                        <i class="fas fa-certificate"></i> View Certificate
+                                    <a href="../certificate/<?php echo !empty($course['certificate_id']) ? 'view.php?id=' . (int)$course['certificate_id'] : 'index.php'; ?>" class="btn btn-outline-success w-100">
+                                        <i class="fas fa-certificate"></i> <?php echo !empty($course['certificate_id']) ? 'View Certificate' : 'My Certificates'; ?>
                                     </a>
                                 <?php else: ?>
                                     <a href="course.php?id=<?php echo $course['course_id']; ?>" class="btn btn-outline-secondary w-100">

@@ -849,53 +849,51 @@ a:hover {
 /* ============================================
    15. DARK MODE SUPPORT
    ============================================ */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --glass-bg: rgba(0, 0, 0, 0.3);
-        --glass-border: rgba(255, 255, 255, 0.05);
-    }
-    
-    body {
-        background: #1a202c;
-        color: #e2e8f0;
-    }
-    
-    .glass-card {
-        background: rgba(26, 32, 44, 0.8);
-        border-color: rgba(255, 255, 255, 0.05);
-    }
-    
-    .feature-card-modern,
-    .course-card-modern,
-    .mentor-card-modern {
-        background: #2d3748;
-        border-color: rgba(255, 255, 255, 0.05);
-    }
-    
-    .form-modern {
-        background: #2d3748;
-    }
-    
-    .form-control-modern {
-        background: #1a202c;
-        border-color: #4a5568;
-        color: #e2e8f0;
-    }
-    
-    .course-footer-modern {
-        background: #1a202c;
-        border-color: #4a5568;
-    }
-    
-    .feature-title-modern,
-    .course-title-modern,
-    .mentor-name-modern {
-        color: #e2e8f0;
-    }
-    
-    .feature-desc-modern,
-    .course-meta-modern,
-    .mentor-title-modern {
-        color: #a0aec0;
-    }
+html[data-theme="dark"] {
+    --glass-bg: rgba(0, 0, 0, 0.3);
+    --glass-border: rgba(255, 255, 255, 0.05);
+}
+
+html[data-theme="dark"] body {
+    background: #1a202c;
+    color: #e2e8f0;
+}
+
+html[data-theme="dark"] .glass-card {
+    background: rgba(26, 32, 44, 0.8);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+html[data-theme="dark"] .feature-card-modern,
+html[data-theme="dark"] .course-card-modern,
+html[data-theme="dark"] .mentor-card-modern {
+    background: #2d3748;
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+html[data-theme="dark"] .form-modern {
+    background: #2d3748;
+}
+
+html[data-theme="dark"] .form-control-modern {
+    background: #1a202c;
+    border-color: #4a5568;
+    color: #e2e8f0;
+}
+
+html[data-theme="dark"] .course-footer-modern {
+    background: #1a202c;
+    border-color: #4a5568;
+}
+
+html[data-theme="dark"] .feature-title-modern,
+html[data-theme="dark"] .course-title-modern,
+html[data-theme="dark"] .mentor-name-modern {
+    color: #e2e8f0;
+}
+
+html[data-theme="dark"] .feature-desc-modern,
+html[data-theme="dark"] .course-meta-modern,
+html[data-theme="dark"] .mentor-title-modern {
+    color: #a0aec0;
 }

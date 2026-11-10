@@ -31,62 +31,192 @@ if (!$course) {
     redirect('my-course.php');
 }
 
-// Get modules with lessons
-$stmt = $pdo->prepare("SELECT * FROM course_modules WHERE course_id = ? AND is_published = 1 ORDER BY order_number");
-$stmt->execute([$course_id]);
-$modules = $stmt->fetchAll();
-
+// Published lesson sequence is enforced on the server, including direct lesson URLs.
+$stmt = $pdo->prepare("SELECT cm.id AS module_id, cm.title AS module_title,
+                              l.*, COALESCE(lp.completed, 0) AS saved_completed,
+                              COALESCE((SELECT COUNT(*) FROM lesson_quiz_questions q WHERE q.lesson_id = l.id), 0) AS quiz_question_count,
+                              EXISTS(SELECT 1 FROM lesson_quiz_attempts qa
+                                     WHERE qa.fresher_id = ? AND qa.lesson_id = l.id
+                                       AND qa.quiz_version = l.quiz_version AND qa.passed = 1) AS quiz_passed
+                       FROM course_modules cm
+                       JOIN course_lessons l ON l.module_id = cm.id AND l.is_published = 1
+                       LEFT JOIN lesson_progress lp ON lp.lesson_id = l.id AND lp.fresher_id = ?
+                       WHERE cm.course_id = ? AND cm.is_published = 1
+                       ORDER BY cm.order_number, cm.id, l.order_number, l.id");
+$stmt->execute([$user_id, $user_id, $course_id]);
+$all_lessons = $stmt->fetchAll();
+$modules = [];
 $lessons = [];
-foreach ($modules as $module) {
-    $stmt = $pdo->prepare("SELECT * FROM course_lessons WHERE module_id = ? AND is_published = 1 ORDER BY order_number");
-    $stmt->execute([$module['id']]);
-    $module_lessons = $stmt->fetchAll();
-    
-    // Get progress for each lesson
-    foreach ($module_lessons as $lessonIndex => $lesson) {
-        $stmt = $pdo->prepare("SELECT completed FROM lesson_progress WHERE fresher_id = ? AND lesson_id = ?");
-        $stmt->execute([$user_id, $lesson['id']]);
-        $progress = $stmt->fetch();
-        $module_lessons[$lessonIndex]['completed'] = $progress ? (int)$progress['completed'] : 0;
+$lessonIndexes = [];
+$first_lesson = null;
+foreach ($all_lessons as $index => &$lesson) {
+    $lesson['completed'] = (int)$lesson['saved_completed'];
+    $lesson['quiz_required'] = (int)($lesson['quiz_required'] ?? 0);
+    $lesson['quiz_pass_percent'] = (int)($lesson['quiz_pass_percent'] ?? 70);
+    $lesson['quiz_version'] = (int)($lesson['quiz_version'] ?? 1);
+    $lesson['quiz_passed'] = (int)$lesson['quiz_passed'];
+    if ($lesson['quiz_required'] && ($lesson['quiz_question_count'] < 1 || !$lesson['quiz_passed'])) {
+        $lesson['completed'] = 0;
     }
-    $lessons[$module['id']] = $module_lessons;
+    if (!isset($modules[$lesson['module_id']])) {
+        $modules[$lesson['module_id']] = ['id' => $lesson['module_id'], 'title' => $lesson['module_title']];
+    }
+    $lessons[$lesson['module_id']][] = $lesson;
+    $lessonIndexes[(int)$lesson['id']] = $index;
+    if ($first_lesson === null) {
+        $first_lesson = $lesson;
+    }
+}
+unset($lesson);
+$modules = array_values($modules);
+
+// Keep learners on the first unfinished lesson across their enrolled course sequence.
+$pendingLessonQuery = $pdo->prepare("SELECT c.id AS course_id, l.id AS lesson_id
+                                   FROM enrollments e
+                                   JOIN courses c ON c.id = e.course_id
+                                   JOIN course_modules cm ON cm.course_id = c.id AND cm.is_published = 1
+                                                                     JOIN course_lessons l ON l.module_id = cm.id AND l.is_published = 1
+                                                                     LEFT JOIN lesson_progress lp ON lp.fresher_id = e.fresher_id AND lp.lesson_id = l.id
+                                                                     WHERE e.fresher_id = ? AND e.status IN ('active', 'completed')
+                                                                         AND (COALESCE(lp.completed, 0) = 0 OR (l.quiz_required = 1 AND NOT EXISTS (
+                                                                                 SELECT 1 FROM lesson_quiz_attempts qa
+                                                                                 WHERE qa.fresher_id = e.fresher_id AND qa.lesson_id = l.id
+                                                                                     AND qa.quiz_version = l.quiz_version AND qa.passed = 1
+                                                                         )))
+                                   ORDER BY e.id, cm.order_number, cm.id, l.order_number, l.id
+                                   LIMIT 1");
+$pendingLessonQuery->execute([$user_id]);
+$pendingLesson = $pendingLessonQuery->fetch();
+if ($pendingLesson && (int)$pendingLesson['course_id'] !== $course_id) {
+        redirect('course.php?id=' . (int)$pendingLesson['course_id'] . '&lesson=' . (int)$pendingLesson['lesson_id']);
 }
 
-// Get first lesson
-$first_lesson = null;
-foreach ($modules as $module) {
-    if (!empty($lessons[$module['id']])) {
-        $first_lesson = $lessons[$module['id']][0];
+// Requested lessons are only available once all earlier lessons are complete.
+$requested_lesson_id = isset($_GET['lesson']) ? (int)$_GET['lesson'] : ($first_lesson ? (int)$first_lesson['id'] : 0);
+$requested_index = $requested_lesson_id && isset($lessonIndexes[$requested_lesson_id]) ? $lessonIndexes[$requested_lesson_id] : 0;
+$first_unfinished_index = null;
+foreach ($all_lessons as $index => $lesson) {
+    if (empty($lesson['completed'])) {
+        $first_unfinished_index = $index;
         break;
     }
 }
-
-// Get current lesson
-$lesson_id = isset($_GET['lesson']) ? (int)$_GET['lesson'] : ($first_lesson ? $first_lesson['id'] : 0);
-$current_lesson = null;
-if ($lesson_id) {
-    $stmt = $pdo->prepare("SELECT l.*, COALESCE(lp.completed, 0) AS completed
-                           FROM course_lessons l
-                           JOIN course_modules m ON m.id = l.module_id AND m.course_id = ? AND m.is_published = 1
-                           LEFT JOIN lesson_progress lp ON lp.lesson_id = l.id AND lp.fresher_id = ?
-                           WHERE l.id = ? AND l.is_published = 1
-                           LIMIT 1");
-    $stmt->execute([$course_id, $user_id, $lesson_id]);
-    $current_lesson = $stmt->fetch();
+if ($requested_lesson_id && isset($lessonIndexes[$requested_lesson_id]) && $first_unfinished_index !== null && $requested_index > $first_unfinished_index) {
+    $lockedLesson = $all_lessons[$first_unfinished_index];
+    $_SESSION['alert'] = ['type' => 'warning', 'icon' => 'lock', 'message' => 'Complete this lesson and pass its required quiz before moving on.'];
+    redirect('course.php?id=' . $course_id . '&lesson=' . (int)$lockedLesson['id']);
 }
 
-// Mark lesson as complete
-if (isset($_POST['complete_lesson']) && $current_lesson) {
-    $stmt = $pdo->prepare("INSERT INTO lesson_progress (fresher_id, lesson_id, completed, completed_at) 
-                           VALUES (?, ?, 1, NOW()) 
-                           ON DUPLICATE KEY UPDATE completed = 1, completed_at = NOW()");
-    $stmt->execute([$user_id, $current_lesson['id']]);
-    
-    $_SESSION['alert'] = [
-        'type' => 'success',
-        'icon' => 'check-circle',
-        'message' => 'Lesson marked as complete!'
-    ];
+$lesson_id = $requested_lesson_id;
+$current_lesson = $lesson_id && isset($lessonIndexes[$lesson_id]) ? $all_lessons[$lessonIndexes[$lesson_id]] : null;
+$quiz_questions = [];
+$latestAttempt = null;
+if ($current_lesson && $current_lesson['quiz_required']) {
+    $stmt = $pdo->prepare('SELECT id, question_text, option_a, option_b, option_c, option_d FROM lesson_quiz_questions WHERE lesson_id = ? ORDER BY order_number, id');
+    $stmt->execute([$lesson_id]);
+    $quiz_questions = $stmt->fetchAll();
+    $stmt = $pdo->prepare('SELECT score_percent, passed, attempted_at FROM lesson_quiz_attempts WHERE fresher_id = ? AND lesson_id = ? AND quiz_version = ? ORDER BY id DESC LIMIT 1');
+    $stmt->execute([$user_id, $lesson_id, $current_lesson['quiz_version']]);
+    $latestAttempt = $stmt->fetch();
+}
+
+$recalculateEnrollment = function () use ($pdo, $user_id, $course_id) {
+    $stmt = $pdo->prepare("SELECT COUNT(*) AS total_lessons,
+                                  COALESCE(SUM(CASE WHEN lp.completed = 1 THEN 1 ELSE 0 END), 0) AS completed_lessons
+                           FROM course_modules cm
+                           JOIN course_lessons cl ON cl.module_id = cm.id AND cl.is_published = 1
+                           LEFT JOIN lesson_progress lp ON lp.lesson_id = cl.id AND lp.fresher_id = ?
+                           WHERE cm.course_id = ? AND cm.is_published = 1");
+    $stmt->execute([$user_id, $course_id]);
+    $counts = $stmt->fetch();
+    $total = (int)$counts['total_lessons'];
+    $completed = (int)$counts['completed_lessons'];
+    $percent = $total > 0 ? (int)round(($completed / $total) * 100) : 0;
+    $isComplete = $total > 0 && $completed >= $total;
+    $stmt = $pdo->prepare("UPDATE enrollments
+                           SET progress = ?,
+                               status = CASE WHEN ? = 1 THEN 'completed' WHEN status = 'completed' THEN 'active' ELSE status END,
+                               completed_at = CASE WHEN ? = 1 THEN COALESCE(completed_at, NOW()) WHEN ? = 0 THEN NULL ELSE completed_at END,
+                               last_accessed_at = NOW()
+                           WHERE fresher_id = ? AND course_id = ?");
+    $stmt->execute([$percent, $isComplete ? 1 : 0, $isComplete ? 1 : 0, $isComplete ? 1 : 0, $user_id, $course_id]);
+    if ($isComplete) {
+        try {
+            ensureCourseCertificate($pdo, $user_id, $course_id);
+        } catch (Throwable $e) {
+            error_log('Course certificate issuance failed: ' . $e->getMessage());
+        }
+    }
+    return ['progress' => $percent, 'complete' => $isComplete];
+};
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['submit_quiz']) || isset($_POST['complete_lesson']))) {
+    if (!verifyCsrfToken($_POST['csrf_token'] ?? null)) {
+        $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => 'Your session token expired. Please reload and try again.'];
+        redirect('course.php?id=' . $course_id . '&lesson=' . $lesson_id);
+    }
+
+    $postedLessonId = (int)($_POST['lesson_id'] ?? 0);
+    if (!$current_lesson || $postedLessonId !== (int)$current_lesson['id']) {
+        redirect('course.php?id=' . $course_id);
+    }
+
+    if (isset($_POST['submit_quiz'])) {
+        $questionStmt = $pdo->prepare('SELECT id, correct_option FROM lesson_quiz_questions WHERE lesson_id = ? ORDER BY order_number, id');
+        $questionStmt->execute([$lesson_id]);
+        $answerKey = $questionStmt->fetchAll();
+        $submittedAnswers = $_POST['answers'] ?? [];
+        $isValidAttempt = $answerKey && is_array($submittedAnswers) && count($answerKey) === count($submittedAnswers);
+        $correctCount = 0;
+
+        foreach ($answerKey as $question) {
+            $questionKey = (string)$question['id'];
+            $answer = isset($submittedAnswers[$questionKey]) ? strtoupper((string)$submittedAnswers[$questionKey]) : '';
+            if (!in_array($answer, ['A', 'B', 'C', 'D'], true)) {
+                $isValidAttempt = false;
+            } elseif ($answer === $question['correct_option']) {
+                $correctCount++;
+            }
+        }
+
+        if (!$isValidAttempt) {
+            $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => 'Answer every quiz question before submitting.'];
+        } else {
+            $score = (int)round(($correctCount / count($answerKey)) * 100);
+            $passed = $score >= $current_lesson['quiz_pass_percent'];
+            $pdo->beginTransaction();
+            try {
+                $stmt = $pdo->prepare('INSERT INTO lesson_quiz_attempts (fresher_id, lesson_id, quiz_version, score_percent, passed) VALUES (?, ?, ?, ?, ?)');
+                $stmt->execute([$user_id, $lesson_id, $current_lesson['quiz_version'], $score, $passed ? 1 : 0]);
+                if ($passed) {
+                    $stmt = $pdo->prepare('INSERT INTO lesson_progress (fresher_id, lesson_id, completed, completed_at) VALUES (?, ?, 1, NOW()) ON DUPLICATE KEY UPDATE completed = 1, completed_at = NOW()');
+                    $stmt->execute([$user_id, $lesson_id]);
+                }
+                $pdo->commit();
+            } catch (Throwable $e) {
+                $pdo->rollBack();
+                error_log('Lesson quiz submission failed: ' . $e->getMessage());
+                $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => 'We could not save your quiz attempt. Please try again.'];
+                redirect('course.php?id=' . $course_id . '&lesson=' . $lesson_id);
+            }
+
+            $courseProgress = $recalculateEnrollment();
+            $_SESSION['alert'] = $passed
+                ? ['type' => 'success', 'icon' => 'check-circle', 'message' => 'You passed with ' . $score . '%. Lesson completed!']
+                : ['type' => 'warning', 'icon' => 'redo', 'message' => 'You scored ' . $score . '%. You need ' . $current_lesson['quiz_pass_percent'] . '% to pass. Review the lesson and try again.'];
+        }
+        redirect('course.php?id=' . $course_id . '&lesson=' . $lesson_id);
+    }
+
+    if ($current_lesson['quiz_required'] && !$current_lesson['quiz_passed']) {
+        $_SESSION['alert'] = ['type' => 'warning', 'icon' => 'lock', 'message' => 'Pass the lesson quiz before marking this lesson complete.'];
+        redirect('course.php?id=' . $course_id . '&lesson=' . $lesson_id);
+    }
+
+    $stmt = $pdo->prepare('INSERT INTO lesson_progress (fresher_id, lesson_id, completed, completed_at) VALUES (?, ?, 1, NOW()) ON DUPLICATE KEY UPDATE completed = 1, completed_at = NOW()');
+    $stmt->execute([$user_id, $lesson_id]);
+    $courseProgress = $recalculateEnrollment();
+    $_SESSION['alert'] = ['type' => 'success', 'icon' => 'check-circle', 'message' => 'Lesson marked as complete!'];
     redirect('course.php?id=' . $course_id . '&lesson=' . $lesson_id);
 }
 ?>
@@ -177,14 +307,60 @@ if (isset($_POST['complete_lesson']) && $current_lesson) {
                                     </a>
                                 </div>
                                 <?php endif; ?>
+
+                                <?php if ($current_lesson['quiz_required']): ?>
+                                    <div class="card border-primary border-opacity-25 mt-4">
+                                        <div class="card-header bg-primary bg-opacity-10">
+                                            <h4 class="h6 mb-0"><i class="fas fa-circle-question me-2"></i>Lesson knowledge check</h4>
+                                            <small class="text-muted">Pass mark: <?php echo (int)$current_lesson['quiz_pass_percent']; ?>%</small>
+                                        </div>
+                                        <div class="card-body">
+                                            <?php if ($latestAttempt): ?>
+                                                <div class="alert alert-<?php echo !empty($latestAttempt['passed']) ? 'success' : 'warning'; ?> py-2">
+                                                    Your latest score: <strong><?php echo (int)$latestAttempt['score_percent']; ?>%</strong>
+                                                    <?php echo !empty($latestAttempt['passed']) ? '— quiz passed.' : '— review the lesson and try again.'; ?>
+                                                </div>
+                                            <?php endif; ?>
+
+                                            <?php if ($quiz_questions): ?>
+                                                <form method="POST">
+                                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8'); ?>">
+                                                    <input type="hidden" name="lesson_id" value="<?php echo (int)$current_lesson['id']; ?>">
+                                                    <?php foreach ($quiz_questions as $questionIndex => $question): ?>
+                                                        <fieldset class="mb-4" aria-labelledby="quizQuestion<?php echo (int)$question['id']; ?>">
+                                                            <legend class="fs-6 fw-semibold" id="quizQuestion<?php echo (int)$question['id']; ?>">
+                                                                <?php echo ($questionIndex + 1) . '. ' . htmlspecialchars($question['question_text']); ?>
+                                                            </legend>
+                                                            <?php foreach (['A' => 'option_a', 'B' => 'option_b', 'C' => 'option_c', 'D' => 'option_d'] as $optionKey => $optionColumn): ?>
+                                                                <label class="d-flex align-items-start gap-2 p-2 border rounded mb-2">
+                                                                    <input class="form-check-input mt-1" type="radio" name="answers[<?php echo (int)$question['id']; ?>]" value="<?php echo $optionKey; ?>" required>
+                                                                    <span><strong><?php echo $optionKey; ?>.</strong> <?php echo htmlspecialchars($question[$optionColumn]); ?></span>
+                                                                </label>
+                                                            <?php endforeach; ?>
+                                                        </fieldset>
+                                                    <?php endforeach; ?>
+                                                    <button type="submit" name="submit_quiz" value="1" class="btn btn-primary">
+                                                        <i class="fas fa-paper-plane me-1"></i>Submit quiz
+                                                    </button>
+                                                </form>
+                                            <?php else: ?>
+                                                <div class="alert alert-warning mb-0">This required quiz is not ready yet. Please contact your mentor.</div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
                                 
                                 <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
                                     <div>
                                         <?php if ($current_lesson['completed']): ?>
                                             <span class="badge bg-success"><i class="fas fa-check"></i> Completed</span>
+                                        <?php elseif ($current_lesson['quiz_required'] && !$current_lesson['quiz_passed']): ?>
+                                            <span class="badge bg-warning text-dark"><i class="fas fa-lock"></i> Pass quiz to complete</span>
                                         <?php else: ?>
                                             <form method="POST" class="d-inline">
-                                                <button type="submit" name="complete_lesson" class="btn btn-success">
+                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8'); ?>">
+                                                <input type="hidden" name="lesson_id" value="<?php echo (int)$current_lesson['id']; ?>">
+                                                <button type="submit" name="complete_lesson" value="1" class="btn btn-success">
                                                     <i class="fas fa-check"></i> Mark as Complete
                                                 </button>
                                             </form>
@@ -222,13 +398,21 @@ if (isset($_POST['complete_lesson']) && $current_lesson) {
                             <?php endif; ?>
                             
                             <?php if ($next_lesson): ?>
-                                <a href="course.php?id=<?php echo $course_id; ?>&lesson=<?php echo $next_lesson['id']; ?>" class="btn btn-primary">
-                                    Next: <?php echo htmlspecialchars($next_lesson['title']); ?> <i class="fas fa-arrow-right"></i>
-                                </a>
+                                <?php if ($current_lesson['completed']): ?>
+                                    <a href="course.php?id=<?php echo $course_id; ?>&lesson=<?php echo $next_lesson['id']; ?>" class="btn btn-primary">
+                                        Next: <?php echo htmlspecialchars($next_lesson['title']); ?> <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                <?php else: ?>
+                                    <button type="button" class="btn btn-primary" disabled title="Complete this lesson<?php echo $current_lesson['quiz_required'] ? ' and pass its quiz' : ''; ?> first">
+                                        <i class="fas fa-lock me-1"></i>Complete lesson to continue
+                                    </button>
+                                <?php endif; ?>
                             <?php else: ?>
-                                <a href="my-course.php" class="btn btn-success">
-                                    <i class="fas fa-check"></i> Course Complete!
-                                </a>
+                                <?php if ($current_lesson['completed']): ?>
+                                    <a href="my-course.php" class="btn btn-success"><i class="fas fa-check"></i> Course Complete!</a>
+                                <?php else: ?>
+                                    <button type="button" class="btn btn-success" disabled><i class="fas fa-lock me-1"></i>Complete lesson to finish</button>
+                                <?php endif; ?>
                             <?php endif; ?>
                         </div>
                     <?php else: ?>
@@ -250,7 +434,7 @@ if (isset($_POST['complete_lesson']) && $current_lesson) {
 <script>
 function markIncomplete(lessonId) {
     if (confirm('Mark this lesson as incomplete?')) {
-        window.location.href = '#';
+        window.location.href = 'mark-incomplete.php?lesson=' + encodeURIComponent(lessonId);
     }
 }
 </script>

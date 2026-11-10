@@ -8,14 +8,19 @@ require_once '../config/auth.php';
 requireFresher();
 
 $user_id = getUserId();
+$enrollmentColumns = $pdo->query('SHOW COLUMNS FROM enrollments')->fetchAll(PDO::FETCH_COLUMN);
+$enrollmentDateColumn = in_array('enrolled_at', $enrollmentColumns, true)
+    ? 'enrolled_at'
+    : (in_array('started_at', $enrollmentColumns, true) ? 'started_at' : 'created_at');
 
 $stmt = $pdo->prepare("SELECT e.*, c.id as course_id, c.title, c.thumbnail, c.level, c.price, 
+                       (SELECT cert.id FROM certificates cert WHERE cert.course_id = c.id AND cert.fresher_id = e.fresher_id AND cert.is_valid = 1 ORDER BY cert.issued_at DESC LIMIT 1) AS certificate_id,
                        u.full_name as mentor_name, u.id as mentor_id
                        FROM enrollments e 
                        JOIN courses c ON e.course_id = c.id 
                        JOIN users u ON c.mentor_id = u.id 
                        WHERE e.fresher_id = ? AND e.status != 'dropped'
-                       ORDER BY e.enrolled_at DESC");
+                       ORDER BY e.$enrollmentDateColumn DESC");
 $stmt->execute([$user_id]);
 $courses = $stmt->fetchAll();
 ?>
@@ -61,9 +66,15 @@ $courses = $stmt->fetchAll();
                                 </div>
                             </div>
                             <div class="card-footer bg-transparent">
-                                <a href="learning/course.php?id=<?php echo $course['course_id']; ?>" class="btn btn-primary w-100">
-                                    <i class="fas fa-play"></i> Continue Learning
-                                </a>
+                                <?php if ($course['status'] === 'completed'): ?>
+                                    <a href="certificate/<?php echo !empty($course['certificate_id']) ? 'view.php?id=' . (int)$course['certificate_id'] : 'index.php'; ?>" class="btn btn-success w-100">
+                                        <i class="fas fa-certificate"></i> <?php echo !empty($course['certificate_id']) ? 'View Certificate' : 'My Certificates'; ?>
+                                    </a>
+                                <?php else: ?>
+                                    <a href="learning/course.php?id=<?php echo (int)$course['course_id']; ?>" class="btn btn-primary w-100">
+                                        <i class="fas fa-play"></i> Continue Learning
+                                    </a>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

@@ -9,6 +9,17 @@ requireFresher();
 
 $user_id = getUserId();
 
+// Some existing databases do not have the enrollment-completion trigger installed.
+$stmt = $pdo->prepare("SELECT course_id FROM enrollments WHERE fresher_id = ? AND status = 'completed'");
+$stmt->execute([$user_id]);
+foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $completedCourseId) {
+    try {
+        ensureCourseCertificate($pdo, $user_id, (int)$completedCourseId);
+    } catch (Throwable $e) {
+        error_log('Automatic certificate check failed: ' . $e->getMessage());
+    }
+}
+
 $stmt = $pdo->prepare("SELECT c.*, cr.title as course_title, cr.thumbnail, u.full_name as mentor_name
                        FROM certificates c 
                        JOIN courses cr ON c.course_id = cr.id 
@@ -42,7 +53,7 @@ $certificates = $stmt->fetchAll();
                                     <i class="fas fa-certificate fa-4x text-primary"></i>
                                 </div>
                                 <h5><?php echo htmlspecialchars($cert['course_title']); ?></h5>
-                                <p class="text-muted small">Issued to <?php echo htmlspecialchars($_SESSION['full_name']); ?></p>
+                                <p class="text-muted small">Issued to <?php echo htmlspecialchars($_SESSION['full_name'], ENT_QUOTES, 'UTF-8'); ?></p>
                                 <p class="text-muted small">
                                     <i class="fas fa-calendar"></i> <?php echo formatDate($cert['issued_at']); ?>
                                 </p>
@@ -53,12 +64,12 @@ $certificates = $stmt->fetchAll();
                                     <a href="view.php?id=<?php echo $cert['id']; ?>" class="btn btn-primary">
                                         <i class="fas fa-eye"></i> View Certificate
                                     </a>
-                                    <a href="#" class="btn btn-outline-primary">
+                                    <a href="download.php?id=<?php echo (int)$cert['id']; ?>" class="btn btn-outline-primary">
                                         <i class="fas fa-download"></i> Download PDF
                                     </a>
                                 </div>
                                 <small class="text-muted d-block mt-2">
-                                    Code: <?php echo $cert['certificate_code']; ?>
+                                    Code: <?php echo htmlspecialchars($cert['certificate_code'], ENT_QUOTES, 'UTF-8'); ?>
                                 </small>
                             </div>
                         </div>

@@ -133,7 +133,7 @@ $pending_bookings = $stmt->fetchColumn();
             </a>
         </li>
         <li class="nav-item mentor-nav-subitem">
-            <a class="nav-link text-white <?php echo $mentorSection === 'settings' && strpos($mentorPath, 'security') !== false ? 'active' : ''; ?>" href="<?php echo appUrl('mentor/account/security.php'); ?>" <?php echo $mentorSection === 'settings' && strpos($mentorPath, 'security') !== false ? 'aria-current="page"' : ''; ?>>
+            <a class="nav-link text-white <?php echo $mentorSection === 'settings' && (strpos($mentorPath, 'security') !== false || ($_GET['section'] ?? '') === 'security') ? 'active' : ''; ?>" href="<?php echo appUrl('mentor/account/setting.php?section=security#security'); ?>">
                 <i class="fas fa-shield-alt me-2"></i> Security
             </a>
         </li>

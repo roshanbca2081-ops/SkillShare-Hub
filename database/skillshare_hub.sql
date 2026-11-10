@@ -10,8 +10,6 @@ CREATE DATABASE IF NOT EXISTS `skillshare_hub` CHARACTER SET utf8mb4 COLLATE utf
 USE `skillshare_hub`;
 
 -- =============================================
--- SCHEMA TABLES
--- =============================================
 SOURCE schema/01_users.sql;
 SOURCE schema/02_academic_fields.sql;
 SOURCE schema/03_courses.sql;
@@ -39,6 +37,7 @@ SOURCE schema/24_system_logs.sql;
 SOURCE schema/25_settings.sql;
 SOURCE schema/26_oauth_accounts.sql;
 SOURCE schema/27_interview_activity.sql;
+SOURCE schema/28_lesson_quizzes.sql;
 
 -- =============================================
 -- VIEWS

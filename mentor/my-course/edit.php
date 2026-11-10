@@ -31,6 +31,136 @@ foreach ($modules as &$module) {
     $stmt = $pdo->prepare("SELECT * FROM course_lessons WHERE module_id = ? ORDER BY order_number");
     $stmt->execute([$module['id']]);
     $module['lessons'] = $stmt->fetchAll();
+    foreach ($module['lessons'] as &$lesson) {
+        $questionStmt = $pdo->prepare('SELECT * FROM lesson_quiz_questions WHERE lesson_id = ? ORDER BY order_number, id');
+        $questionStmt->execute([$lesson['id']]);
+        $lesson['quiz_questions'] = $questionStmt->fetchAll();
+    }
+    unset($lesson);
+}
+unset($module);
+
+$invalidateLessonQuiz = function ($lesson_id) use ($pdo, $course_id) {
+    $stmt = $pdo->prepare('UPDATE course_lessons SET quiz_version = quiz_version + 1 WHERE id = ?');
+    $stmt->execute([$lesson_id]);
+    $stmt = $pdo->prepare('UPDATE lesson_progress SET completed = 0, completed_at = NULL WHERE lesson_id = ?');
+    $stmt->execute([$lesson_id]);
+
+    $enrollmentStmt = $pdo->prepare('SELECT fresher_id, status, completed_at FROM enrollments WHERE course_id = ?');
+    $enrollmentStmt->execute([$course_id]);
+    $enrollments = $enrollmentStmt->fetchAll();
+    $progressStmt = $pdo->prepare("SELECT COUNT(*) AS total_lessons,
+                                          COALESCE(SUM(CASE WHEN lp.completed = 1 THEN 1 ELSE 0 END), 0) AS completed_lessons
+                                   FROM course_modules cm
+                                   JOIN course_lessons cl ON cl.module_id = cm.id AND cl.is_published = 1
+                                   LEFT JOIN lesson_progress lp ON lp.lesson_id = cl.id AND lp.fresher_id = ?
+                                   WHERE cm.course_id = ? AND cm.is_published = 1");
+    $updateEnrollment = $pdo->prepare('UPDATE enrollments SET progress = ?, status = ?, completed_at = ? WHERE fresher_id = ? AND course_id = ?');
+
+    foreach ($enrollments as $enrollment) {
+        $progressStmt->execute([$enrollment['fresher_id'], $course_id]);
+        $counts = $progressStmt->fetch();
+        $total = (int)$counts['total_lessons'];
+        $completed = (int)$counts['completed_lessons'];
+        $percent = $total > 0 ? (int)round(($completed / $total) * 100) : 0;
+        $status = $enrollment['status'];
+        $completedAt = $enrollment['completed_at'];
+
+        if ($total > 0 && $completed >= $total && in_array($status, ['active', 'completed'], true)) {
+            $status = 'completed';
+            $completedAt = $completedAt ?: date('Y-m-d H:i:s');
+        } elseif ($status === 'completed' && $percent < 100) {
+            $status = 'active';
+            $completedAt = null;
+        }
+
+        $updateEnrollment->execute([$percent, $status, $completedAt, $enrollment['fresher_id'], $course_id]);
+    }
+};
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['quiz_action'])) {
+    if (!verifyCsrfToken($_POST['csrf_token'] ?? null)) {
+        $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => 'Your session token expired. Please try again.'];
+        redirect('edit.php?id=' . $course_id . '#modules');
+    }
+
+    $lesson_id = (int)($_POST['lesson_id'] ?? 0);
+    $stmt = $pdo->prepare('SELECT l.id, l.quiz_required, l.quiz_pass_percent FROM course_lessons l JOIN course_modules m ON m.id = l.module_id WHERE l.id = ? AND m.course_id = ?');
+    $stmt->execute([$lesson_id, $course_id]);
+    $quizLesson = $stmt->fetch();
+    if (!$quizLesson) {
+        $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => 'Lesson not found for this course.'];
+        redirect('edit.php?id=' . $course_id . '#modules');
+    }
+
+    $quizAction = $_POST['quiz_action'];
+    if ($quizAction === 'save_settings') {
+        $required = isset($_POST['quiz_required']) ? 1 : 0;
+        $passPercent = max(1, min(100, (int)($_POST['quiz_pass_percent'] ?? 70)));
+        $questionStmt = $pdo->prepare('SELECT COUNT(*) FROM lesson_quiz_questions WHERE lesson_id = ?');
+        $questionStmt->execute([$lesson_id]);
+        $questionCount = (int)$questionStmt->fetchColumn();
+
+        if ($required && $questionCount === 0) {
+            $_SESSION['alert'] = ['type' => 'warning', 'icon' => 'exclamation-circle', 'message' => 'Add at least one question before requiring this quiz.'];
+        } elseif ((int)$quizLesson['quiz_required'] !== $required || (int)$quizLesson['quiz_pass_percent'] !== $passPercent) {
+            $stmt = $pdo->prepare('UPDATE course_lessons SET quiz_required = ?, quiz_pass_percent = ? WHERE id = ?');
+            $stmt->execute([$required, $passPercent, $lesson_id]);
+            $invalidateLessonQuiz($lesson_id);
+            $_SESSION['alert'] = ['type' => 'success', 'icon' => 'check-circle', 'message' => 'Quiz settings saved. Students must pass the updated quiz before progressing.'];
+        } else {
+            $_SESSION['alert'] = ['type' => 'info', 'icon' => 'info-circle', 'message' => 'Quiz settings are unchanged.'];
+        }
+    } elseif (in_array($quizAction, ['add_question', 'update_question'], true)) {
+        $question = trim((string)($_POST['question_text'] ?? ''));
+        $options = [
+            'A' => trim((string)($_POST['option_a'] ?? '')),
+            'B' => trim((string)($_POST['option_b'] ?? '')),
+            'C' => trim((string)($_POST['option_c'] ?? '')),
+            'D' => trim((string)($_POST['option_d'] ?? '')),
+        ];
+        $correctOption = strtoupper(trim((string)($_POST['correct_option'] ?? '')));
+
+        if ($question === '' || in_array('', $options, true) || !isset($options[$correctOption])) {
+            $_SESSION['alert'] = ['type' => 'danger', 'icon' => 'exclamation-circle', 'message' => 'Enter the question, all four answer choices, and the correct choice.'];
+        } elseif ($quizAction === 'add_question') {
+            $orderStmt = $pdo->prepare('SELECT COALESCE(MAX(order_number), 0) + 1 FROM lesson_quiz_questions WHERE lesson_id = ?');
+            $orderStmt->execute([$lesson_id]);
+            $orderNumber = (int)$orderStmt->fetchColumn();
+            $stmt = $pdo->prepare('INSERT INTO lesson_quiz_questions (lesson_id, question_text, option_a, option_b, option_c, option_d, correct_option, order_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$lesson_id, $question, $options['A'], $options['B'], $options['C'], $options['D'], $correctOption, $orderNumber]);
+            $stmt = $pdo->prepare('UPDATE course_lessons SET quiz_required = 1 WHERE id = ?');
+            $stmt->execute([$lesson_id]);
+            $invalidateLessonQuiz($lesson_id);
+            $_SESSION['alert'] = ['type' => 'success', 'icon' => 'check-circle', 'message' => 'Question added. This lesson now requires students to pass its quiz.'];
+        } else {
+            $question_id = (int)($_POST['question_id'] ?? 0);
+            $stmt = $pdo->prepare('UPDATE lesson_quiz_questions SET question_text = ?, option_a = ?, option_b = ?, option_c = ?, option_d = ?, correct_option = ? WHERE id = ? AND lesson_id = ?');
+            $stmt->execute([$question, $options['A'], $options['B'], $options['C'], $options['D'], $correctOption, $question_id, $lesson_id]);
+            if ($stmt->rowCount() > 0) {
+                $invalidateLessonQuiz($lesson_id);
+                $_SESSION['alert'] = ['type' => 'success', 'icon' => 'check-circle', 'message' => 'Question updated. Students must pass the updated quiz again.'];
+            } else {
+                $_SESSION['alert'] = ['type' => 'warning', 'icon' => 'exclamation-circle', 'message' => 'Question was not changed.'];
+            }
+        }
+    } elseif ($quizAction === 'delete_question') {
+        $question_id = (int)($_POST['question_id'] ?? 0);
+        $stmt = $pdo->prepare('DELETE FROM lesson_quiz_questions WHERE id = ? AND lesson_id = ?');
+        $stmt->execute([$question_id, $lesson_id]);
+        if ($stmt->rowCount() > 0) {
+            $questionStmt = $pdo->prepare('SELECT COUNT(*) FROM lesson_quiz_questions WHERE lesson_id = ?');
+            $questionStmt->execute([$lesson_id]);
+            if (!(int)$questionStmt->fetchColumn()) {
+                $stmt = $pdo->prepare('UPDATE course_lessons SET quiz_required = 0 WHERE id = ?');
+                $stmt->execute([$lesson_id]);
+            }
+            $invalidateLessonQuiz($lesson_id);
+            $_SESSION['alert'] = ['type' => 'success', 'icon' => 'check-circle', 'message' => 'Question deleted and previous quiz passes invalidated.'];
+        }
+    }
+
+    redirect('edit.php?id=' . $course_id . '#quiz-' . $lesson_id);
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_course'])) {
@@ -424,6 +554,71 @@ if (isset($_GET['delete_lesson']) && isset($_GET['lesson_id'])) {
                                                     <div class="col-md-4 d-flex align-items-end"><div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" name="is_published" id="lessonPublished<?php echo (int)$lesson['id']; ?>" <?php echo !empty($lesson['is_published']) ? 'checked' : ''; ?>><label class="form-check-label small" for="lessonPublished<?php echo (int)$lesson['id']; ?>">Visible to freshers</label></div></div>
                                                     <div class="col-12"><button type="submit" name="update_lesson" class="btn btn-sm btn-primary"><i class="fas fa-save me-1"></i>Save Lesson</button></div>
                                                 </form>
+                                                <div class="border-top mt-3 pt-3" id="quiz-<?php echo (int)$lesson['id']; ?>">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <h6 class="mb-0"><i class="fas fa-circle-question text-primary me-1"></i>Lesson quiz</h6>
+                                                        <span class="badge bg-<?php echo !empty($lesson['quiz_required']) ? 'warning text-dark' : 'secondary'; ?>">
+                                                            <?php echo !empty($lesson['quiz_required']) ? 'Required to progress' : 'Optional'; ?>
+                                                        </span>
+                                                    </div>
+                                                    <p class="small text-muted">Freshers must pass this quiz before opening later lessons or another enrolled course.</p>
+                                                    <form method="POST" class="row g-2 align-items-end mb-3">
+                                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8'); ?>">
+                                                        <input type="hidden" name="quiz_action" value="save_settings">
+                                                        <input type="hidden" name="lesson_id" value="<?php echo (int)$lesson['id']; ?>">
+                                                        <div class="col-md-5">
+                                                            <div class="form-check form-switch">
+                                                                <input class="form-check-input" type="checkbox" name="quiz_required" id="quizRequired<?php echo (int)$lesson['id']; ?>" <?php echo !empty($lesson['quiz_required']) ? 'checked' : ''; ?>>
+                                                                <label class="form-check-label small" for="quizRequired<?php echo (int)$lesson['id']; ?>">Require quiz to continue</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <label class="form-label small mb-1" for="quizPass<?php echo (int)$lesson['id']; ?>">Passing score (%)</label>
+                                                            <input type="number" class="form-control form-control-sm" name="quiz_pass_percent" id="quizPass<?php echo (int)$lesson['id']; ?>" min="1" max="100" value="<?php echo (int)$lesson['quiz_pass_percent']; ?>" required>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <button type="submit" class="btn btn-sm btn-outline-primary">Save quiz settings</button>
+                                                        </div>
+                                                    </form>
+
+                                                    <?php foreach ($lesson['quiz_questions'] as $question): ?>
+                                                        <div class="border rounded p-3 mb-2 bg-white">
+                                                            <form method="POST" class="row g-2">
+                                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8'); ?>">
+                                                                <input type="hidden" name="quiz_action" value="update_question">
+                                                                <input type="hidden" name="lesson_id" value="<?php echo (int)$lesson['id']; ?>">
+                                                                <input type="hidden" name="question_id" value="<?php echo (int)$question['id']; ?>">
+                                                                <div class="col-12"><label class="form-label small">Question</label><textarea name="question_text" class="form-control form-control-sm" rows="2" required><?php echo htmlspecialchars($question['question_text'], ENT_QUOTES, 'UTF-8'); ?></textarea></div>
+                                                                <div class="col-md-6"><label class="form-label small">Choice A</label><input name="option_a" class="form-control form-control-sm" value="<?php echo htmlspecialchars($question['option_a'], ENT_QUOTES, 'UTF-8'); ?>" required></div>
+                                                                <div class="col-md-6"><label class="form-label small">Choice B</label><input name="option_b" class="form-control form-control-sm" value="<?php echo htmlspecialchars($question['option_b'], ENT_QUOTES, 'UTF-8'); ?>" required></div>
+                                                                <div class="col-md-6"><label class="form-label small">Choice C</label><input name="option_c" class="form-control form-control-sm" value="<?php echo htmlspecialchars($question['option_c'], ENT_QUOTES, 'UTF-8'); ?>" required></div>
+                                                                <div class="col-md-6"><label class="form-label small">Choice D</label><input name="option_d" class="form-control form-control-sm" value="<?php echo htmlspecialchars($question['option_d'], ENT_QUOTES, 'UTF-8'); ?>" required></div>
+                                                                <div class="col-md-4"><label class="form-label small">Correct choice</label><select name="correct_option" class="form-select form-select-sm" required><?php foreach (['A', 'B', 'C', 'D'] as $option): ?><option value="<?php echo $option; ?>" <?php echo $question['correct_option'] === $option ? 'selected' : ''; ?>><?php echo $option; ?></option><?php endforeach; ?></select></div>
+                                                                <div class="col-md-8 d-flex align-items-end"><button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-save me-1"></i>Save question</button></div>
+                                                            </form>
+                                                            <form method="POST" class="mt-2" onsubmit="return confirm('Delete this quiz question? Students may need to pass the revised quiz again.');">
+                                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8'); ?>">
+                                                                <input type="hidden" name="quiz_action" value="delete_question">
+                                                                <input type="hidden" name="lesson_id" value="<?php echo (int)$lesson['id']; ?>">
+                                                                <input type="hidden" name="question_id" value="<?php echo (int)$question['id']; ?>">
+                                                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash me-1"></i>Delete question</button>
+                                                            </form>
+                                                        </div>
+                                                    <?php endforeach; ?>
+
+                                                    <form method="POST" class="row g-2 border rounded p-3 bg-white">
+                                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8'); ?>">
+                                                        <input type="hidden" name="quiz_action" value="add_question">
+                                                        <input type="hidden" name="lesson_id" value="<?php echo (int)$lesson['id']; ?>">
+                                                        <div class="col-12"><label class="form-label small">New question</label><textarea name="question_text" class="form-control form-control-sm" rows="2" required></textarea></div>
+                                                        <div class="col-md-6"><label class="form-label small">Choice A</label><input name="option_a" class="form-control form-control-sm" required></div>
+                                                        <div class="col-md-6"><label class="form-label small">Choice B</label><input name="option_b" class="form-control form-control-sm" required></div>
+                                                        <div class="col-md-6"><label class="form-label small">Choice C</label><input name="option_c" class="form-control form-control-sm" required></div>
+                                                        <div class="col-md-6"><label class="form-label small">Choice D</label><input name="option_d" class="form-control form-control-sm" required></div>
+                                                        <div class="col-md-4"><label class="form-label small">Correct choice</label><select name="correct_option" class="form-select form-select-sm" required><option value="">Select</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
+                                                        <div class="col-md-8 d-flex align-items-end"><button type="submit" class="btn btn-sm btn-success"><i class="fas fa-plus me-1"></i>Add question and require quiz</button></div>
+                                                    </form>
+                                                </div>
                                             </details>
                                         </li>
                                         <?php endforeach; ?>

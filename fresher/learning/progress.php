@@ -11,6 +11,7 @@ $user_id = getUserId();
 
 // Get all courses with progress
 $stmt = $pdo->prepare("SELECT e.*, c.id as course_id, c.title, c.thumbnail, c.duration,
+                       cert.id AS certificate_id,
                        u.full_name as mentor_name,
                        (SELECT COUNT(*) FROM course_lessons cl 
                         JOIN course_modules cm ON cl.module_id = cm.id 
@@ -22,6 +23,7 @@ $stmt = $pdo->prepare("SELECT e.*, c.id as course_id, c.title, c.thumbnail, c.du
                        FROM enrollments e 
                        JOIN courses c ON e.course_id = c.id 
                        JOIN users u ON c.mentor_id = u.id 
+                       LEFT JOIN certificates cert ON cert.course_id = c.id AND cert.fresher_id = e.fresher_id AND cert.is_valid = 1
                        WHERE e.fresher_id = ? AND e.status != 'dropped'
                        ORDER BY e.progress DESC");
 $stmt->execute([$user_id, $user_id]);
@@ -131,8 +133,8 @@ $total_progress = $total_courses > 0 ? array_sum(array_column($courses, 'progres
                                 <i class="fas fa-play"></i> Continue Learning
                             </a>
                             <?php else: ?>
-                                <a href="../certificate/view.php?id=<?php echo $course['course_id']; ?>" class="btn btn-sm btn-success w-100 mt-2">
-                                <i class="fas fa-certificate"></i> View Certificate
+                                <a href="../certificate/<?php echo !empty($course['certificate_id']) ? 'view.php?id=' . (int)$course['certificate_id'] : 'index.php'; ?>" class="btn btn-sm btn-success w-100 mt-2">
+                                <i class="fas fa-certificate"></i> <?php echo !empty($course['certificate_id']) ? 'View Certificate' : 'My Certificates'; ?>
                             </a>
                             <?php endif; ?>
                         </div>

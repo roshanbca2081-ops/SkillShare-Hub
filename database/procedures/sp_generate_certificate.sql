@@ -11,7 +11,6 @@ CREATE PROCEDURE `sp_generate_certificate`(
 )
 BEGIN
     DECLARE v_certificate_code VARCHAR(255);
-    DECLARE v_certificate_id INT;
 
     SET v_certificate_code = CONCAT('SSH-', UPPER(SUBSTRING(MD5(RAND()), 1, 8)), '-', p_fresher_id, '-', p_course_id);
 
@@ -23,18 +22,6 @@ BEGIN
         issued_at = NOW(),
         updated_at = NOW();
 
-    SET v_certificate_id = LAST_INSERT_ID();
-
-    SELECT 
-        c.*,
-        u.full_name AS fresher_name,
-        co.title AS course_title,
-        m.full_name AS mentor_name
-    FROM certificates c
-    JOIN users u ON c.fresher_id = u.id
-    JOIN courses co ON c.course_id = co.id
-    JOIN users m ON co.mentor_id = m.id
-    WHERE c.id = v_certificate_id;
 END$$
 
 DELIMITER ;

@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS `certificates` (
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `deleted_at` DATETIME DEFAULT NULL,
+    UNIQUE KEY `unique_certificate_student_course` (`fresher_id`, `course_id`),
     INDEX `idx_certificates_fresher_id` (`fresher_id`),
     INDEX `idx_certificates_course_id` (`course_id`),
     INDEX `idx_certificates_certificate_code` (`certificate_code`),

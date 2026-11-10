@@ -63,7 +63,8 @@ $stmt->execute([$user_id]);
 $pending_bookings_list = $stmt->fetchAll();
 
 // Get recent students
-$stmt = $pdo->prepare("SELECT DISTINCT u.id, u.full_name, u.avatar, u.email, e.started_at AS enrolled_at, e.progress 
+$enrollmentDateColumn = getEnrollmentDateColumn($pdo);
+$stmt = $pdo->prepare("SELECT DISTINCT u.id, u.full_name, u.avatar, u.email, e.$enrollmentDateColumn AS enrolled_at, e.progress 
                        FROM enrollments e 
                        JOIN users u ON e.fresher_id = u.id 
                        JOIN courses c ON e.course_id = c.id 

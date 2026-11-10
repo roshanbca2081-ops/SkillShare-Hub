@@ -8,11 +8,13 @@ require_once '../config/auth.php';
 requireMentor();
 
 $user_id = getUserId();
+$enrollmentDateColumn = getEnrollmentDateColumn($pdo);
 $search = isset($_GET['search']) ? sanitize($_GET['search']) : '';
 $course_id = isset($_GET['course']) ? (int)$_GET['course'] : 0;
 
 $query = "SELECT DISTINCT u.id, u.full_name, u.email, u.avatar, u.created_at as joined_date,
-          e.course_id, e.progress, e.status as enrollment_status, e.started_at as enrolled_at,
+          e.id as enrollment_id, e.course_id, e.progress, e.status as enrollment_status,
+          e.$enrollmentDateColumn AS enrolled_at,
           c.title as course_title,
           (SELECT COUNT(*) FROM messages WHERE sender_id = u.id AND receiver_id = ?) as messages_sent,
           (SELECT COUNT(*) FROM messages WHERE sender_id = ? AND receiver_id = u.id) as messages_received,
@@ -37,7 +39,7 @@ if ($course_id) {
     $params[] = $course_id;
 }
 
-$query .= " ORDER BY e.started_at DESC";
+$query .= " ORDER BY e.$enrollmentDateColumn DESC";
 
 $stmt = $pdo->prepare($query);
 $stmt->execute($params);
@@ -145,8 +147,8 @@ $courses = $stmt->fetchAll();
                                                 <a href="message/index.php?user_id=<?php echo $student['id']; ?>" class="btn btn-outline-primary" title="Message">
                                                     <i class="fas fa-envelope"></i>
                                                 </a>
-                                                <a href="../fresher/learning/progress.php?student=<?php echo $student['id']; ?>&course=<?php echo $student['course_id']; ?>" class="btn btn-outline-info" title="Progress">
-                                                    <i class="fas fa-chart-line"></i>
+                                                <a href="my-course/student-report.php?enrollment=<?php echo (int)$student['enrollment_id']; ?>" class="btn btn-outline-info" title="Progress and student report">
+                                                    <i class="fas fa-chart-line"></i> Report
                                                 </a>
                                             </div>
                                         </td>

@@ -11,7 +11,7 @@ $user_id = getUserId();
 
 $stmt = $pdo->prepare("SELECT p.*, c.title as course_title 
                        FROM payments p 
-                       JOIN courses c ON p.course_id = c.id 
+                       LEFT JOIN courses c ON p.course_id = c.id 
                        WHERE p.fresher_id = ? 
                        ORDER BY p.payment_date DESC");
 $stmt->execute([$user_id]);
@@ -47,7 +47,7 @@ $payments = $stmt->fetchAll();
                         <tbody>
                             <?php foreach ($payments as $payment): ?>
                             <tr>
-                                <td><?php echo htmlspecialchars($payment['course_title']); ?></td>
+                                <td><?php echo htmlspecialchars($payment['course_title'] ?? 'Mentoring session', ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td>$<?php echo number_format($payment['amount'], 2); ?></td>
                                 <td><?php echo ucfirst($payment['payment_method']); ?></td>
                                 <td>

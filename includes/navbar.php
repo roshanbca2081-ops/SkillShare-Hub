@@ -46,6 +46,17 @@ if ($showFresherMenuToggle): ?>
                 <li class="nav-item"><a class="nav-link <?php echo $landingActivePage === 'contact' ? 'active' : ''; ?>" <?php echo $landingActivePage === 'contact' ? 'aria-current="page"' : ''; ?> href="<?php echo appUrl('contact.php'); ?>"><i class="fas fa-envelope" aria-hidden="true"></i> Contact</a></li>
             </ul>
             <div class="landing-nav-actions">
+                <?php if (!isLoggedIn()): ?><div class="theme-picker dropdown">
+                    <button class="theme-toggle-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Theme switcher">
+                        <i class="fas fa-circle-half-stroke" aria-hidden="true"></i>
+                        <span class="theme-label">System</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end theme-menu">
+                        <li><button type="button" class="dropdown-item theme-option" data-theme-option="light"><i class="fas fa-sun"></i> Light</button></li>
+                        <li><button type="button" class="dropdown-item theme-option" data-theme-option="dark"><i class="fas fa-moon"></i> Dark</button></li>
+                        <li><button type="button" class="dropdown-item theme-option" data-theme-option="system"><i class="fas fa-desktop"></i> System</button></li>
+                    </ul>
+                </div><?php endif; ?>
                 <?php if (isLoggedIn()): ?>
                     <?php $landingDashboard = isMentor() ? 'mentor/dashboard.php' : (isAdmin() ? 'admin/dashboard.php' : 'fresher/dashboard.php'); ?>
                     <a class="landing-login-button" href="<?php echo appUrl($landingDashboard); ?>"><img src="<?php echo $navbarAvatarUrl; ?>" alt="" width="24" height="24" style="border-radius:50%;object-fit:cover;"> Dashboard</a>
@@ -74,10 +85,21 @@ if ($showFresherMenuToggle): ?>
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
+            <ul class="navbar-nav ms-auto align-items-lg-center">
                 <li class="nav-item"><a class="nav-link" href="<?php echo appUrl('index.php'); ?>"><i class="fas fa-home"></i> Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?php echo appUrl('about.php'); ?>"><i class="fas fa-circle-info"></i> About</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?php echo appUrl('contact.php'); ?>"><i class="fas fa-envelope"></i> Contact</a></li>
+                <?php if (!isLoggedIn()): ?><li class="nav-item theme-picker theme-picker-inline dropdown">
+                    <button class="theme-toggle-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Theme switcher">
+                        <i class="fas fa-circle-half-stroke" aria-hidden="true"></i>
+                        <span class="theme-label">System</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end theme-menu">
+                        <li><button type="button" class="dropdown-item theme-option" data-theme-option="light"><i class="fas fa-sun"></i> Light</button></li>
+                        <li><button type="button" class="dropdown-item theme-option" data-theme-option="dark"><i class="fas fa-moon"></i> Dark</button></li>
+                        <li><button type="button" class="dropdown-item theme-option" data-theme-option="system"><i class="fas fa-desktop"></i> System</button></li>
+                    </ul>
+                </li><?php endif; ?>
                 <?php if ($isMentorSection): ?>
                     <li class="nav-item role-nav-back-item">
                         <a class="role-topbar-back" href="<?php echo appUrl('mentor/dashboard.php'); ?>" onclick="if (window.history.length > 1) { window.history.back(); return false; }" aria-label="Go to previous page"><i class="fas fa-arrow-left" aria-hidden="true"></i><span>Back</span></a>

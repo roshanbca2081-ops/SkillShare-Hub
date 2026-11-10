@@ -124,8 +124,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/landing.css">
     <link rel="stylesheet" href="assets/css/auth-pages.css?v=20261101-auth-register-v3">
+    <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20261104-responsive-v1">
 </head>
 <body class="login-body register-body">
+<div class="auth-theme-picker dropdown">
+    <button class="theme-toggle-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Theme switcher">
+        <i class="fas fa-circle-half-stroke" aria-hidden="true"></i>
+        <span class="theme-label">System</span>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end theme-menu">
+        <li><button type="button" class="dropdown-item theme-option" data-theme-option="light"><i class="fas fa-sun"></i> Light</button></li>
+        <li><button type="button" class="dropdown-item theme-option" data-theme-option="dark"><i class="fas fa-moon"></i> Dark</button></li>
+        <li><button type="button" class="dropdown-item theme-option" data-theme-option="system"><i class="fas fa-desktop"></i> System</button></li>
+    </ul>
+</div>
 <main class="login-page register-page">
     <div class="login-shell register-shell">
         <aside class="login-brand-panel register-brand-panel">

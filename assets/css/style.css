@@ -1,7 +1,10 @@
+
 /* ============================================
-   Global Styles
+   Global Styles & Theme Variables
    ============================================ */
+
 :root {
+    color-scheme: light;
     --primary: #667eea;
     --primary-dark: #5a67d8;
     --secondary: #764ba2;
@@ -9,13 +12,91 @@
     --warning: #ed8936;
     --danger: #fc8181;
     --info: #4299e1;
+
+    /* Light Theme */
+    --app-bg: #f7fafc;
+    --app-surface: #ffffff;
+    --app-surface-alt: #eef2ff;
+    --app-text: #2d3748;
+    --app-muted: #4a5568;
+    --app-border: rgba(15, 23, 42, 0.08);
+    --app-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+
+    --app-input-bg: #ffffff;
+    --app-input-text: #2d3748;
+    --app-sidebar-bg: #ffffff;
+    --app-sidebar-text: #334155;
+    --app-table-hover: #f1f5f9;
+    --app-dropdown-hover: #eef2ff;
+
+    --bs-body-bg: var(--app-bg);
+    --bs-body-color: var(--app-text);
+    --bs-border-color: var(--app-border);
+    --bs-card-bg: var(--app-surface);
+    --bs-card-color: var(--app-text);
+}
+
+/* ============================================
+   Dark Theme
+   ============================================ */
+
+html[data-theme="dark"] {
+    color-scheme: dark;
+
+    --primary: #8aa2ff;
+    --primary-dark: #738bff;
+    --secondary: #b58cff;
+
+    --success: #68d391;
+    --warning: #f6ad55;
+    --danger: #fc8181;
+    --info: #63b3ed;
+
+    --app-bg: #0f172a;
+    --app-surface: #111827;
+    --app-surface-alt: #1f2937;
+    --app-text: #e5e7eb;
+    --app-muted: #cbd5e1;
+    --app-border: rgba(148, 163, 184, 0.25);
+    --app-shadow: 0 18px 42px rgba(2, 6, 23, 0.48);
+
+    --app-input-bg: #1e293b;
+    --app-input-text: #f8fafc;
+    --app-sidebar-bg: #111827;
+    --app-sidebar-text: #cbd5e0;
+    --app-table-hover: #263449;
+    --app-dropdown-hover: #334155;
+
+    --bs-body-bg: var(--app-bg);
+    --bs-body-color: var(--app-text);
+    --bs-border-color: var(--app-border);
+    --bs-card-bg: var(--app-surface);
+    --bs-card-color: var(--app-text);
+}
+
+/* ============================================
+   Base Elements
+   ============================================ */
+
+html {
+    background: var(--app-bg);
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #f7fafc;
-    color: #2d3748;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont,
+        'Segoe UI', Roboto, sans-serif;
+    background: var(--app-bg);
+    color: var(--app-text);
     overflow-x: hidden;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--app-text);
+}
+
+p, label, small {
+    color: inherit;
 }
 
 a {
@@ -27,17 +108,78 @@ a:hover {
     color: var(--primary-dark);
 }
 
+hr {
+    border-color: var(--app-border);
+    opacity: 1;
+}
+
+/* ============================================
+   Theme Surface Components
+   ============================================ */
+
+.card,
+.dashboard-card,
+.panel,
+.filter-panel,
+.list-group-item,
+.modal-content,
+.dropdown-menu,
+.list-group,
+.accordion-item {
+    background: var(--app-surface);
+    color: var(--app-text);
+    border-color: var(--app-border);
+}
+
+.card-header,
+.card-footer,
+.accordion-button,
+.list-group-item,
+.modal-header,
+.modal-footer {
+    background-color: var(--app-surface);
+    color: var(--app-text);
+    border-color: var(--app-border);
+}
+
+.card,
+.dashboard-card,
+.panel {
+    box-shadow: var(--app-shadow);
+}
+
+.text-muted,
+.text-secondary,
+.small,
+.muted {
+    color: var(--app-muted) !important;
+}
+
+.bg-light {
+    background-color: var(--app-surface-alt) !important;
+    color: var(--app-text) !important;
+}
+
+.bg-white {
+    background-color: var(--app-surface) !important;
+    color: var(--app-text) !important;
+}
+
 /* ============================================
    Navbar
    ============================================ */
+
 .navbar {
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     padding: 12px 0;
+    background-color: var(--app-surface);
+    border-color: var(--app-border);
 }
 
 .navbar-brand {
     font-weight: 700;
     font-size: 1.4rem;
+    color: var(--app-text);
 }
 
 .navbar-brand i {
@@ -48,6 +190,7 @@ a:hover {
     font-weight: 500;
     padding: 8px 16px !important;
     transition: all 0.3s ease;
+    color: var(--app-text);
 }
 
 .nav-link:hover {
@@ -62,13 +205,16 @@ a:hover {
 /* ============================================
    Sidebar
    ============================================ */
+
 .sidebar {
-    background: #2d3748;
+    background: var(--app-sidebar-bg);
     min-height: calc(100vh - 72px);
     padding: 20px 0;
+    color: var(--app-sidebar-text);
 }
 
 /* Keep role navigation in place while the main page scrolls. */
+
 .role-section-sidebar {
     position: fixed;
     z-index: 1020;
@@ -140,7 +286,7 @@ a:hover {
 }
 
 .sidebar .nav-link {
-    color: #cbd5e0;
+    color: var(--app-sidebar-text);
     padding: 10px 20px;
     border-radius: 8px;
     margin: 2px 10px;
@@ -148,8 +294,8 @@ a:hover {
 }
 
 .sidebar .nav-link:hover {
-    background: rgba(255,255,255,0.1);
-    color: #fff;
+    background: var(--app-dropdown-hover);
+    color: var(--app-text);
 }
 
 .sidebar .nav-link.active {
@@ -165,14 +311,18 @@ a:hover {
 /* ============================================
    Cards
    ============================================ */
+
 .card {
     border-radius: 12px;
+    background: var(--app-surface);
+    color: var(--app-text);
+    border-color: var(--app-border);
     transition: all 0.3s ease;
 }
 
 .hover-shadow:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.12) !important;
+    box-shadow: var(--app-shadow) !important;
 }
 
 .card-img-top {
@@ -182,6 +332,7 @@ a:hover {
 /* ============================================
    Buttons
    ============================================ */
+
 .btn {
     border-radius: 8px;
     font-weight: 600;
@@ -192,6 +343,7 @@ a:hover {
 .btn-primary {
     background: linear-gradient(135deg, var(--primary), var(--secondary));
     border: none;
+    color: #fff;
 }
 
 .btn-primary:hover {
@@ -212,21 +364,124 @@ a:hover {
 /* ============================================
    Forms
    ============================================ */
-.form-control, .form-select {
+
+.form-control,
+.form-select {
     border-radius: 8px;
     padding: 10px 16px;
-    border: 2px solid #e2e8f0;
+    border: 2px solid var(--app-border);
+    background-color: var(--app-input-bg);
+    color: var(--app-input-text);
     transition: all 0.3s ease;
 }
 
-.form-control:focus, .form-select:focus {
+.form-control:focus,
+.form-select:focus {
+    background-color: var(--app-input-bg);
+    color: var(--app-input-text);
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.form-control::placeholder {
+    color: var(--app-muted);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+    background-color: var(--app-surface-alt);
+}
+
+/* ============================================
+   Tables
+   ============================================ */
+
+.table {
+    color: var(--app-text);
+    background: var(--app-surface);
+    border-color: var(--app-border);
+}
+
+.table th,
+.table td {
+    color: var(--app-text);
+    border-color: var(--app-border);
+}
+
+.table-hover tbody tr:hover {
+    background: var(--app-table-hover);
+    color: var(--app-text);
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+    color: var(--app-text);
+}
+
+/* ============================================
+   Dropdowns
+   ============================================ */
+
+.dropdown-menu {
+    background: var(--app-surface);
+    border-color: var(--app-border);
+    box-shadow: var(--app-shadow);
+}
+
+.dropdown-item {
+    color: var(--app-text);
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background: var(--app-dropdown-hover);
+    color: var(--app-text);
+}
+
+/* ============================================
+   Modal & Accordion
+   ============================================ */
+
+.modal-content {
+    background: var(--app-surface);
+    color: var(--app-text);
+    border-color: var(--app-border);
+}
+
+.modal-header,
+.modal-footer {
+    background: var(--app-surface);
+    color: var(--app-text);
+    border-color: var(--app-border);
+}
+
+.btn-close {
+    filter: none;
+}
+
+html[data-theme="dark"] .btn-close {
+    filter: invert(1);
+}
+
+.accordion-item {
+    background: var(--app-surface);
+    color: var(--app-text);
+    border-color: var(--app-border);
+}
+
+.accordion-button {
+    background: var(--app-surface);
+    color: var(--app-text);
+}
+
+.accordion-button:not(.collapsed) {
+    background: var(--app-surface-alt);
+    color: var(--primary);
 }
 
 /* ============================================
    Alerts
    ============================================ */
+
 .alert {
     border-radius: 8px;
     border: none;
@@ -235,6 +490,7 @@ a:hover {
 /* ============================================
    Feature Icons
    ============================================ */
+
 .feature-icon {
     display: inline-flex;
     align-items: center;
@@ -247,6 +503,7 @@ a:hover {
 /* ============================================
    Badges
    ============================================ */
+
 .badge {
     padding: 6px 12px;
     border-radius: 20px;
@@ -256,9 +513,10 @@ a:hover {
 /* ============================================
    Progress
    ============================================ */
+
 .progress {
     border-radius: 10px;
-    background: #e2e8f0;
+    background: var(--app-surface-alt);
 }
 
 .progress-bar {
@@ -269,6 +527,7 @@ a:hover {
 /* ============================================
    Hero Section
    ============================================ */
+
 .hero-section {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: #fff;
@@ -281,8 +540,10 @@ a:hover {
 /* ============================================
    Footer
    ============================================ */
+
 footer {
     background: #1a202c;
+    color: #fff;
 }
 
 footer a:hover {
@@ -290,8 +551,9 @@ footer a:hover {
 }
 
 /* ============================================
-   Misc
+   Miscellaneous
    ============================================ */
+
 .min-vh-75 {
     min-height: 75vh;
 }
@@ -302,6 +564,7 @@ footer a:hover {
 
 .text-gradient {
     background: linear-gradient(135deg, #667eea, #764ba2);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -309,6 +572,7 @@ footer a:hover {
 /* ============================================
    Animations
    ============================================ */
+
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -327,16 +591,17 @@ footer a:hover {
 /* ============================================
    Responsive
    ============================================ */
+
 @media (max-width: 768px) {
     .sidebar {
         min-height: auto;
         padding: 10px 0;
     }
-    
+
     .display-3 {
         font-size: 2.5rem;
     }
-    
+
     .display-4 {
         font-size: 2rem;
     }
@@ -347,3 +612,51 @@ footer a:hover {
         display: none !important;
     }
 }
+
+/* ============================================
+   Theme Transition
+   ============================================ */
+
+.card,
+.sidebar,
+.navbar,
+.dropdown-menu,
+.modal-content,
+.form-control,
+.form-select,
+.table,
+.panel,
+.dashboard-card {
+    transition: background-color 0.2s ease,
+                color 0.2s ease,
+                border-color 0.2s ease;
+}
+
+/* Respect accessibility preferences */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}
+
+/* Bridge explicit Bootstrap utility colors to semantic tokens in dark mode. */
+html[data-theme="dark"] .text-dark,
+html[data-theme="dark"] .text-body {
+    color: var(--app-text) !important;
+}
+
+html[data-theme="dark"] .border,
+html[data-theme="dark"] .border-bottom,
+html[data-theme="dark"] .border-top {
+    border-color: var(--app-border) !important;
+}
+
+html[data-theme="dark"] .table > :not(caption) > * > * {
+    color: var(--app-text);
+    background-color: transparent;
+    border-color: var(--app-border);
+}
+

@@ -1,0 +1,288 @@
+/* Targeted small-screen refinements. Desktop rules and visual identity remain unchanged. */
+@media (max-width: 991.98px) {
+    html {
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+    }
+
+    body {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    img,
+    svg,
+    video,
+    iframe {
+        max-width: 100%;
+    }
+
+    .row > [class*="col-"] {
+        min-width: 0;
+    }
+
+    .card,
+    .card-body,
+    .admin-card,
+    .courses-table-card {
+        min-width: 0;
+    }
+
+    .table-responsive,
+    .admin-table-wrap {
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table-responsive > .table,
+    .admin-table-wrap > table {
+        margin-bottom: 0;
+    }
+
+    pre,
+    code {
+        overflow-wrap: anywhere;
+    }
+
+    .form-control,
+    .form-select,
+    textarea,
+    input,
+    select {
+        max-width: 100%;
+    }
+}
+
+@media (min-width: 576px) and (max-width: 991.98px) {
+    .container-fluid {
+        padding-right: 18px;
+        padding-left: 18px;
+    }
+
+    .admin-main {
+        padding-right: 18px;
+        padding-left: 18px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    html {
+        font-size: 15px;
+    }
+
+    .container,
+    .container-fluid {
+        padding-right: 12px;
+        padding-left: 12px;
+    }
+
+    .container-fluid > .row {
+        --bs-gutter-x: 1rem;
+    }
+
+    .card .card-body {
+        padding: 14px;
+    }
+
+    .card-header,
+    .card-footer {
+        padding: 12px 14px;
+    }
+
+    .btn:not(.btn-sm):not(.btn-lg) {
+        min-height: 38px;
+        padding: 8px 14px;
+    }
+
+    .btn-lg {
+        min-height: 42px;
+    }
+
+    .table {
+        font-size: .86rem;
+    }
+
+    .table:not(.admin-table):not(.courses-table) {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table th,
+    .table td {
+        padding: 9px 10px;
+        vertical-align: middle;
+    }
+
+    .d-flex.flex-wrap,
+    .card-header .d-flex,
+    .dashboard-widget-header {
+        min-width: 0;
+    }
+
+    .admin-main {
+        padding: 16px 12px 26px;
+    }
+
+    .admin-card,
+    .courses-table-card {
+        padding: 14px;
+    }
+
+    .admin-topbar,
+    .courses-page-header {
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .admin-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    /* Preserve every mentor destination while keeping the mobile sidebar compact. */
+    body.mentor-dashboard-page .mentor-role-sidebar {
+        max-height: none;
+        padding: 12px !important;
+    }
+
+    body.mentor-dashboard-page .mentor-sidebar-brand,
+    body.mentor-dashboard-page .mentor-role-sidebar > .role-sidebar-label,
+    body.mentor-dashboard-page .mentor-nav-group-label {
+        display: none;
+    }
+
+    body.mentor-dashboard-page .mentor-role-sidebar .role-sidebar-links {
+        display: grid !important;
+        max-height: 190px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 4px;
+        overflow-y: auto;
+        padding: 0;
+    }
+
+    body.mentor-dashboard-page .mentor-role-sidebar .nav-link {
+        min-height: 38px;
+        padding: 7px 8px !important;
+        font-size: .77rem;
+        overflow-wrap: anywhere;
+    }
+
+    /* Let admin navigation wrap with its labels instead of leaving icon-only links. */
+    body.admin-dashboard-page .admin-sidebar {
+        max-height: none;
+        padding: 10px 12px;
+    }
+
+    body.admin-dashboard-page .admin-sidebar .admin-link {
+        display: inline-flex;
+        max-width: 100%;
+        align-items: center;
+        white-space: normal;
+    }
+
+    body.admin-dashboard-page .admin-sidebar .admin-link span {
+        display: inline !important;
+    }
+
+    body.admin-dashboard-page .admin-sidebar .admin-label {
+        display: none;
+    }
+
+    /* On short phones, let the login page scroll rather than clipping its form. */
+    body.login-body:not(.register-body) {
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .login-page:not(.register-page) {
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+    }
+
+    .login-page:not(.register-page) .login-shell {
+        height: auto;
+        min-height: min(680px, calc(100dvh - 28px));
+    }
+
+    .login-page:not(.register-page) .login-panel {
+        min-height: 0;
+    }
+}
+
+@media (max-width: 600px) {
+    body.fresher-layout-page > footer form.d-flex,
+    body.mentor-dashboard-page > footer form.d-flex {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    body.fresher-layout-page > footer form.d-flex .form-control,
+    body.mentor-dashboard-page > footer form.d-flex .form-control {
+        flex: 1 1 100%;
+        min-width: 0;
+        margin-right: 0 !important;
+    }
+
+    .login-page:not(.register-page) .login-shell {
+        display: block;
+        min-height: 100dvh;
+        border: 0;
+        border-radius: 0;
+    }
+
+    .login-page:not(.register-page) .login-brand-panel {
+        display: none;
+    }
+
+    .login-page:not(.register-page) .login-panel {
+        width: 100%;
+        min-height: 100dvh;
+        height: auto;
+        justify-content: center;
+        overflow: visible;
+        padding: max(24px, env(safe-area-inset-top)) 22px max(24px, env(safe-area-inset-bottom));
+    }
+
+    .admin-kpis {
+        gap: 8px;
+    }
+
+    .admin-kpi strong {
+        font-size: 1.4rem;
+    }
+
+    .admin-topbar .btn,
+    .courses-page-header .btn {
+        max-width: 100%;
+        white-space: normal;
+    }
+}
+
+@media (max-width: 380px) {
+    html {
+        font-size: 14px;
+    }
+
+    .container,
+    .container-fluid {
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+
+    .admin-kpis {
+        grid-template-columns: 1fr;
+    }
+
+    body.mentor-dashboard-page .mentor-role-sidebar .role-sidebar-links {
+        grid-template-columns: 1fr;
+        max-height: 170px;
+    }
+}

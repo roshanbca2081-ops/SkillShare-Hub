@@ -1,8 +1,56 @@
 /* Shared Login and Registration page system. */
 *,*::before,*::after { box-sizing: border-box; }
 :root { --auth-ink: #172033; --auth-muted: #667085; --auth-primary: #4f46e5; }
+html[data-theme="dark"] { --auth-ink: #edf2ff; --auth-muted: #bac6da; --auth-primary: #8aa2ff; }
 .login-body,
 .register-body { width: 100%; min-height: 100vh; margin: 0; color: var(--auth-ink); background: #f3f5ff; font-family: 'DM Sans', sans-serif; }
+html[data-theme="dark"] .login-body,
+html[data-theme="dark"] .register-body { background: #0f172a; color: var(--auth-ink); }
+html[data-theme="dark"] .login-page,
+html[data-theme="dark"] .register-page { background: radial-gradient(circle at 8% 12%, rgba(14,165,233,.10), transparent 30%), radial-gradient(circle at 93% 90%, rgba(168,85,247,.12), transparent 27%), linear-gradient(145deg,#0f172a,#111827 52%,#1e293b); }
+html[data-theme="dark"] .login-shell,
+html[data-theme="dark"] .register-shell { background: #111827; border-color: rgba(148,163,184,.18); box-shadow: 0 28px 90px rgba(2,6,23,.5); }
+html[data-theme="dark"] .login-brand-copy p,
+html[data-theme="dark"] .register-brand-copy p,
+html[data-theme="dark"] .login-heading p,
+html[data-theme="dark"] .register-heading p,
+html[data-theme="dark"] .login-form .form-check-label,
+html[data-theme="dark"] .login-form .forgot-link,
+html[data-theme="dark"] .register-form-panel .form-check-label,
+html[data-theme="dark"] .register-form-panel .text-muted,
+html[data-theme="dark"] .register-form-panel .form-label-modern,
+html[data-theme="dark"] .login-form .form-label { color: var(--auth-muted); }
+html[data-theme="dark"] .login-form .form-control,
+html[data-theme="dark"] .register-form-panel .form-control-modern,
+html[data-theme="dark"] .register-form-panel .form-check,
+html[data-theme="dark"] .register-form-panel .course-check,
+html[data-theme="dark"] .register-form-panel #skillsGroup,
+html[data-theme="dark"] .register-form-panel #learnCourseGroup,
+html[data-theme="dark"] .register-form-panel #teachCourseGroup { background: #0f172a; border-color: rgba(148,163,184,.18); color: var(--auth-ink); }
+html[data-theme="dark"] .login-form .form-control:focus,
+html[data-theme="dark"] .register-form-panel .form-control-modern:focus { background: #0b1120; }
+html[data-theme="dark"] .register-progress-track { background: rgba(148,163,184,.14); }
+html[data-theme="dark"] .register-role-option { background: #0f172a; border-color: rgba(148,163,184,.18); }
+html[data-theme="dark"] .register-role-option.selected,
+html[data-theme="dark"] .register-role-option:has(input:checked) { background: rgba(138,162,255,.12); border-color: rgba(138,162,255,.7); }
+html[data-theme="dark"] .login-topline a,
+html[data-theme="dark"] .register-topline a,
+html[data-theme="dark"] .login-register,
+html[data-theme="dark"] .register-form-panel .form-check-label,
+html[data-theme="dark"] .register-form-panel .register-tip { color: var(--auth-muted); }
+.auth-theme-picker { position: fixed; top: 20px; right: 20px; z-index: 2000; }
+.auth-theme-picker .theme-toggle-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(79,70,229,.18); background: rgba(255,255,255,.84); color: #172033; font-weight: 600; box-shadow: 0 8px 24px rgba(15,23,42,.1);
+}
+.auth-theme-picker .theme-menu { min-width: 150px; }
+.auth-theme-picker .theme-option { display: flex; align-items: center; gap: 10px; padding: 0.5rem 0.9rem; }
+.auth-theme-picker .theme-option.active { background: rgba(79,70,229,.10); color: var(--auth-primary); font-weight: 700; }
+html[data-theme="dark"] .auth-theme-picker .theme-toggle-btn {
+    background: rgba(15,23,42,.82); border-color: rgba(148,163,184,.2); color: #edf2ff; box-shadow: 0 8px 24px rgba(2,6,23,.32);
+}
+html[data-theme="dark"] .auth-theme-picker .theme-menu .dropdown-item { color: #edf2ff; }
+html[data-theme="dark"] .auth-theme-picker .theme-menu .dropdown-item:hover,
+html[data-theme="dark"] .auth-theme-picker .theme-menu .dropdown-item:focus { background: rgba(148,163,184,.12); }
 .login-body { height: 100vh; height: 100dvh; overflow: hidden; }
 .register-body { overflow-x: hidden; overflow-y: auto; }
 .login-page,

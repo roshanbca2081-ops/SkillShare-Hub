@@ -35,6 +35,29 @@ function sanitize($value)
     );
 }
 
+/**
+ * Return the enrollment timestamp column used by this database version.
+ */
+function getEnrollmentDateColumn(PDO $pdo)
+{
+    static $dateColumn = null;
+
+    if ($dateColumn !== null) {
+        return $dateColumn;
+    }
+
+    $columns = $pdo->query('SHOW COLUMNS FROM enrollments')->fetchAll(PDO::FETCH_COLUMN);
+    if (in_array('enrolled_at', $columns, true)) {
+        $dateColumn = 'enrolled_at';
+    } elseif (in_array('started_at', $columns, true)) {
+        $dateColumn = 'started_at';
+    } else {
+        $dateColumn = 'created_at';
+    }
+
+    return $dateColumn;
+}
+
 function generateToken($length = 32)
 {
     return bin2hex(random_bytes($length));
@@ -272,6 +295,69 @@ function createSlug($string)
     $string = trim($string, '-');
 
     return $string;
+}
+
+/**
+ * Create a URL-friendly slug that is unique when academic_fields has a slug column.
+ */
+function createUniqueAcademicFieldSlug(PDO $pdo, $name, $excludeId = 0)
+{
+    $baseSlug = createSlug($name);
+    if ($baseSlug === '') {
+        $baseSlug = 'academic-field';
+    }
+    $baseSlug = substr($baseSlug, 0, 100);
+
+    $slugColumn = $pdo->query("SHOW COLUMNS FROM academic_fields LIKE 'slug'")->fetch(PDO::FETCH_ASSOC);
+    if (!$slugColumn) {
+        return $baseSlug;
+    }
+
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM academic_fields WHERE slug = ? AND id <> ?');
+    $candidate = $baseSlug;
+    $suffix = 2;
+    while (true) {
+        $stmt->execute([$candidate, (int)$excludeId]);
+        if (!(int)$stmt->fetchColumn()) {
+            return $candidate;
+        }
+
+        $suffixText = '-' . $suffix++;
+        $candidate = substr($baseSlug, 0, 100 - strlen($suffixText)) . $suffixText;
+    }
+}
+
+/**
+ * Ensure a completed course has a valid certificate and return its ID.
+ */
+function ensureCourseCertificate(PDO $pdo, $fresherId, $courseId)
+{
+    $find = $pdo->prepare('SELECT id, is_valid FROM certificates WHERE fresher_id = ? AND course_id = ? ORDER BY issued_at DESC LIMIT 1');
+    $find->execute([(int)$fresherId, (int)$courseId]);
+    $existing = $find->fetch(PDO::FETCH_ASSOC);
+    if ($existing) {
+        return (int)$existing['is_valid'] === 1 ? (int)$existing['id'] : 0;
+    }
+
+    $insert = $pdo->prepare('INSERT INTO certificates (fresher_id, course_id, certificate_code, is_valid, issued_at) VALUES (?, ?, ?, 1, NOW())');
+    for ($attempt = 0; $attempt < 3; $attempt++) {
+        $code = 'SSH-' . strtoupper(bin2hex(random_bytes(6)));
+        try {
+            $insert->execute([(int)$fresherId, (int)$courseId, $code]);
+            return (int)$pdo->lastInsertId();
+        } catch (PDOException $e) {
+            if ((string)$e->getCode() !== '23000') {
+                throw $e;
+            }
+            $find->execute([(int)$fresherId, (int)$courseId]);
+            $existing = $find->fetch(PDO::FETCH_ASSOC);
+            if ($existing) {
+                return (int)$existing['is_valid'] === 1 ? (int)$existing['id'] : 0;
+            }
+        }
+    }
+
+    throw new RuntimeException('Could not generate a unique certificate code.');
 }
 
 

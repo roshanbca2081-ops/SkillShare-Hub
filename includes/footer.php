@@ -42,7 +42,7 @@
     </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?php echo appUrl('assets/js/main.js'); ?>?v=20261031-fresher-sidebar-drawer-v1"></script>
+<script src="<?php echo appUrl('assets/js/main.js'); ?>?v=20261110-account-settings-v1"></script>
 <?php if (isset($page_js)): ?>
     <script src="<?php echo appUrl('assets/js/' . $page_js); ?>"></script>
 <?php endif; ?>

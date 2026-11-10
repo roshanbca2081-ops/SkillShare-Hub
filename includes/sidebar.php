@@ -6,6 +6,7 @@ $fresherPath = strpos($scriptPath, '/fresher/') !== false
 $user_id = getUserId();
 
 $activeSection = 'dashboard';
+$activeSubSection = '';
 if (strpos($fresherPath, 'academic/') === 0) {
     $activeSection = 'academic';
 } elseif (strpos($fresherPath, 'mentor/') === 0) {
@@ -35,17 +36,24 @@ if (strpos($fresherPath, 'academic/') === 0) {
 } elseif (strpos($fresherPath, 'account/') === 0 || strpos($fresherPath, 'profile/') === 0) {
     if (strpos($fresherPath, 'security') !== false) {
         $activeSection = 'settings';
+        $activeSubSection = 'security';
     } elseif (strpos($fresherPath, 'setting') !== false) {
         $activeSection = 'settings';
+        $activeSubSection = 'theme';
     } else {
-        $activeSection = 'profile';
+        $activeSection = 'settings';
+        $activeSubSection = 'profile';
     }
 } elseif (strpos($fresherPath, 'setting/') === 0) {
     $activeSection = 'settings';
+    $activeSubSection = 'theme';
 } elseif ($fresherPath === 'my-courses.php' || strpos($fresherPath, 'learning/') === 0 || strpos($fresherPath, 'bookmark.php/') === 0) {
     $activeSection = 'my-courses';
 } elseif (strpos($fresherPath, 'reviews/') === 0) {
     $activeSection = 'my-courses';
+}
+if ($activeSection === 'settings' && isset($_GET['section']) && $_GET['section'] === 'security') {
+    $activeSubSection = 'security';
 }
 
 global $pdo;
@@ -162,19 +170,29 @@ $pending_assignments = $stmt->fetchColumn();
         
         <li class="fresher-nav-group-label">Account</li>
         <li class="nav-item">
-            <a class="nav-link text-white <?php echo $activeSection === 'profile' && strpos($fresherPath, 'profile/') === 0 ? 'active' : ''; ?>" href="<?php echo appUrl('fresher/profile/index.php'); ?>" <?php echo $activeSection === 'profile' && strpos($fresherPath, 'profile/') === 0 ? 'aria-current="page"' : ''; ?>>
-                <i class="fas fa-user me-2"></i> My Profile
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link text-white <?php echo $activeSection === 'settings' && strpos($fresherPath, 'security') === false ? 'active' : ''; ?>" href="<?php echo appUrl('fresher/setting/index.php'); ?>" <?php echo $activeSection === 'settings' && strpos($fresherPath, 'security') === false ? 'aria-current="page"' : ''; ?>>
+            <a class="nav-link text-white <?php echo $activeSection === 'settings' ? 'active' : ''; ?>" href="#" data-bs-toggle="collapse" data-bs-target="#settingsCollapse" aria-expanded="<?php echo $activeSection === 'settings' ? 'true' : 'false'; ?>" aria-controls="settingsCollapse">
                 <i class="fas fa-cog me-2"></i> Settings
+                <i class="fas fa-chevron-down ms-auto" style="font-size: 0.6rem;"></i>
             </a>
-        </li>
-        <li class="nav-item fresher-nav-subitem">
-            <a class="nav-link text-white <?php echo $activeSection === 'settings' && strpos($fresherPath, 'security') !== false ? 'active' : ''; ?>" href="<?php echo appUrl('fresher/account/security.php'); ?>" <?php echo $activeSection === 'settings' && strpos($fresherPath, 'security') !== false ? 'aria-current="page"' : ''; ?>>
-                <i class="fas fa-shield-alt me-2"></i> Security
-            </a>
+            <div class="collapse <?php echo $activeSection === 'settings' ? 'show' : ''; ?>" id="settingsCollapse">
+                <ul class="nav flex-column ms-3">
+                    <li class="nav-item fresher-nav-subitem">
+                        <a class="nav-link text-white <?php echo $activeSubSection === 'theme' ? 'active' : ''; ?>" href="<?php echo appUrl('fresher/account/setting.php#theme'); ?>" <?php echo $activeSubSection === 'theme' ? 'aria-current="page"' : ''; ?>>
+                            <i class="fas fa-palette me-2"></i> Theme
+                        </a>
+                    </li>
+                    <li class="nav-item fresher-nav-subitem">
+                        <a class="nav-link text-white <?php echo $activeSubSection === 'profile' ? 'active' : ''; ?>" href="<?php echo appUrl('fresher/profile/index.php'); ?>" <?php echo $activeSubSection === 'profile' ? 'aria-current="page"' : ''; ?>>
+                            <i class="fas fa-user me-2"></i> My Profile
+                        </a>
+                    </li>
+                    <li class="nav-item fresher-nav-subitem">
+                        <a class="nav-link text-white <?php echo $activeSubSection === 'security' ? 'active' : ''; ?>" href="<?php echo appUrl('fresher/account/setting.php?section=security#security'); ?>" <?php echo $activeSubSection === 'security' ? 'aria-current="page"' : ''; ?>>
+                            <i class="fas fa-shield-alt me-2"></i> Security
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </li>
     </ul>
     <div class="fresher-sidebar-footer">

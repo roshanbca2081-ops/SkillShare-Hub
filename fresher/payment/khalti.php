@@ -1,107 +1,68 @@
 <?php
 $page_title = 'Khalti Payment';
-require_once '../../config/database.php';
-require_once '../../config/session.php';
-require_once '../../config/functions.php';
-require_once '../../config/auth.php';
-
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../config/session.php';
+require_once __DIR__ . '/../../config/functions.php';
+require_once __DIR__ . '/../../config/auth.php';
+$paymentConfig = require_once __DIR__ . '/../../config/payment-gateways.php';
 requireFresher();
+$userId = (int)getUserId();
+$message = '';
+$messageType = 'warning';
 
-$user_id = getUserId();
-$session_id = isset($_GET['session']) ? (int)$_GET['session'] : 0;
-$amount = isset($_GET['amount']) ? (float)$_GET['amount'] : 0;
-
-if (!$session_id || !$amount) {
-    redirect('fresher/payment/index.php');
-}
-
-$stmt = $pdo->prepare("SELECT s.*, u.full_name as mentor_name FROM sessions s JOIN users u ON s.mentor_id = u.id WHERE s.id = ?");
-$stmt->execute([$session_id]);
-$session = $stmt->fetch();
-
-if (!$session) {
-    redirect('fresher/payment/index.php');
-}
-
-$transaction_id = 'KH-' . time() . '-' . $user_id;
-$amount_npr = $amount * 130;
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $transaction_id = sanitize($_POST['transaction_id'] ?? $transaction_id);
-    $payment_status = 'completed';
-    
-    $stmt = $pdo->prepare("INSERT INTO payments (fresher_id, course_id, amount, payment_method, status, transaction_id, payment_date) 
-                           VALUES (?, ?, ?, 'khalti', ?, ?, NOW())");
-    $stmt->execute([$user_id, $session['course_id'] ?? 0, $amount, $payment_status, $transaction_id]);
-    
-    $payment_id = $pdo->lastInsertId();
-    
-    $stmt = $pdo->prepare("INSERT INTO bookings (fresher_id, session_id, payment_method, payment_status, transaction_id, payment_date, status) 
-                           VALUES (?, ?, 'khalti', 'paid', ?, NOW(), 'approved')");
-    $stmt->execute([$user_id, $session_id, $transaction_id]);
-    
-    redirect('sucess.php?id=' . $payment_id);
+$pidx = trim((string)($_GET['pidx'] ?? ''));
+$orderReference = trim((string)($_GET['purchase_order_id'] ?? ''));
+if ($pidx !== '' || $orderReference !== '') {
+    try {
+        $order = parsePaymentOrderReference($orderReference);
+        if (!$order || !preg_match('/\A[a-zA-Z0-9_-]{8,100}\z/', $pidx)) {
+            throw new RuntimeException('Invalid payment callback.');
+        }
+        $stmt = $pdo->prepare("SELECT p.id, p.fresher_id, p.amount, p.status, p.payment_method, p.transaction_id, p.metadata, s.id AS session_id, s.price AS session_price FROM payments p JOIN bookings b ON b.id = ? AND b.fresher_id = p.fresher_id JOIN sessions s ON s.id = b.session_id WHERE p.id = ? AND JSON_UNQUOTE(JSON_EXTRACT(p.metadata, '$.booking_id')) = ? AND p.fresher_id = ? AND p.payment_method = 'khalti' LIMIT 1");
+        $stmt->execute([$order['booking_id'], $order['payment_id'], (string)$order['booking_id'], $userId]);
+        $payment = $stmt->fetch();
+        $metadata = $payment ? json_decode((string)$payment['metadata'], true) : null;
+        if (!$payment || $payment['transaction_id'] !== $pidx || ($metadata['order_reference'] ?? '') !== $orderReference) {
+            throw new RuntimeException('Payment order does not match the callback.');
+        }
+        $lookup = khaltiLookupPayment($pidx);
+        $expectedPaisa = paymentNprForUsd($payment['session_price']) * 100;
+        if (($lookup['pidx'] ?? '') !== $pidx
+            || (int)($lookup['total_amount'] ?? -1) !== $expectedPaisa
+            || (float)$payment['amount'] !== (float)$payment['session_price']) {
+            throw new RuntimeException('Khalti transaction details did not match this order.');
+        }
+        if (($lookup['status'] ?? '') === 'Completed' && empty($lookup['refunded'])) {
+            if (!finalizeSessionPayment($pdo, $order['payment_id'], $order['booking_id'], 'khalti', $pidx, true)) {
+                throw new RuntimeException('Payment could not be completed for this booking.');
+            }
+            redirect('fresher/payment/sucess.php?session_id=' . (int)$payment['session_id']);
+        }
+        $providerStatus = (string)($lookup['status'] ?? 'Unknown');
+        if (in_array($providerStatus, ['Expired', 'User canceled', 'Refunded', 'Partially Refunded', 'Canceled', 'Failed'], true)) {
+            finalizeSessionPayment($pdo, $order['payment_id'], $order['booking_id'], 'khalti', $pidx, false);
+            $message = 'Khalti did not complete this payment. You have not been charged by SkillShare Hub.';
+            $messageType = 'danger';
+        } else {
+            $message = 'Khalti has not confirmed this payment yet. Your booking remains pending; refresh this page later to check again.';
+        }
+    } catch (Throwable $error) {
+        error_log('Khalti callback verification failed: ' . $error->getMessage());
+        $message = 'We could not verify the Khalti payment. It has not been marked paid. If your wallet was charged, contact support with your Khalti reference.';
+        $messageType = 'danger';
+    }
 }
 ?>
-<?php include '../../includes/header.php'; ?>
-<?php include '../../includes/navbar.php'; ?>
-<?php include '../../includes/alerts.php'; ?>
-
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-3 col-lg-2 d-md-block sidebar p-0">
-            <?php include '../../includes/sidebar.php'; ?>
-        </div>
-        
-        <div class="col-md-9 col-lg-10 ms-sm-auto px-md-4 py-4">
-            <div class="row justify-content-center">
-                <div class="col-lg-6">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body p-5 text-center">
-                            <div class="mb-4">
-                                <i class="fas fa-mobile-alt fa-4x text-primary"></i>
-                                <h3 class="mt-3">Khalti Payment</h3>
-                                <p class="text-muted">Complete your payment using Khalti</p>
-                            </div>
-                            
-                            <div class="alert alert-info">
-                                <h5>Amount to Pay: NPR <?php echo number_format($amount_npr, 0); ?></h5>
-                                <p class="mb-0">Approx. $<?php echo number_format($amount, 2); ?> USD</p>
-                            </div>
-                            
-                            <div class="mb-4">
-                                <h6>Payment Instructions:</h6>
-                                <ol class="text-start">
-                                    <li>Open your Khalti mobile app or visit <a href="https://khalti.com" target="_blank">khalti.com</a></li>
-                                    <li>Send money to: <strong>SkillShare Hub</strong></li>
-                                    <li>Amount: <strong>NPR <?php echo number_format($amount_npr, 0); ?></strong></li>
-                                    <li>Note/Remark: <strong><?php echo $transaction_id; ?></strong></li>
-                                    <li>Enter the transaction ID below after payment</li>
-                                </ol>
-                            </div>
-                            
-                            <form method="POST">
-                                <div class="mb-3">
-                                    <label class="form-label">Khalti Transaction ID</label>
-                                    <input type="text" name="transaction_id" class="form-control" value="<?php echo $transaction_id; ?>" required>
-                                    <small class="text-muted">Enter the transaction ID from your Khalti payment</small>
-                                </div>
-                                
-                                <div class="d-grid gap-2">
-                                    <button type="submit" class="btn btn-primary btn-lg">
-                                        <i class="fas fa-check"></i> Confirm Payment
-                                    </button>
-                                    <a href="checkout.php?session=<?php echo $session_id; ?>" class="btn btn-outline-secondary">
-                                        <i class="fas fa-arrow-left"></i> Back to Checkout
-                                    </a>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<?php include '../../includes/footer.php'; ?>
+<?php include __DIR__ . '/../../includes/header.php'; ?>
+<?php include __DIR__ . '/../../includes/navbar.php'; ?>
+<div class="container-fluid"><div class="row">
+    <div class="col-md-3 col-lg-2 d-md-block sidebar p-0"><?php include __DIR__ . '/../../includes/sidebar.php'; ?></div>
+    <main class="col-md-9 col-lg-10 ms-sm-auto px-md-4 py-4">
+        <div class="row justify-content-center"><div class="col-lg-7"><div class="card border-0 shadow-sm"><div class="card-body p-4 p-md-5 text-center">
+            <i class="fas fa-mobile-alt fa-3x text-primary" aria-hidden="true"></i><h1 class="h3 mt-3">Khalti payment verification</h1>
+            <?php if ($message): ?><div class="alert alert-<?php echo htmlspecialchars($messageType, ENT_QUOTES, 'UTF-8'); ?> mt-4" role="status"><?php echo htmlspecialchars($message, ENT_QUOTES, 'UTF-8'); ?></div><a class="btn btn-outline-primary" href="index.php">Payment history</a>
+            <?php else: ?><p class="text-muted mt-3">Khalti checkout will return here after payment. Transaction status is verified directly with Khalti before booking approval.</p><a class="btn btn-primary" href="../sessions/index.php">Browse sessions</a><?php endif; ?>
+        </div></div></div></div>
+    </main>
+</div></div>
+<?php include __DIR__ . '/../../includes/footer.php'; ?>

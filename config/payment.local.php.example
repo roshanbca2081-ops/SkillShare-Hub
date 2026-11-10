@@ -1,0 +1,11 @@
+<?php
+// Copy to config/payment.local.php and use merchant-issued credentials only.
+// Sandbox is the default. Never commit the copied private file.
+return [
+    'environment' => 'sandbox', // Set to production only after merchant approval and testing.
+    'base_url' => 'http://localhost/SkillShare-Hub',
+    'esewa_product_code' => 'EPAYTEST',
+    'esewa_secret_key' => '', // Use the eSewa-provided sandbox secret in test; production secret in production.
+    'khalti_secret_key' => '', // Use the Khalti sandbox live_secret_key in test; production key in production.
+    'npr_per_usd' => '130', // Replace with the exchange rate you want to charge.
+];

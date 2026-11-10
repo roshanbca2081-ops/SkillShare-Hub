@@ -1,3 +1,7 @@
 # OAuth client credentials are private; ignore both normal and Windows double-suffix names.
 /config/social-auth.local.php
 /config/social-auth.local.php.php
+/config/mail.local.php
+/config/mail.local.php.php
+/config/payment.local.php
+/config/payment.local.php.php

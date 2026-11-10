@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS `courses` (
     `slug` VARCHAR(500) NOT NULL UNIQUE,
     `description` TEXT DEFAULT NULL,
     `mentor_id` INT UNSIGNED NOT NULL,
-    `field_id` INT UNSIGNED NOT NULL,
+    `field_id` INT UNSIGNED DEFAULT NULL,
     `status` ENUM('active', 'inactive', 'draft') NOT NULL DEFAULT 'draft',
     `level` ENUM('beginner', 'intermediate', 'advanced') NOT NULL DEFAULT 'beginner',
     `price` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
@@ -28,5 +28,5 @@ CREATE TABLE IF NOT EXISTS `courses` (
     INDEX `idx_courses_status` (`status`),
     INDEX `idx_courses_slug` (`slug`),
     CONSTRAINT `fk_courses_mentor` FOREIGN KEY (`mentor_id`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT `fk_courses_field` FOREIGN KEY (`field_id`) REFERENCES `academic_fields`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT `fk_courses_field` FOREIGN KEY (`field_id`) REFERENCES `academic_fields`(`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

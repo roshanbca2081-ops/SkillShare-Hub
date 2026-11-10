@@ -1,0 +1,11 @@
+<?php
+// Copy this file to config/mail.local.php and fill in your Gmail details.
+// Never commit the copied local file or share the App Password.
+return [
+    'username' => 'your-gmail-address@gmail.com',
+    'app_password' => '',
+    'from_name' => 'SkillShare Hub',
+    // Must include the project folder for XAMPP, e.g. http://localhost/SkillShare-Hub.
+    // Use your HTTPS production URL when deployed.
+    'base_url' => 'http://localhost/SkillShare-Hub',
+];

@@ -2,7 +2,136 @@
 // Main JavaScript
 // ============================================
 
+const THEME_STORAGE_KEY = 'skillshare-theme';
+const SERVER_THEME_PREFERENCE = document.querySelector('meta[name="csrf-token"]')
+    ? (document.documentElement.dataset.themePreference || 'system')
+    : 'system';
+
+function getSystemTheme() {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function getSavedThemePreference() {
+    if (document.querySelector('meta[name="csrf-token"]')) {
+        return SERVER_THEME_PREFERENCE;
+    }
+    try {
+        return localStorage.getItem(THEME_STORAGE_KEY) || 'system';
+    } catch (error) {
+        return 'system';
+    }
+}
+
+function applyTheme(themePreference, savePreference = true) {
+    const safePreference = ['light', 'dark', 'system'].includes(themePreference) ? themePreference : 'system';
+    const resolvedTheme = safePreference === 'system' ? getSystemTheme() : safePreference;
+
+    document.documentElement.setAttribute('data-theme', resolvedTheme);
+    document.body.setAttribute('data-theme', resolvedTheme);
+
+    try {
+        localStorage.setItem(THEME_STORAGE_KEY, safePreference);
+    } catch (error) {
+        // Ignore storage issues in restricted browsers.
+    }
+
+    // Save to database if user is logged in
+    if (savePreference) {
+        saveThemeToServer(safePreference);
+    }
+
+    const themeButtons = document.querySelectorAll('.theme-option');
+    themeButtons.forEach(button => {
+        const isActive = button.getAttribute('data-theme-option') === safePreference;
+        button.classList.toggle('active', isActive);
+        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+
+    const themeLabels = document.querySelectorAll('.theme-label');
+    themeLabels.forEach(label => {
+        const labelTheme = safePreference.charAt(0).toUpperCase() + safePreference.slice(1);
+        label.textContent = labelTheme;
+    });
+
+    document.querySelectorAll('[data-theme-select]').forEach(select => {
+        select.value = safePreference;
+    });
+
+    document.dispatchEvent(new CustomEvent('themechange', {
+        detail: { preference: safePreference, resolvedTheme }
+    }));
+}
+
+function saveThemeToServer(themePreference) {
+    // Only save if user appears to be logged in (check for session indicators)
+    const isLoggedIn = document.body.classList.contains('fresher-layout-page') || 
+                       document.body.classList.contains('mentor-dashboard-page') ||
+                       document.querySelector('a[href*="logout.php"]');
+    
+    if (isLoggedIn) {
+        fetch(appUrl('api/theme-preference.php'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: new URLSearchParams({
+                theme_preference: themePreference,
+                csrf_token: document.querySelector('meta[name="csrf-token"]')?.content || ''
+            })
+        }).catch(() => {
+            // Silently fail - localStorage will still work
+        });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    const storedTheme = (() => {
+        try {
+            return document.querySelector('meta[name="csrf-token"]')
+                ? SERVER_THEME_PREFERENCE
+                : (localStorage.getItem(THEME_STORAGE_KEY) || 'system');
+        } catch (error) {
+            return SERVER_THEME_PREFERENCE;
+        }
+    })();
+
+    applyTheme(storedTheme, false);
+
+    if (window.matchMedia) {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleSystemThemeChange = () => {
+            let preference = 'system';
+            try {
+                preference = getSavedThemePreference();
+            } catch (error) {
+                // Keep the system preference when storage is unavailable.
+            }
+            if (preference === 'system') {
+                applyTheme('system');
+            }
+        };
+
+        if (typeof mediaQuery.addEventListener === 'function') {
+            mediaQuery.addEventListener('change', handleSystemThemeChange);
+        } else if (typeof mediaQuery.addListener === 'function') {
+            mediaQuery.addListener(handleSystemThemeChange);
+        }
+    }
+
+    document.querySelectorAll('.theme-option').forEach(button => {
+        button.addEventListener('click', function() {
+            const selectedTheme = this.getAttribute('data-theme-option');
+            applyTheme(selectedTheme);
+        });
+    });
+
+    document.querySelectorAll('[data-theme-select]').forEach(select => {
+        select.addEventListener('change', function() {
+            applyTheme(this.value);
+        });
+    });
+
     // Initialize tooltips
     const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
     tooltips.forEach(el => new bootstrap.Tooltip(el));
